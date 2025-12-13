@@ -6,7 +6,7 @@ labels: feature
 assignees: ''
 ---
 ## ✔️  Check-list
-- [ ] : Label을 지정해 주세요.
+- [ ] Label을 지정해 주세요.
 
 ## 🚀 기능 설명
 추가하려는 기능을 설명해주세요.
