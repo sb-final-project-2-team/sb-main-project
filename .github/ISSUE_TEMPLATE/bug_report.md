@@ -5,6 +5,8 @@ title: "[BUG] "
 labels: bug
 assignees: ''
 ---
+## ✔️  Check-list
+- [ ] : Label을 지정해 주세요.
 
 ## 🐛 버그 설명
 어떤 문제가 발생했는지 간단히 설명해주세요.
