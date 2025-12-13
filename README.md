@@ -6,3 +6,5 @@ ISSUE : bug report, feature report 구성
 CI : 구성
 CODEOWNERS 구성
 PR : PR TEMPLATE 구성
+
+ISSUE 작업 자동화 확인
