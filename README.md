@@ -10,4 +10,5 @@ PR : PR TEMPLATE 구성
 ISSUE 작업 자동화 확인
 코드래빗 적용 테스트
 
-12-18일 유저 CRUD 생성
+브랜치 규칙 적용 완료
+main, develop 직접 push reject, 코드 리뷰 2명이상 해야 push, merge가능
