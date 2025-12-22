@@ -490,7 +490,7 @@ public void deleteUser(UUID userId) {
 ```java
 @Transactional
 public void hardDeleteUser(UUID userId) {
-		userRepository.deleteById(userId);
+    userRepository.deleteById(userId);
 }
 ```
 

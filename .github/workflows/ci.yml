@@ -25,7 +25,7 @@ jobs:
         run: chmod +x ./closet/gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./closet/gradlew build
 
 # 컴파일 에러 ❌ → CI 실패
 #
