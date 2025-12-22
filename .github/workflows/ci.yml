@@ -22,10 +22,12 @@ jobs:
           cache: gradle
 
       - name: Grant execute permission for gradlew
-        run: chmod +x ./closet/gradlew
+        working-directory: closet
+        run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./closet/gradlew build
+        working-directory: closet
+        run: ./gradlew build
 
 # 컴파일 에러 ❌ → CI 실패
 #
