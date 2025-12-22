@@ -10,6 +10,9 @@ PR : PR TEMPLATE 구성
 ISSUE 작업 자동화 확인
 코드래빗 적용 테스트
 
+브랜치 규칙 적용 완료
+main, develop 직접 push reject, 코드 리뷰 2명이상 해야 push, merge가능
+
 ## 📦 Tech Stack & Dependencies
 
 본 프로젝트는 **Spring Boot 4.x + Java 17** 기반으로 구성되어 있으며,
@@ -148,3 +151,4 @@ ISSUE 작업 자동화 확인
 * 실무 기준 확장 가능한 구조
 * 인증 / 배치 / 메일 / 장애 대응을 고려한 구성
 * 운영 환경을 고려한 모니터링 및 메트릭 수집
+
