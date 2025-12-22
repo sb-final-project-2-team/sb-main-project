@@ -21,7 +21,7 @@ reviews:
   instructions: |
     This project follows strict backend coding conventions.
     Review all changes based on the rules defined in:
-    docs/review-guidelines.md
+    .coderabbit/backend-coding-guidelines.md
 
     Key principles:
     - Service methods return Response DTOs only
