@@ -152,3 +152,45 @@ main, develop 직접 push reject, 코드 리뷰 2명이상 해야 push, merge가
 * 인증 / 배치 / 메일 / 장애 대응을 고려한 구성
 * 운영 환경을 고려한 모니터링 및 메트릭 수집
 
+---
+## 📁 프로젝트 구조 가이드 (단일 모듈 + 도메인 분리 기반 DDD Lite)
+
+>핵심: common은 공용, module 안에 비즈니스 도메인 분리,
+>service/repository 방식 사용 가능.
+>단지 도메인을 기능 묶음 기준으로 독립성 있게 관리한다는 목적.
+
+🔥 디렉토리 구조 예시
+
+``` markdown
+src/main/java/com/project
+├─ common/                         # 공통 모듈 (전역에서 활용)
+│   ├─ config/                      # 공통 설정(Spring Config 등)
+│   ├─ exception/                   # GlobalException, ErrorCode 등
+│   └─ util/                        # 유틸 클래스
+│
+└─ module/                         # 도메인 그룹
+├─ user/                       # User Domain
+│   ├─ controller/             # API 진입점
+│   ├─ service/                # 서비스(비즈니스 로직)
+│   ├─ repository/             # Repository (JPA/Hibernate)
+│   ├─ entity/                 # DB Entity
+│   └─ dto/                    # Request / Response DTO
+│
+├─ auth/                       # Auth Domain
+│   ├─ controller/
+│   ├─ service/
+│   ├─ repository/
+│   ├─ entity/
+│   └─ dto/
+│
+├─ order/
+│   ├─ controller/
+│   ├─ service/
+│   ├─ repository/
+│   ├─ entity/
+│   └─ dto/
+│
+└─ ...
+```
+📌 ModuleConfig 제거, 도메인별 폴더로만 분리
+📌 Service/Repository 구조는 동일하게 유지
