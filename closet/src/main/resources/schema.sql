@@ -2,7 +2,19 @@
 -- PostgreSQL DDL
 -- ===========================
 
--- 1. Users
+-- 1. Binary Contents
+CREATE TABLE binary_contents
+(
+    id           UUID PRIMARY KEY,
+    file_path    VARCHAR(255) NOT NULL,
+    file_url     VARCHAR(500) NOT NULL,
+    size         BIGINT       NOT NULL,
+    content_type VARCHAR(50)  NOT NULL,
+    created_at   TIMESTAMPTZ DEFAULT NOW(),
+    updated_at   TIMESTAMPTZ
+);
+
+-- 2. Users
 CREATE TABLE users
 (
     id                       UUID PRIMARY KEY,
@@ -23,17 +35,7 @@ CREATE TABLE users
     FOREIGN KEY (binary_content_id) REFERENCES binary_contents (id)
 );
 
--- 2. Binary Contents
-CREATE TABLE binary_contents
-(
-    id           UUID PRIMARY KEY,
-    file_path    VARCHAR(255) NOT NULL,
-    file_url     VARCHAR(500) NOT NULL,
-    size         BIGINT       NOT NULL,
-    content_type VARCHAR(50)  NOT NULL,
-    created_at   TIMESTAMPTZ DEFAULT NOW(),
-    updated_at   TIMESTAMPTZ
-);
+
 
 -- 3. Clothes Attribute Definitions
 CREATE TABLE clothes_attributes
