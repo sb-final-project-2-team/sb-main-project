@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/closet
+    username: closet-user
+    password: closet_1234
+  jpa:
+    hibernate:
+      ddl-auto: create-drop   # 테스트 시 자동으로 테이블 생성/삭제
+    properties:
+      hibernate:
+        format_sql: true
+  sql.init.mode: never       # 기존 schema.sql 자동 실행 방지

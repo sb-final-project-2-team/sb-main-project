@@ -1,11 +1,22 @@
 spring:
   application:
     name: closet
+
   datasource:
-    url: jdbc:h2:mem:closet;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:postgresql://localhost:5432/closet
+    driver-class-name: org.postgresql.Driver
+    username: closet-user
+    password: closet_1234
+
+  jpa:
+    hibernate:
+      ddl-auto: update   # (dev환경이면 update OK / prod는 validate 권장)
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+
   mail:
     host: smtp.gmail.com
     port: 587
