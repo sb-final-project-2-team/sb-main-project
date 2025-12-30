@@ -2,7 +2,7 @@ package com.codeit.closet.module.follow.dto;
 
 import java.util.UUID;
 
-public record FollowSummaryDto(
+public record FollowSummaryDTO(
         UUID followeeId,
         long followerCount,
         long followingCount,

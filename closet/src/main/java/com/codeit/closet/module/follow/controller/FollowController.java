@@ -1,9 +1,9 @@
 package com.codeit.closet.module.follow.controller;
 
 import com.codeit.closet.module.follow.dto.FollowCreateRequest;
-import com.codeit.closet.module.follow.dto.FollowDto;
+import com.codeit.closet.module.follow.dto.FollowDTO;
 import com.codeit.closet.module.follow.dto.FollowListResponse;
-import com.codeit.closet.module.follow.dto.FollowSummaryDto;
+import com.codeit.closet.module.follow.dto.FollowSummaryDTO;
 import com.codeit.closet.module.follow.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,19 +21,19 @@ public class FollowController {
 
     // 팔로우 생성
     @PostMapping
-    public ResponseEntity<FollowDto> create(
+    public ResponseEntity<FollowDTO> create(
             @RequestBody FollowCreateRequest followCreateRequest
     ) {
-        FollowDto result = followService.create(followCreateRequest);
+        FollowDTO result = followService.create(followCreateRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     // 팔로우 요약 정보 조회
     @GetMapping("/summary")
-    public ResponseEntity<FollowSummaryDto> summary(
+    public ResponseEntity<FollowSummaryDTO> summary(
             @RequestParam UUID userId
     ) {
-        FollowSummaryDto result = followService.findFollowSummary(userId);
+        FollowSummaryDTO result = followService.findFollowSummary(userId);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 

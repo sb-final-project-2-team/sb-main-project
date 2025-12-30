@@ -1,61 +1,32 @@
 package com.codeit.closet.module.follow.service;
 
 import com.codeit.closet.module.follow.dto.FollowCreateRequest;
-import com.codeit.closet.module.follow.dto.FollowDto;
+import com.codeit.closet.module.follow.dto.FollowDTO;
 import com.codeit.closet.module.follow.dto.FollowListResponse;
-import com.codeit.closet.module.follow.dto.FollowSummaryDto;
-import com.codeit.closet.module.follow.repository.FollowRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.codeit.closet.module.follow.dto.FollowSummaryDTO;
 
 import java.util.UUID;
 
-@Service
-@RequiredArgsConstructor
-public class FollowService {
-    private final FollowRepository followRepository;
+public interface FollowService {
+    FollowDTO create(FollowCreateRequest followCreateRequest);
 
-    @Transactional
-    public FollowDto create(
-            FollowCreateRequest followCreateRequest
-    ) {
-        return null;
-    }
+    FollowSummaryDTO findFollowSummary(UUID userId);
 
-    @Transactional(readOnly = true)
-    public FollowSummaryDto findFollowSummary(
-            UUID userId
-    ) {
-        return null;
-    }
-
-    @Transactional(readOnly = true)
-    public FollowListResponse findFollowingList(
+    FollowListResponse findFollowingList(
             UUID followerId,
             String cursor,
             UUID idAfter,
             int limit,
             String nameLike
-    ) {
-        return null;
-    }
+    );
 
-    @Transactional(readOnly = true)
-    public FollowListResponse findFollowerList(
+    FollowListResponse findFollowerList(
             UUID followeeId,
             String cursor,
             UUID idAfter,
             int limit,
             String nameLike
-    ) {
-        return null;
-    }
+    );
 
-    @Transactional
-    public void delete(
-            UUID followId
-    ) {
-
-    }
+    void delete(UUID followId);
 }

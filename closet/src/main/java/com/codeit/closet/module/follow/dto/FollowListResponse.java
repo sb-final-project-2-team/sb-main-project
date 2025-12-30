@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record FollowListResponse(
-        List<FollowDto> data,
+        List<FollowDTO> data,
         String nextCursor,
         UUID nextIdAfter,
         boolean hasNext,
