@@ -40,7 +40,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 10, nullable = false)
-    private UserRole role = UserRole.USER;
+    private UserRole role;
 
     @Column(name = "birth")
     private Instant birthDate;
