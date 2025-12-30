@@ -35,7 +35,6 @@ public class BinaryContentController {
 
   @GetMapping("/findUrl/{id}")
   public ResponseEntity<String> getFileUrl(@PathVariable UUID id) {
-    binaryContentService.findFileUrlByBinaryContentId(id);
     return ResponseEntity.ok(binaryContentService.findFileUrlByBinaryContentId(id));
   }
 
