@@ -2,6 +2,8 @@ package com.codeit.closet.module.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -57,9 +59,11 @@ public class User {
     @Column
     private Boolean locked;
 
-    @Column(name = "created_at")
-    private Instant createdAt = Instant.now();
+    @CreatedDate
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private Instant createdAt;
 
+    @LastModifiedDate
     @Column(name = "updated_at")
     private Instant updatedAt;
 
