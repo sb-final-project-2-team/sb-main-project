@@ -17,14 +17,8 @@ spring:
         format_sql: true
     show-sql: true
 
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: your_email@gmail.com
-    password: app-password
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+closet:
+  storage:
+    type: ${STORAGE_TYPE:local}
+    local:
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:storage}
