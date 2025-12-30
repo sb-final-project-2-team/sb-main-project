@@ -1,4 +1,32 @@
 -- ===========================
+-- DROP TABLES (Dependencies 고려)
+-- ===========================
+
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS direct_messages CASCADE;
+DROP TABLE IF EXISTS follows CASCADE;
+DROP TABLE IF EXISTS recommendations CASCADE;
+DROP TABLE IF EXISTS weather_regions CASCADE;
+DROP TABLE IF EXISTS weather_data CASCADE;
+DROP TABLE IF EXISTS likes CASCADE;
+DROP TABLE IF EXISTS comments CASCADE;
+DROP TABLE IF EXISTS feeds CASCADE;
+DROP TABLE IF EXISTS clothes_attributes_values CASCADE;
+DROP TABLE IF EXISTS clothes CASCADE;
+DROP TABLE IF EXISTS clothes_attributes CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS binary_contents CASCADE;
+
+-- ===========================
+-- DROP ENUM TYPES
+-- ===========================
+
+DROP TYPE IF EXISTS forecast_kind_enum;
+DROP TYPE IF EXISTS sky_status_enum;
+DROP TYPE IF EXISTS precipitation_type_enum;
+DROP TYPE IF EXISTS wind_as_word_enum;
+
+-- ===========================
 -- PostgreSQL DDL
 -- ===========================
 
@@ -231,6 +259,7 @@ CREATE TABLE notifications
     id          UUID PRIMARY KEY,
     receiver_id UUID         NOT NULL,
     title       VARCHAR(200) NOT NULL,
+    content     TEXT         NOT NULL,
     level       VARCHAR(10) CHECK (level IN ('INFO', 'WARNING', 'ERROR')),
     created_at  TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (receiver_id) REFERENCES users (id)
