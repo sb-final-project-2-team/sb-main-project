@@ -3,6 +3,7 @@ package com.codeit.closet.module.user.service.impl;
 import com.codeit.closet.module.user.dto.profile.ProfileDTO;
 import com.codeit.closet.module.user.dto.profile.ProfileUpdateRequest;
 import com.codeit.closet.module.user.dto.user.*;
+import com.codeit.closet.module.user.mapper.UserMapper;
 import com.codeit.closet.module.user.repository.UserRepository;
 import com.codeit.closet.module.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Override
     @Transactional
@@ -60,6 +62,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDTO updateUserLock(UUID userId, UserLockUpdateRequest request) {
         return null;
     }

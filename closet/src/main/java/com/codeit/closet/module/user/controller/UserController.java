@@ -5,6 +5,7 @@ import com.codeit.closet.module.user.dto.profile.ProfileUpdateRequest;
 import com.codeit.closet.module.user.dto.user.*;
 import com.codeit.closet.module.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,8 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@RequestBody UserCreateRequest request) {
-        return ResponseEntity.ok().build();
+        UserDTO result = userService.createUser(request);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     @GetMapping
@@ -32,36 +34,41 @@ public class UserController {
             @RequestParam(required = false) String roleEqual,
             @RequestParam(required = false) Boolean locked
     ) {
-        return ResponseEntity.ok().build();
+        UserDTOCursorResponse results = userService.findUsers(cursor, idAfter, limit, sortBy, sortDirection, emailLike, roleEqual, locked);
+        return ResponseEntity.status(HttpStatus.OK).body(results);
     }
 
     @PatchMapping("/{userId}/role")
     public ResponseEntity<UserDTO> updateUserRole(@PathVariable UUID userId,
                                                   @RequestBody UserRoleUpdateRequest request) {
-        return ResponseEntity.ok().build();
+        UserDTO result = userService.updateUserRole(userId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     @GetMapping("/{userId}/profiles")
     public ResponseEntity<ProfileDTO> getUserProfile(@PathVariable UUID userId) {
-        return ResponseEntity.ok().build();
+        ProfileDTO result = userService.findUserProfile(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     @PatchMapping("/{userId}/profiles")
     public ResponseEntity<ProfileDTO> updateUserProfile(@PathVariable UUID userId,
                                                         @RequestBody ProfileUpdateRequest request) { // 이미지도 가능하게
-        return ResponseEntity.ok().build();
+        ProfileDTO result = userService.updateUserProfile(userId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     @PatchMapping("/{userId}/password")
     public ResponseEntity<Void> updateUserPassword(@PathVariable UUID userId,
                                                    @RequestBody ChangePasswordRequest request) {
-        return ResponseEntity.ok().build();
+        userService.updateUserPassword(userId, request);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/{userId}/lock")
     public ResponseEntity<UserDTO> updateUserLock(@PathVariable UUID userId,
                                                   @RequestBody UserLockUpdateRequest request) {
-
-        return ResponseEntity.ok().build();
+        UserDTO result = userService.updateUserLock(userId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 }

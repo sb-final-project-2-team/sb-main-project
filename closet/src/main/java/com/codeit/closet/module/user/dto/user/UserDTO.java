@@ -1,5 +1,7 @@
 package com.codeit.closet.module.user.dto.user;
 
+import com.codeit.closet.module.user.entity.UserRole;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -8,7 +10,7 @@ public record UserDTO(
         Instant createdAt,
         String email,
         String name,
-        String role,
+        UserRole role,
         boolean locked
 ) {
 }
