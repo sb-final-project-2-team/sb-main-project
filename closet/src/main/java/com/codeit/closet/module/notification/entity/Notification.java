@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "notifications")
-public class notification {
+public class Notification {
 	@Id
 	@GeneratedValue
 	@Column(columnDefinition = "uuid")
