@@ -8,7 +8,7 @@ import com.codeit.closet.module.follow.dto.FollowSummaryDTO;
 import java.util.UUID;
 
 public interface FollowService {
-    FollowDTO create(FollowCreateRequest followCreateRequest);
+    FollowDTO createFollow(FollowCreateRequest followCreateRequest);
 
     FollowSummaryDTO findFollowSummary(UUID userId);
 
@@ -28,5 +28,5 @@ public interface FollowService {
             String nameLike
     );
 
-    void delete(UUID followId);
+    void deleteFollow(UUID followId);
 }

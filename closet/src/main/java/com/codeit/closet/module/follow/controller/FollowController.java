@@ -21,16 +21,16 @@ public class FollowController {
 
     // 팔로우 생성
     @PostMapping
-    public ResponseEntity<FollowDTO> create(
+    public ResponseEntity<FollowDTO> createFollow(
             @RequestBody FollowCreateRequest followCreateRequest
     ) {
-        FollowDTO result = followService.create(followCreateRequest);
+        FollowDTO result = followService.createFollow(followCreateRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     // 팔로우 요약 정보 조회
     @GetMapping("/summary")
-    public ResponseEntity<FollowSummaryDTO> summary(
+    public ResponseEntity<FollowSummaryDTO> findFollowSummary(
             @RequestParam UUID userId
     ) {
         FollowSummaryDTO result = followService.findFollowSummary(userId);
@@ -39,7 +39,7 @@ public class FollowController {
 
     // 팔로잉 목록 조회
     @GetMapping("/followings")
-    public ResponseEntity<FollowListResponse> followings(
+    public ResponseEntity<FollowListResponse> findFollowingList(
             @RequestParam UUID followerId,
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) UUID idAfter,
@@ -59,7 +59,7 @@ public class FollowController {
 
     // 팔로워 목록 조회
     @GetMapping("/followers")
-    public  ResponseEntity<FollowListResponse> followers(
+    public  ResponseEntity<FollowListResponse> findFollowerList(
             @RequestParam UUID followeeId,
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) UUID idAfter,
@@ -78,10 +78,10 @@ public class FollowController {
 
     // 팔로우 취소
     @DeleteMapping("/{followId}")
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<Void> deleteFollow(
             @PathVariable UUID followId
     ) {
-        followService.delete(followId);
+        followService.deleteFollow(followId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

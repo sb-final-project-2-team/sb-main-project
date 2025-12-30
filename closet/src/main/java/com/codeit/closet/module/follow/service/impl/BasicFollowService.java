@@ -19,7 +19,7 @@ public class BasicFollowService implements FollowService {
 
     @Override
     @Transactional
-    public FollowDTO create(
+    public FollowDTO createFollow(
             FollowCreateRequest followCreateRequest
     ) {
         return null;
@@ -59,7 +59,7 @@ public class BasicFollowService implements FollowService {
 
     @Override
     @Transactional
-    public void delete(
+    public void deleteFollow(
             UUID followId
     ) {
 
