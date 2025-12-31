@@ -68,7 +68,7 @@ public class User {
     private Instant updatedAt;
 
     @PrePersist
-    public void initFileUrl() {
+    public void initTemperatureSensitivity() {
         if (temperatureSensitivity == null) {
             this.temperatureSensitivity = 3;
         }
