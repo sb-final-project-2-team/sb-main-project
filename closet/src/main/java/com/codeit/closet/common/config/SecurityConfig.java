@@ -1,5 +1,6 @@
 package com.codeit.closet.common.config;
 
+import com.codeit.closet.common.security.Http401UnauthorizedEntryPoint;
 import com.codeit.closet.common.security.Http403ForbiddenAccessDeniedHandler;
 import com.codeit.closet.common.security.LoginFailureHandler;
 import com.codeit.closet.common.security.SpaCsrfTokenRequestHandler;
@@ -35,7 +36,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            LoginFailureHandler loginFailureHandler,
                                            DaoAuthenticationProvider daoAuthenticationProvider,
-                                           Http403ForbiddenAccessDeniedHandler forbiddenAccessDeniedHandler) throws Exception {
+                                           Http403ForbiddenAccessDeniedHandler forbiddenAccessDeniedHandler,
+                                           Http401UnauthorizedEntryPoint unauthorizedEntryPoint) throws Exception {
         http
                 .authenticationProvider(daoAuthenticationProvider)
                 // CSRF 사용용 설정
@@ -49,7 +51,7 @@ public class SecurityConfig {
                 )
 
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
+                        .authenticationEntryPoint(unauthorizedEntryPoint)
                         .accessDeniedHandler(forbiddenAccessDeniedHandler))
                 // Cors 설정
                 .cors(Customizer.withDefaults())
