@@ -48,7 +48,7 @@ public class User {
     private Instant birthDate;
 
     @Column(name = "temperature_sensitivity", nullable = false)
-    private Integer temperatureSensitivity = 3;
+    private Integer temperatureSensitivity;
 
     @Column(name = "temp_password")
     private String tempPassword;
@@ -67,4 +67,10 @@ public class User {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    @PrePersist
+    public void initTemperatureSensitivity() {
+        if (temperatureSensitivity == null) {
+            this.temperatureSensitivity = 3;
+        }
+    }
 }
