@@ -27,7 +27,7 @@ public class DirectMessage {
     @Column(name = "receiver_id", nullable = false)
     private UUID receiverId;
 
-    @Column(nullable = false)
+    @Column(columnDefinition ="TEXT", nullable = false)
     private String content;
 
     @Column(name = "created_at", nullable = false, updatable = false)
