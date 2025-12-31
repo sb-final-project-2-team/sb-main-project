@@ -2,6 +2,7 @@ package com.codeit.closet.module.dm.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -30,6 +31,7 @@ public class DirectMessage {
     @Column(columnDefinition ="TEXT", nullable = false)
     private String content;
 
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 }
