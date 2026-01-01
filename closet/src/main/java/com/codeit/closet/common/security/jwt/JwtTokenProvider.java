@@ -214,7 +214,15 @@ public class JwtTokenProvider {
       Date issueTime = jwtClaimsSet.getIssueTime();
 
       List<String> roleList = jwtClaimsSet.getStringListClaim("roles");
-      UserRole primaryRole = UserRole.valueOf(roleList.get(0).substring(5));
+      if (roleList == null || roleList.isEmpty()) {
+        throw new IllegalArgumentException("JWT에 roles 클레임이 없음.");
+      }
+      String roleString = roleList.get(0);
+      String roleName = roleString.startsWith("ROLE_")
+          ? roleString.substring(5)
+          : roleString;
+
+      UserRole primaryRole = UserRole.valueOf(roleName);
 
       UserDTO userDTO = new UserDTO(
           userId,

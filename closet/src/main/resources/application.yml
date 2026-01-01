@@ -38,4 +38,4 @@ logging:
   level:
     root: info
     org.hibernate.sql: info
-    org.hibernate.type: trace
+    org.hibernate.type: info

@@ -49,11 +49,13 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
             new JwtInformation(closetUserDetails.getUserDTO(), accessToken, refreshToken));
 
       } catch (JOSEException e) {
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         ErrorResponse errorResponse = new ErrorResponse(e,
             HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
       }
     } else {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       ErrorResponse errorResponse = new ErrorResponse(
           new Exception("Authorization failure!"), HttpServletResponse.SC_UNAUTHORIZED);
       response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
