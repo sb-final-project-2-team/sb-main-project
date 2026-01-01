@@ -34,7 +34,7 @@ DROP TYPE IF EXISTS wind_as_word_enum;
 CREATE TABLE binary_contents
 (
     id           UUID PRIMARY KEY,
-    file_path    VARCHAR(255) NOT NULL,
+    file_name    VARCHAR(255) NOT NULL,
     file_url     VARCHAR(500) NOT NULL,
     size         BIGINT       NOT NULL,
     content_type VARCHAR(50)  NOT NULL,
