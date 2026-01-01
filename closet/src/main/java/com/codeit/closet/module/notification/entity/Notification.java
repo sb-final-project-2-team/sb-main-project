@@ -19,28 +19,32 @@ import lombok.NoArgsConstructor;
 public class Notification {
 
 	@Id
-	@GeneratedValue
-	@Column(columnDefinition = "uuid")
+	@Column(name = "id", nullable = false, columnDefinition = "uuid")
 	private UUID id;
 
-	@Column(nullable = false, updatable = false)
+	@Column(name = "receiver_id",nullable = false, updatable = false, columnDefinition = "uuid")
 	private UUID receiverId;
 
-	@Column(nullable = false, length = 200)
+	@Column(name ="title", nullable = false, length = 200)
 	private String title;
 
-	@Column(nullable = false, columnDefinition = "TEXT")
+	@Column(name = "content", nullable = false, columnDefinition = "text")
 	private String content;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@Column(name ="level", nullable = false, length = 10)
 	private NotificationLevel level;
 
-	@Column(nullable = false, updatable = false)
+	@Column(name ="created_at", nullable = false, updatable = false)
 	private Instant createdAt;
 
 	@PrePersist
 	protected void onCreate() {
-		this.createdAt = Instant.now(); // 생성시점에 자동으로 시간 기록
+		if (this.id == null) {
+			this.id = UUID.randomUUID(); // 애플리케이션에서 UUID 생성 (캐시 활용)
+		}
+		if (this.createdAt == null){
+			this.createdAt = Instant.now(); // null일 때만 세팅
+		}
 	}
 }

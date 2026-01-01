@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record NotificationDtoCursorResponse(
-	List<NotificationDto> items,
+	List<NotificationDto> data,
 	String nextCursor,
 	UUID nextIdAfter,
 	boolean hasNext,
