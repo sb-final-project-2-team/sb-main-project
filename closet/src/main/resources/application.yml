@@ -25,4 +25,17 @@ closet:
   admin:
     username: ${ADMIN_USERNAME:admin}
     email: ${ADMIN_EMAIL:admin@admin.com}
-    password: ${ADMIN_PASSWORD:admin}
+    password: ${ADMIN_PASSWORD:admin123}
+
+security:
+  jwt:
+    issuer: closet
+    secret: ${JWT_SECRET:376352270f35f8070b7a7e2ae299ca43}
+    access-token-validity-seconds: 3600 # 1시간
+    refresh-token-validity-seconds: 1204000 # 14일
+
+logging:
+  level:
+    root: info
+    org.hibernate.sql: info
+    org.hibernate.type: trace
