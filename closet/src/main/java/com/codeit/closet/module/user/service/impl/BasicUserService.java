@@ -4,18 +4,23 @@ import com.codeit.closet.module.binarycontent.entity.BinaryContent;
 import com.codeit.closet.module.binarycontent.service.BinaryContentService;
 import com.codeit.closet.module.user.dto.profile.ProfileDTO;
 import com.codeit.closet.module.user.dto.profile.ProfileUpdateRequest;
-import com.codeit.closet.module.user.dto.user.*;
+import com.codeit.closet.module.user.dto.user.ChangePasswordRequest;
+import com.codeit.closet.module.user.dto.user.UserCreateRequest;
+import com.codeit.closet.module.user.dto.user.UserDTO;
+import com.codeit.closet.module.user.dto.user.UserDTOCursorResponse;
+import com.codeit.closet.module.user.dto.user.UserLockUpdateRequest;
+import com.codeit.closet.module.user.dto.user.UserRoleUpdateRequest;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.mapper.UserMapper;
 import com.codeit.closet.module.user.repository.UserRepository;
 import com.codeit.closet.module.user.service.UserService;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -58,7 +63,7 @@ public class BasicUserService implements UserService {
     return null;
   }
 
-  // Admin만 가능하게 바꿔야함.
+  @PreAuthorize("hasRole('ADMIN')")
   @Override
   @Transactional
   public UserDTO updateUserRole(UUID userId, UserRoleUpdateRequest request) {
@@ -93,11 +98,13 @@ public class BasicUserService implements UserService {
 
     // 차후에 Location 처리 넣어야함.
 
-    user.updateProfile(request, binaryContent);
+    user.updateProfile(request.name(), request.birthDate(),
+        request.temperatureSensitivity(), request.gender(), binaryContent);
 
     return userMapper.toProfileDTO(user);
   }
 
+  // 이메일 인증을 통한 비밀번호 리셋용 (별도 검증 로직 추가 예정)
   @Override
   @Transactional
   public void updateUserPassword(UUID userId, ChangePasswordRequest request) {
@@ -109,7 +116,8 @@ public class BasicUserService implements UserService {
     user.changePassword(encodedNewPassword);
   }
 
-  // Admin만 처리
+
+  @PreAuthorize("hasRole('ADMIN')")
   @Override
   @Transactional
   public UserDTO updateUserLock(UUID userId, UserLockUpdateRequest request) {
