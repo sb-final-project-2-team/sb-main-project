@@ -2,7 +2,7 @@ package com.codeit.closet.module.clothes.service.impl;
 
 import com.codeit.closet.module.clothes.dto.ClothesCreateRequest;
 import com.codeit.closet.module.clothes.dto.ClothesDTO;
-import com.codeit.closet.module.clothes.dto.ClothesDtoCursorResponse;
+import com.codeit.closet.module.clothes.dto.ClothesDTOCursorResponse;
 import com.codeit.closet.module.clothes.dto.ClothesUpdateRequest;
 import com.codeit.closet.module.clothes.entity.Clothes;
 import com.codeit.closet.module.clothes.entity.ClothesType;
@@ -85,7 +85,7 @@ public class BasicClothesService implements ClothesService {
 
     @Override
     @Transactional(readOnly = true)
-    public ClothesDtoCursorResponse findAll(UUID ownerId,
+    public ClothesDTOCursorResponse findAll(UUID ownerId,
                                             String cursor,
                                             UUID idAfter,
                                             Integer limit,
@@ -98,7 +98,7 @@ public class BasicClothesService implements ClothesService {
                 .map(this::toDto)
                 .toList();
 
-        return new ClothesDtoCursorResponse(
+        return new ClothesDTOCursorResponse(
                 dtoList,
                 null,  // nextCursor
                 null,  // nextIdAfter

@@ -2,7 +2,7 @@ package com.codeit.closet.module.clothes.controller;
 
 import com.codeit.closet.module.clothes.dto.ClothesCreateRequest;
 import com.codeit.closet.module.clothes.dto.ClothesDTO;
-import com.codeit.closet.module.clothes.dto.ClothesDtoCursorResponse;
+import com.codeit.closet.module.clothes.dto.ClothesDTOCursorResponse;
 import com.codeit.closet.module.clothes.dto.ClothesUpdateRequest;
 import com.codeit.closet.module.clothes.service.ClothesService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class ClothesController {
 
     // 옷 목록 조회
     @GetMapping
-    public ResponseEntity<ClothesDtoCursorResponse> getClothes(
+    public ResponseEntity<ClothesDTOCursorResponse> getClothes(
             @RequestParam UUID ownerId,
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) UUID idAfter,
@@ -38,7 +38,7 @@ public class ClothesController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection
     ) {
-        ClothesDtoCursorResponse result = clothesService.findAll(
+        ClothesDTOCursorResponse result = clothesService.findAll(
                 ownerId, cursor, idAfter, limit, sortBy, sortDirection
         );
         return ResponseEntity.status(HttpStatus.OK).body(result);

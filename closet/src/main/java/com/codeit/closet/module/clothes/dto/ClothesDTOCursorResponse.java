@@ -3,7 +3,7 @@ package com.codeit.closet.module.clothes.dto;
 import java.util.List;
 import java.util.UUID;
 
-public record ClothesDtoCursorResponse(
+public record ClothesDTOCursorResponse(
         List<ClothesDTO> data,
 
         String nextCursor,
