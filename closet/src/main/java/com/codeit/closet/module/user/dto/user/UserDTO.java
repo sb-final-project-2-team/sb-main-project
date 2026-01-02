@@ -11,6 +11,6 @@ public record UserDTO(
         String email,
         String name,
         UserRole role,
-        boolean locked
+        Boolean locked
 ) {
 }
