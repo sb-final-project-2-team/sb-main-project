@@ -14,7 +14,6 @@ import java.util.UUID;
 @Table(name = "clothes")
 @Builder
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class Clothes {
