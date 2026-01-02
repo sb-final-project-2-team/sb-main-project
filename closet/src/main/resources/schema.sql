@@ -259,7 +259,8 @@ CREATE TABLE notifications
     id          UUID PRIMARY KEY,
     receiver_id UUID         NOT NULL,
     title       VARCHAR(200) NOT NULL,
-    level       VARCHAR(10) CHECK (level IN ('INFO', 'WARNING', 'ERROR')),
+    content     TEXT         NOT NULL,
+    level       VARCHAR(10) NOT NULL CHECK (level IN ('INFO', 'WARNING', 'ERROR')),
     created_at  TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (receiver_id) REFERENCES users (id)
 );
