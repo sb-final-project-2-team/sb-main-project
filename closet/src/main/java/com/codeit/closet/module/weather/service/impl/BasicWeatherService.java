@@ -62,7 +62,8 @@ public class BasicWeatherService implements WeatherService {
 
     /**
      * WGS84 좌표 → 기상청 격자 좌표 변환
-     * TODO Phase 2: 실제 변환 알고리즘 구현 필요 (https://gist.github.com/fronteer-kr/14d7f779d52a21ac2f16)
+     * 실제 변환 알고리즘 구현 필요
+     * 참고자료: (https://gist.github.com/fronteer-kr/14d7f779d52a21ac2f16)
      */
     private GridCoordinates convertToGrid(Double longitude, Double latitude) {
         return new GridCoordinates(61, 126);  // 임시: 서울 강남 고정값
