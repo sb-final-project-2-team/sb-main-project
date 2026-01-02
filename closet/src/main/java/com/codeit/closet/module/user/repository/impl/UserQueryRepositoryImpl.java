@@ -5,11 +5,13 @@ import com.codeit.closet.module.user.dto.user.UserDTOCursorResponse;
 import com.codeit.closet.module.user.entity.QUser;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.entity.UserRole;
+import com.codeit.closet.module.user.mapper.UserMapper;
 import com.codeit.closet.module.user.repository.UserQueryRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.nio.charset.StandardCharsets;
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
@@ -22,10 +24,13 @@ import org.springframework.stereotype.Repository;
 public class UserQueryRepositoryImpl implements UserQueryRepository {
 
   private final JPAQueryFactory jpaQueryFactory;
+  private final UserMapper userMapper;
+
   private static final QUser user = QUser.user;
 
   @Override
-  public UserDTOCursorResponse findUsersByCursor(String cursor, UUID idAfter, Integer limit, String sortBy,
+  public UserDTOCursorResponse findUsersByCursor(String cursor, UUID idAfter, Integer limit,
+      String sortBy,
       String sortDirection, String emailLike, String roleEqual, Boolean locked) {
 
     int pageSize = limit != null ? limit : 20;
@@ -60,14 +65,18 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
         .select(user.count())
         .from(user)
         .where(
-            emailLike != null && !emailLike.isEmpty() ? user.email.containsIgnoreCase(emailLike) : null,
-            roleEqual != null && !roleEqual.isEmpty() ? user.role.eq(UserRole.valueOf(roleEqual)) : null,
+            emailLike != null && !emailLike.isEmpty() ? user.email.containsIgnoreCase(emailLike)
+                : null,
+            roleEqual != null && !roleEqual.isEmpty() ? user.role.eq(UserRole.valueOf(roleEqual))
+                : null,
             locked != null ? user.locked.eq(locked) : null
         )
         .fetchOne();
 
     boolean hasNext = users.size() > pageSize;
-    if (hasNext) users.remove(pageSize);
+    if (hasNext) {
+      users.remove(pageSize);
+    }
 
     String nextCursor = null;
     UUID nextAfter = null;
@@ -79,7 +88,7 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
     }
 
     return new UserDTOCursorResponse(
-        users.stream().map(UserDTO::from).toList(),
+        userMapper.toUserDTOs(users),
         nextCursor,
         nextAfter,
         hasNext,
@@ -90,16 +99,27 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
   }
 
   // ==================== 커서 관련 유틸 ====================
-  private record CursorInfo(Instant createdAt, UUID id) {}
+  private record CursorInfo(Instant createdAt, UUID id) {
+
+  }
 
   private CursorInfo parseCursor(String cursor) {
-    if (cursor == null) return null;
-    String decoded = new String(Base64.getDecoder().decode(cursor), StandardCharsets.UTF_8);
-    String[] parts = decoded.split("\\|");
-    return new CursorInfo(
-        Instant.parse(parts[0]),
-        UUID.fromString(parts[1])
-    );
+    if (cursor == null) {
+      return null;
+    }
+    try {
+      String decoded = new String(Base64.getDecoder().decode(cursor), StandardCharsets.UTF_8);
+      String[] parts = decoded.split("\\|");
+      if (parts.length < 2) {
+        return null;
+      }
+      return new CursorInfo(
+          Instant.parse(parts[0]),
+          UUID.fromString(parts[1])
+      );
+    } catch (IllegalArgumentException | DateTimeException e) {
+      return null;
+    }
   }
 
   private String encodeCursor(User user) {
