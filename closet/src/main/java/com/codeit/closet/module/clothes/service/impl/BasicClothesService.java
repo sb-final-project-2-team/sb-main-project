@@ -1,7 +1,7 @@
 package com.codeit.closet.module.clothes.service.impl;
 
 import com.codeit.closet.module.clothes.dto.ClothesCreateRequest;
-import com.codeit.closet.module.clothes.dto.ClothesDto;
+import com.codeit.closet.module.clothes.dto.ClothesDTO;
 import com.codeit.closet.module.clothes.dto.ClothesDtoCursorResponse;
 import com.codeit.closet.module.clothes.dto.ClothesUpdateRequest;
 import com.codeit.closet.module.clothes.entity.Clothes;
@@ -23,7 +23,7 @@ public class BasicClothesService implements ClothesService {
 
     @Override
     @Transactional
-    public ClothesDto create(ClothesCreateRequest request) {
+    public ClothesDTO create(ClothesCreateRequest request) {
         // 중복 검사
         if (clothesRepository.existsByOwnerIdAndNameAndDeletedAtIsNull(request.ownerId(), request.name())) {
             throw new RuntimeException("이미 존재하는 의상 이름입니다: " + request.name());
@@ -45,7 +45,7 @@ public class BasicClothesService implements ClothesService {
 
     @Override
     @Transactional(readOnly = true)
-    public ClothesDto find(UUID clothesId) {
+    public ClothesDTO find(UUID clothesId) {
         Clothes clothes = clothesRepository.findByIdAndDeletedAtIsNull(clothesId)
                 .orElseThrow(() -> new RuntimeException("Clothes not found: " + clothesId));
 
@@ -54,7 +54,7 @@ public class BasicClothesService implements ClothesService {
 
     @Override
     @Transactional
-    public ClothesDto update(UUID clothesId, ClothesUpdateRequest request) {
+    public ClothesDTO update(UUID clothesId, ClothesUpdateRequest request) {
         // 조회 (삭제되지 않은 것만)
         Clothes clothes = clothesRepository.findByIdAndDeletedAtIsNull(clothesId)
                 .orElseThrow(() -> new RuntimeException("Clothes not found: " + clothesId));
@@ -94,7 +94,7 @@ public class BasicClothesService implements ClothesService {
         // 일단 간단하게 전체 목록 조회 (페이징은 나중에 구현)
         List<Clothes> clothesList = clothesRepository.findAllByOwnerIdAndDeletedAtIsNull(ownerId);
 
-        List<ClothesDto> dtoList = clothesList.stream()
+        List<ClothesDTO> dtoList = clothesList.stream()
                 .map(this::toDto)
                 .toList();
 
@@ -110,8 +110,8 @@ public class BasicClothesService implements ClothesService {
     }
 
     // Entity -> DTO 변환
-    private ClothesDto toDto(Clothes clothes) {
-        return new ClothesDto(
+    private ClothesDTO toDto(Clothes clothes) {
+        return new ClothesDTO(
                 clothes.getId(),
                 clothes.getOwnerId(),
                 clothes.getName(),

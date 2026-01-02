@@ -1,7 +1,7 @@
 package com.codeit.closet.module.clothes.service;
 
 import com.codeit.closet.module.clothes.dto.ClothesCreateRequest;
-import com.codeit.closet.module.clothes.dto.ClothesDto;
+import com.codeit.closet.module.clothes.dto.ClothesDTO;
 import com.codeit.closet.module.clothes.dto.ClothesDtoCursorResponse;
 import com.codeit.closet.module.clothes.dto.ClothesUpdateRequest;
 
@@ -9,11 +9,11 @@ import java.util.UUID;
 
 public interface ClothesService {
 
-    ClothesDto create(ClothesCreateRequest request);
+    ClothesDTO create(ClothesCreateRequest request);
 
-    ClothesDto find(UUID clothesId);
+    ClothesDTO find(UUID clothesId);
 
-    ClothesDto update(UUID clothesId, ClothesUpdateRequest request);
+    ClothesDTO update(UUID clothesId, ClothesUpdateRequest request);
 
     void delete(UUID clothesId);
 

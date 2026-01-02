@@ -1,7 +1,7 @@
 package com.codeit.closet.module.clothes.controller;
 
 import com.codeit.closet.module.clothes.dto.ClothesCreateRequest;
-import com.codeit.closet.module.clothes.dto.ClothesDto;
+import com.codeit.closet.module.clothes.dto.ClothesDTO;
 import com.codeit.closet.module.clothes.dto.ClothesDtoCursorResponse;
 import com.codeit.closet.module.clothes.dto.ClothesUpdateRequest;
 import com.codeit.closet.module.clothes.service.ClothesService;
@@ -21,10 +21,10 @@ public class ClothesController {
 
     // 옷 등록
     @PostMapping
-    public ResponseEntity<ClothesDto> createClothes(
+    public ResponseEntity<ClothesDTO> createClothes(
             @RequestBody ClothesCreateRequest request
     ) {
-        ClothesDto result = clothesService.create(request);
+        ClothesDTO result = clothesService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
@@ -46,20 +46,20 @@ public class ClothesController {
 
     // 옷 단건 조회
     @GetMapping("/{clothesId}")
-    public ResponseEntity<ClothesDto> findClothes(
+    public ResponseEntity<ClothesDTO> findClothes(
             @PathVariable UUID clothesId
     ) {
-        ClothesDto result = clothesService.find(clothesId);
+        ClothesDTO result = clothesService.find(clothesId);
         return ResponseEntity.ok(result);
     }
 
     // 옷 수정
     @PatchMapping("/{clothesId}")
-    public ResponseEntity<ClothesDto> updateClothes(
+    public ResponseEntity<ClothesDTO> updateClothes(
             @PathVariable UUID clothesId,
             @RequestBody ClothesUpdateRequest request
     ) {
-        ClothesDto result = clothesService.update(clothesId, request);
+        ClothesDTO result = clothesService.update(clothesId, request);
         return ResponseEntity.ok(result);
     }
 

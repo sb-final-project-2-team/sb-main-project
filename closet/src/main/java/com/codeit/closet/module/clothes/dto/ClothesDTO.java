@@ -2,7 +2,7 @@ package com.codeit.closet.module.clothes.dto;
 
 import java.util.UUID;
 
-public record ClothesDto(
+public record ClothesDTO(
         UUID id,
         UUID ownerId,
         String name,
