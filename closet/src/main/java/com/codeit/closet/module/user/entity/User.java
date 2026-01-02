@@ -94,6 +94,10 @@ public class User {
     if (role == null) {
       this.role = UserRole.USER;
     }
+
+    if (locked == null) {
+      this.locked = false;
+    }
   }
 
   public void updateRole(UserRole role) {
