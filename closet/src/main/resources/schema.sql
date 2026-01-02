@@ -263,3 +263,10 @@ CREATE TABLE notifications
     created_at  TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (receiver_id) REFERENCES users (id)
 );
+
+-- #################################
+-- ########## Index 추가 ############
+-- #################################
+CREATE INDEX idx_users_created_at_id ON users (created_at DESC, id DESC);
+CREATE INDEX idx_users_email_id ON users (email ASC, id ASC);
+CREATE INDEX idx_users_created_at_id_role_locked ON users (created_at DESC, id DESC, role, locked);
