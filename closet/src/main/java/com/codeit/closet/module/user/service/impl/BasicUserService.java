@@ -14,9 +14,11 @@ import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.mapper.UserMapper;
 import com.codeit.closet.module.user.repository.UserRepository;
 import com.codeit.closet.module.user.service.UserService;
+import java.awt.print.Pageable;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -52,7 +54,8 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional(readOnly = true)
-  public UserDTOCursorResponse findUsers(String cursor,
+  public UserDTOCursorResponse findUsers(
+      String cursor,
       UUID idAfter,
       Integer limit,
       String sortBy,
@@ -60,7 +63,8 @@ public class BasicUserService implements UserService {
       String emailLike,
       String roleEqual,
       Boolean locked) {
-    return null;
+
+    return userRepository.findUsersByCursor(cursor, idAfter, limit, sortBy, sortDirection, emailLike, roleEqual, locked);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -104,7 +108,7 @@ public class BasicUserService implements UserService {
     return userMapper.toProfileDTO(user);
   }
 
-  // 이메일 인증을 통한 비밀번호 리셋용 (별도 검증 로직 추가 예정)
+  // 이메일 인증을 통한 비밀번호 리셋용 (별도 검증 로직 추가 예정 )
   @Override
   @Transactional
   public void updateUserPassword(UUID userId, ChangePasswordRequest request) {
