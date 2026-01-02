@@ -1,8 +1,8 @@
 package com.codeit.closet.module.clothes.entity;
 
 
+import com.codeit.closet.module.binarycontent.entity.BinaryContent;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -29,8 +29,9 @@ public class Clothes {
     @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @Column(name = "binary_content_id") // 임시
-    private UUID binaryContentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "binary_content_id")
+    private BinaryContent binaryContent;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
@@ -44,12 +45,14 @@ public class Clothes {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    @Column(name = "deleted_at")
-    private Instant deletedAt;
+    // 비즈니스 메서드
+    public void updateName(String name) {
+        this.name = name;
+    }
 
-    // Soft Delete 메서드
-    public void markAsDeleted() {
-        this.deletedAt = Instant.now();
+    public void updateType(ClothesType type) {
+        this.type = type;
     }
 
 }
+

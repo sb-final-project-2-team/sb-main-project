@@ -25,7 +25,7 @@ public class BasicClothesService implements ClothesService {
     @Transactional
     public ClothesDTO create(ClothesCreateRequest request) {
         // 중복 검사
-        if (clothesRepository.existsByOwnerIdAndNameAndDeletedAtIsNull(request.ownerId(), request.name())) {
+        if (clothesRepository.existsByOwnerIdAndName(request.ownerId(), request.name())) {
             throw new RuntimeException("이미 존재하는 의상 이름입니다: " + request.name());
         }
 
@@ -46,7 +46,7 @@ public class BasicClothesService implements ClothesService {
     @Override
     @Transactional(readOnly = true)
     public ClothesDTO find(UUID clothesId) {
-        Clothes clothes = clothesRepository.findByIdAndDeletedAtIsNull(clothesId)
+        Clothes clothes = clothesRepository.findById(clothesId)
                 .orElseThrow(() -> new RuntimeException("Clothes not found: " + clothesId));
 
         return toDto(clothes);
@@ -55,16 +55,16 @@ public class BasicClothesService implements ClothesService {
     @Override
     @Transactional
     public ClothesDTO update(UUID clothesId, ClothesUpdateRequest request) {
-        // 조회 (삭제되지 않은 것만)
-        Clothes clothes = clothesRepository.findByIdAndDeletedAtIsNull(clothesId)
+        // 조회
+        Clothes clothes = clothesRepository.findById(clothesId)
                 .orElseThrow(() -> new RuntimeException("Clothes not found: " + clothesId));
 
         // 수정 (null이 아닌 값만)
         if (request.name() != null) {
-            clothes.setName(request.name());
+            clothes.updateName(request.name());
         }
         if (request.type() != null) {
-            clothes.setType(ClothesType.valueOf(request.type()));
+            clothes.updateType(ClothesType.valueOf(request.type()));
         }
 
         // @Transactional과 JPA 더티 체킹으로 자동 저장됨
@@ -74,13 +74,13 @@ public class BasicClothesService implements ClothesService {
     @Override
     @Transactional
     public void delete(UUID clothesId) {
-        // 조회 (삭제되지 않은 것만)
-        Clothes clothes = clothesRepository.findByIdAndDeletedAtIsNull(clothesId)
-                .orElseThrow(() -> new RuntimeException("Clothes not found: " + clothesId));
+        // 존재 확인
+        if (!clothesRepository.existsById(clothesId)) {
+            throw new RuntimeException("Clothes not found: " + clothesId);
+        }
 
-        // Soft Delete
-        clothes.markAsDeleted();
-        // @Transactional에 의해 자동 저장
+        // 삭제
+        clothesRepository.deleteById(clothesId);
     }
 
     @Override
@@ -92,7 +92,7 @@ public class BasicClothesService implements ClothesService {
                                             String sortBy,
                                             String sortDirection) {
         // 일단 간단하게 전체 목록 조회 (페이징은 나중에 구현)
-        List<Clothes> clothesList = clothesRepository.findAllByOwnerIdAndDeletedAtIsNull(ownerId);
+        List<Clothes> clothesList = clothesRepository.findAllByOwnerId(ownerId);
 
         List<ClothesDTO> dtoList = clothesList.stream()
                 .map(this::toDto)
