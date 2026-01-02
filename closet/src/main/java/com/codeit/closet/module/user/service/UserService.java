@@ -5,6 +5,7 @@ import com.codeit.closet.module.user.dto.profile.ProfileUpdateRequest;
 import com.codeit.closet.module.user.dto.user.*;
 
 import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
     UserDTO createUser(UserCreateRequest request);
@@ -22,7 +23,7 @@ public interface UserService {
 
     ProfileDTO findUserProfile(UUID userId);
 
-    ProfileDTO updateUserProfile(UUID userId, ProfileUpdateRequest request);
+    ProfileDTO updateUserProfile(UUID userId, ProfileUpdateRequest request, MultipartFile multipartFile);
 
     void updateUserPassword(UUID userId, ChangePasswordRequest request);
 
