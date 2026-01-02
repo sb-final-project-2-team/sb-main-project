@@ -12,5 +12,5 @@ public interface NotificationService {
 
 	void delete(UUID id, UUID receiverId);
 
-	void create(Set<UUID> receiverIds, String title, String content);
+	void create(UUID receiverIds, String title, String content);
 }
