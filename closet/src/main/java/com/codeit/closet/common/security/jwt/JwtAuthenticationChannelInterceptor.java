@@ -72,13 +72,9 @@ public class JwtAuthenticationChannelInterceptor implements ChannelInterceptor {
     String prefix = "Bearer ";
 
     String authHeader = accessor.getFirstNativeHeader(HttpHeaders.AUTHORIZATION);
+    log.info("test authHeader: {}", StringUtils.hasText(authHeader) && authHeader.startsWith(prefix));
     if (StringUtils.hasText(authHeader) && authHeader.startsWith(prefix)) {
       return Optional.of(authHeader.substring(prefix.length()));
-    }
-
-    String refreshTokenHeader = accessor.getFirstNativeHeader(REFRESH_TOKEN_COOKIE_NAME);
-    if (StringUtils.hasText(refreshTokenHeader)) {
-      return Optional.of(refreshTokenHeader);
     }
 
     return Optional.empty();

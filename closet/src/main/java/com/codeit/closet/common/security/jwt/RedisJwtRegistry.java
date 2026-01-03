@@ -9,7 +9,9 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -59,20 +61,28 @@ public class RedisJwtRegistry implements JwtRegistry<UUID> {
   }
 
   @CacheEvict(value = "users", key = "'all'")
+  @Retryable(retryFor = RedisLockAcquisitionException.class, maxAttempts = 10,
+      backoff = @Backoff(delay = 100, multiplier = 2))
   @Override
   public void invalidateJwtInformationByUserId(UUID userId) {
     String userKey = getUserKey(userId);
+    String lockKey = userId.toString();
 
-    List<Object> tokens = redisTemplate.opsForList().range(userKey, 0, -1);
-    if (tokens != null) {
-      tokens.forEach(tokenObj -> {
-        if (tokenObj instanceof JwtInformation jwtInfo) {
-          removeTokenIndex(jwtInfo.getAccessToken(), jwtInfo.getRefreshToken());
-        }
-      });
+    redisLockProvider.acquireLock(lockKey);
+    try {
+      List<Object> tokens = redisTemplate.opsForList().range(userKey, 0, -1);
+      if (tokens != null) {
+        tokens.forEach(tokenObj -> {
+          if (tokenObj instanceof JwtInformation jwtInfo) {
+            removeTokenIndex(jwtInfo.getAccessToken(), jwtInfo.getRefreshToken());
+          }
+        });
+      }
+
+      redisTemplate.delete(userKey);
+    } finally {
+      redisLockProvider.releaseLock(lockKey);
     }
-
-    redisTemplate.delete(userKey);
   }
 
   @Override
@@ -132,31 +142,46 @@ public class RedisJwtRegistry implements JwtRegistry<UUID> {
   @Scheduled(fixedDelay = 1000 * 60 * 5)
   @Override
   public void clearExpiredJwtInformation() {
-    Set<String> userKeys = redisTemplate.keys(USER_JWT_KEY_PREFIX + "*");
 
-    for (String userKey : userKeys) {
-      List<Object> tokens = redisTemplate.opsForList().range(userKey, 0, -1);
+    ScanOptions scanOptions = ScanOptions.scanOptions()
+        .match(USER_JWT_KEY_PREFIX + "*")
+        .count(100)
+        .build();
 
-      if (tokens != null) {
-        boolean hasValidTokens = false;
+    try (Cursor<String> cursor = redisTemplate.scan(scanOptions)) {
+      while (cursor.hasNext()) {
+        String userKey = cursor.next();
+        List<Object> tokens =
+            redisTemplate.opsForList().range(userKey, 0, -1);
+
+        if (tokens == null || tokens.isEmpty()) {
+          redisTemplate.delete(userKey);
+          return;
+        }
+
+        boolean hasValid = false;
 
         for (int i = tokens.size() - 1; i >= 0; i--) {
           if (tokens.get(i) instanceof JwtInformation jwtInfo) {
-            boolean isExpired =
-                !jwtTokenProvider.validateAccessToken(jwtInfo.getAccessToken()) ||
-                    !jwtTokenProvider.validateRefreshToken(jwtInfo.getRefreshToken());
 
-            if (isExpired) {
-              redisTemplate.opsForList().set(userKey, i, "EXPIRED");
-              redisTemplate.opsForList().remove(userKey, 1, "EXPIRED");
-              removeTokenIndex(jwtInfo.getAccessToken(), jwtInfo.getRefreshToken());
+            boolean expired =
+                !jwtTokenProvider.validateAccessToken(jwtInfo.getAccessToken())
+                    || !jwtTokenProvider.validateRefreshToken(jwtInfo.getRefreshToken());
+
+            if (expired) {
+              redisTemplate.opsForList()
+                  .remove(userKey, 1, jwtInfo);
+              removeTokenIndex(
+                  jwtInfo.getAccessToken(),
+                  jwtInfo.getRefreshToken()
+              );
             } else {
-              hasValidTokens = true;
+              hasValid = true;
             }
           }
         }
 
-        if (!hasValidTokens) {
+        if (!hasValid) {
           redisTemplate.delete(userKey);
         }
       }
@@ -170,9 +195,6 @@ public class RedisJwtRegistry implements JwtRegistry<UUID> {
   private void addTokenIndex(String accessToken, String refreshToken) {
     redisTemplate.opsForSet().add(ACCESS_TOKEN_INDEX_KEY, accessToken);
     redisTemplate.opsForSet().add(REFRESH_TOKEN_INDEX_KEY, refreshToken);
-
-    redisTemplate.expire(ACCESS_TOKEN_INDEX_KEY, DEFAULT_TTL);
-    redisTemplate.expire(REFRESH_TOKEN_INDEX_KEY, DEFAULT_TTL);
   }
 
   private void removeTokenIndex(String accessToken, String refreshToken) {
