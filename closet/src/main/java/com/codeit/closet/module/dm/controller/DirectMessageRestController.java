@@ -23,6 +23,7 @@ public class DirectMessageRestController {
     // DM 저장
     @PostMapping
     public DirectMessageDTO createDirectMessage(
+//            @AuthenticationPrincipal Jwt jwt,
             @RequestBody DirectMessageSaveRequest directMessageSaveRequest
             ) {
 //        UUID senderId = jwt.getClaim("userId"); senderId는 jwt로 분리 예정

@@ -31,6 +31,12 @@ public class BasicDirectMessageService implements DirectMessageService {
     @Transactional
     public DirectMessageDTO create(UUID senderId, UUID receiverId, String content) {
         log.info("[Service] DM 저장 api 호출");
+
+        User sender = userRepository.findById(senderId)
+                .orElseThrow(() -> new IllegalArgumentException("sender not found"));
+        User receiver = userRepository.findById(receiverId)
+                .orElseThrow(() -> new IllegalArgumentException("receiver not found"));
+
         String dmKey = DmKeyUtil.of(senderId, receiverId);
 
         DirectMessage directMessage = DirectMessage.builder()
@@ -41,11 +47,6 @@ public class BasicDirectMessageService implements DirectMessageService {
                 .build();
 
         directMessageRepository.save(directMessage);
-
-        User sender = userRepository.findById(senderId)
-                .orElseThrow(() -> new IllegalArgumentException("송신자 찾을 수 없음"));
-        User receiver = userRepository.findById(receiverId)
-                .orElseThrow(() -> new IllegalArgumentException("수신자 찾을 수 없음"));
 
         UserSummary senderSummary = userMapper.toUserSummary(sender);
         UserSummary receiverSummary = userMapper.toUserSummary(receiver);
