@@ -148,14 +148,14 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
     BooleanBuilder builder = new BooleanBuilder();
     boolean desc = "DESCENDING".equalsIgnoreCase(sortDirection);
 
-    if ("email".equalsIgnoreCase(sortBy)) {
-      builder.or(user.email.lt(cursor.createdAt().toString())
-          .or(user.email.eq(cursor.createdAt().toString())
-              .and(user.id.lt(cursor.id()))));
-    } else {
+    if (desc) {
       builder.or(user.createdAt.lt(cursor.createdAt())
           .or(user.createdAt.eq(cursor.createdAt())
               .and(user.id.lt(cursor.id()))));
+    } else {
+      builder.or(user.createdAt.gt(cursor.createdAt())
+          .or(user.createdAt.eq(cursor.createdAt())
+              .and(user.id.gt(cursor.id()))));
     }
 
     return builder;
