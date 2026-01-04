@@ -156,7 +156,7 @@ public class RedisJwtRegistry implements JwtRegistry<UUID> {
 
         if (tokens == null || tokens.isEmpty()) {
           redisTemplate.delete(userKey);
-          return;
+          continue;
         }
 
         boolean hasValid = false;
