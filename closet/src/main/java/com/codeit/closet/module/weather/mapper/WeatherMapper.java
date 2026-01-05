@@ -19,11 +19,13 @@ public interface WeatherMapper {
     @Mapping(source = "temperatureCompPrevDay", target = "comparedToDayBefore")
     @Mapping(source = "temperatureMin", target = "min")
     @Mapping(source = "temperatureMax", target = "max")
+    @Named("toTemperatureDTO")
     TemperatureDTO toTemperatureDTO(WeatherData data);
 
     @Mapping(source = "precipitationType", target = "type")
     @Mapping(source = "precipitationAmount", target = "amount")
     @Mapping(source = "precipitationProb", target = "probability")
+    @Named("toPrecipitationDTO")
     PrecipitationDTO toPrecipitationDTO(WeatherData data);
 
     @Mapping(source = "humidityCurrent", target = "current")
@@ -40,6 +42,12 @@ public interface WeatherMapper {
     @Mapping(source = "region.y", target = "y")
     @Mapping(source = "region.locationNames", target = "locationNames", qualifiedByName = "stringToList")
     LocationDTO toLocationDTO(WeatherRegion region, Double latitude, Double longitude);
+
+    @Mapping(target = "weatherId", source = "id")
+    @Mapping(target = "skyStatus", source = "weather.weatherData.skyStatus")
+    @Mapping(target = "precipitation", source = "weather.weatherData", qualifiedByName = "toPrecipitationDTO")
+    @Mapping(target = "temperature", source = "weather.weatherData", qualifiedByName = "toTemperatureDTO")
+    WeatherSummaryDTO toSummary(WeatherRegion weather);
 
     @Mapping(source = "latitude", target = "latitude")
     @Mapping(source = "longitude", target = "longitude")
