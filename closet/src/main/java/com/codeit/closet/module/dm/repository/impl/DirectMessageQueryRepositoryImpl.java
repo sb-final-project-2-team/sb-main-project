@@ -48,8 +48,10 @@ public class DirectMessageQueryRepositoryImpl implements DirectMessageQueryRepos
 
         List<DirectMessage> messages = jpaQueryFactory
                 .selectFrom(directMessage)
-                .leftJoin(directMessage.sender).fetchJoin()
-                .leftJoin(directMessage.receiver).fetchJoin()
+                .join(directMessage.sender).fetchJoin() // sender, receiver 즉시 로딩
+                .join(directMessage.receiver).fetchJoin()
+                .leftJoin(directMessage.sender.binaryContent).fetchJoin()   // 프로필이미지는 없을 수도 있어서 left
+                .leftJoin(directMessage.receiver.binaryContent).fetchJoin()
                 .where(where)
                 .orderBy(orderSpecifiersDesc())
                 .limit(pageSize + 1)
