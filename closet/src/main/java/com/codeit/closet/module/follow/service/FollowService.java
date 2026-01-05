@@ -16,7 +16,7 @@ public interface FollowService {
             UUID followerId,
             String cursor,
             UUID idAfter,
-            int limit,
+            Integer limit,
             String nameLike
     );
 
@@ -24,7 +24,7 @@ public interface FollowService {
             UUID followeeId,
             String cursor,
             UUID idAfter,
-            int limit,
+            Integer limit,
             String nameLike
     );
 
