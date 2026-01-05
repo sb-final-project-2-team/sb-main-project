@@ -8,6 +8,23 @@ spring:
     username: closet-user
     password: closet_1234
 
+  cache:
+    # type: caffeine
+    type: redis
+    cache-names:
+      - users # 추가 해주시면 됩니다. (yml 리스트 형식으로)
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
   jpa:
     hibernate:
       ddl-auto: update   # (dev환경이면 update OK / prod는 validate 권장)
