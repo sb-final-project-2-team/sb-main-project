@@ -54,7 +54,7 @@ CREATE TABLE users
     gender                   VARCHAR(10) CHECK (gender IN ('MALE', 'FEMALE', 'OTHER')),
     role                     VARCHAR(10)  NOT NULL DEFAULT 'USER' CHECK (role IN ('ADMIN', 'USER')),
     birth                    TIMESTAMPTZ,
-    temperature_sensitivity  INTEGER NOT NULL DEFAULT 3,
+    temperature_sensitivity  INTEGER      NOT NULL DEFAULT 3,
     temp_password            VARCHAR(255),
     temp_password_expired_at TIMESTAMPTZ,
     locked                   BOOLEAN,
@@ -62,7 +62,6 @@ CREATE TABLE users
     updated_at               TIMESTAMPTZ,
     FOREIGN KEY (binary_content_id) REFERENCES binary_contents (id)
 );
-
 
 
 -- 3. Clothes Attribute Definitions
@@ -83,7 +82,8 @@ CREATE TABLE clothes
     binary_content_id     UUID,
     type                  VARCHAR(10)
         CHECK (type IN
-               ('TOP', 'BOTTOM', 'DRESS', 'OUTER', 'UNDERWEAR', 'ACCESSORY', 'SHOES', 'SOCKS', 'HAT', 'BAG', 'SCARF',
+               ('TOP', 'BOTTOM', 'DRESS', 'OUTER', 'UNDERWEAR', 'ACCESSORY', 'SHOES', 'SOCKS',
+                'HAT', 'BAG', 'SCARF',
                 'ETC')),
     created_at            TIMESTAMPTZ DEFAULT NOW(),
     updated_at            TIMESTAMPTZ,
@@ -102,53 +102,12 @@ CREATE TABLE clothes_attributes_values
     FOREIGN KEY (clothes_attributes_id) REFERENCES clothes_attributes (id),
     UNIQUE (clothes_id, clothes_attributes_id) -- 하나의 옷에 속성 1개만 적용되도록
 );
--- 5. Feeds (OOTD)
-CREATE TABLE feeds
-(
-    id                UUID PRIMARY KEY,
-    user_id           UUID NOT NULL,
-    clothe_id         UUID NOT NULL,
-    binary_content_id UUID,
-    content           VARCHAR(2000),
-    comment_count     INTEGER     DEFAULT 0,
-    like_count        INTEGER     DEFAULT 0,
-    created_at        TIMESTAMPTZ DEFAULT NOW(),
-    updated_at        TIMESTAMPTZ,
-    FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (binary_content_id) REFERENCES binary_contents (id),
-    FOREIGN KEY (clothe_id) REFERENCES clothes (id)
-);
-
--- 6. Comments
-CREATE TABLE comments
-(
-    id         UUID PRIMARY KEY,
-    feed_id    UUID NOT NULL,
-    user_id    UUID NOT NULL,
-    content    TEXT NOT NULL CHECK (char_length(content) <= 500),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    FOREIGN KEY (feed_id) REFERENCES feeds (id),
-    FOREIGN KEY (user_id) REFERENCES users (id)
-);
-
--- 7. Feed Likes
-CREATE TABLE likes
-(
-    id         UUID PRIMARY KEY,
-    user_id    UUID NOT NULL,
-    feed_id    UUID NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE (user_id, feed_id),
-    FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (feed_id) REFERENCES feeds (id)
-);
 
 -- 예보 종류
 CREATE TYPE forecast_kind_enum AS ENUM ('ULTRA_NOW', 'ULTRA_FCST', 'SHORT_FCST');
 
--- 하늘 상태
-CREATE TYPE sky_status_enum AS ENUM ('SUNNY', 'CLOUDY', 'OVERCAST', 'RAINY', 'SNOWY');
--- 필요하면 교체/추가
+-- 하늘 상태 (기상청 SKY 코드 매핑, 강수는 precipitation_type으로 분리)
+CREATE TYPE sky_status_enum AS ENUM ('CLEAR', 'MOSTLY_CLOUDY', 'CLOUDY');
 
 -- 강수 상태
 CREATE TYPE precipitation_type_enum AS ENUM ('NONE', 'RAIN', 'RAIN_SNOW', 'SNOW', 'SHOWER');
@@ -156,7 +115,7 @@ CREATE TYPE precipitation_type_enum AS ENUM ('NONE', 'RAIN', 'RAIN_SNOW', 'SNOW'
 -- 바람 세기
 CREATE TYPE wind_as_word_enum AS ENUM ('WEAK','MODERATE','STRONG');
 
--- 8. Weather Data
+-- 5. Weather Data
 CREATE TABLE weather_data
 (
     id                          UUID PRIMARY KEY,
@@ -188,7 +147,7 @@ CREATE TABLE weather_data
 );
 
 
--- 9. Weather Region Targets
+-- 6. Weather Region Targets
 CREATE TABLE weather_regions
 (
     id                UUID PRIMARY KEY,
@@ -200,6 +159,47 @@ CREATE TABLE weather_regions
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (x, y)
+);
+
+-- 7. Feeds (OOTD)
+CREATE TABLE feeds
+(
+    id                UUID PRIMARY KEY,
+    user_id           UUID NOT NULL,
+    weather_id        UUID NOT NULL,
+    clothe_id         UUID NOT NULL,
+    content           VARCHAR(2000),
+    comment_count     INTEGER     DEFAULT 0,
+    like_count        INTEGER     DEFAULT 0,
+    created_at        TIMESTAMPTZ DEFAULT NOW(),
+    updated_at        TIMESTAMPTZ,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (weather_id) REFERENCES weather_regions (id),
+    FOREIGN KEY (clothe_id) REFERENCES clothes (id)
+);
+
+-- 8. Comments
+CREATE TABLE comments
+(
+    id         UUID PRIMARY KEY,
+    feed_id    UUID NOT NULL,
+    user_id    UUID NOT NULL,
+    content    TEXT NOT NULL CHECK (char_length(content) <= 500),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    FOREIGN KEY (feed_id) REFERENCES feeds (id),
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+-- 9. Feed Likes
+CREATE TABLE likes
+(
+    id         UUID PRIMARY KEY,
+    user_id    UUID NOT NULL,
+    feed_id    UUID NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (user_id, feed_id),
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (feed_id) REFERENCES feeds (id)
 );
 
 -- 10. Recommendations
@@ -259,7 +259,7 @@ CREATE TABLE notifications
     receiver_id UUID         NOT NULL,
     title       VARCHAR(200) NOT NULL,
     content     TEXT         NOT NULL,
-    level       VARCHAR(10) NOT NULL CHECK (level IN ('INFO', 'WARNING', 'ERROR')),
+    level       VARCHAR(10)  NOT NULL CHECK (level IN ('INFO', 'WARNING', 'ERROR')),
     created_at  TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (receiver_id) REFERENCES users (id)
 );
