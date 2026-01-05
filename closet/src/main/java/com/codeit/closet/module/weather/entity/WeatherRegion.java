@@ -23,8 +23,9 @@ public class WeatherRegion {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "weather_data_id")
-    private UUID weatherDataId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "weather_data_id")
+    private WeatherData weatherData;
 
     @Column(name = "x", nullable = false)
     private Integer x;
