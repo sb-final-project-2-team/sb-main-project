@@ -5,7 +5,7 @@ import java.util.UUID;
 public record CommentCreateRequest(
     UUID feedId,
     UUID authorId,
-    UUID content
+    String content
 ) {
 
 }
