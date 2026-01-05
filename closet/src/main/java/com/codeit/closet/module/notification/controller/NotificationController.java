@@ -42,7 +42,7 @@ public class NotificationController {
 		@PathVariable UUID notificationId) {
 		UUID receiverId = principal.getUserDTO().id();
 		log.info("알림 삭제 요청: id={}, receiverId={}", notificationId, receiverId);
-		notificationService.delete(notificationId, receiverId);
+		notificationService.deleteNotification(notificationId, receiverId);
 		log.debug("알림 삭제 응답: id={}", notificationId);
 		return ResponseEntity.noContent().build();
 	}

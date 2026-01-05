@@ -40,7 +40,7 @@ public class BasicNotificationService implements NotificationService {
 
 	@Override
 	@Transactional
-	public void delete(UUID id, UUID receiverId) {
+	public void deleteNotification(UUID id, UUID receiverId) {
 		log.debug("알림 삭제 시작: notificationId={}, receiverId={}", id, receiverId);
 
 		Notification notification = notificationRepository.findById(id)
