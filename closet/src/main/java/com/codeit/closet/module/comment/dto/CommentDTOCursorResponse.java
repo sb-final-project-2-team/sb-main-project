@@ -1,6 +1,5 @@
 package com.codeit.closet.module.comment.dto;
 
-import com.codeit.closet.module.user.dto.user.UserDTO;
 import java.util.List;
 import java.util.UUID;
 
