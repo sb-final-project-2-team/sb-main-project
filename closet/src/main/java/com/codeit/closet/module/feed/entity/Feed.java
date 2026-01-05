@@ -1,14 +1,22 @@
 package com.codeit.closet.module.feed.entity;
 
+import com.codeit.closet.module.clothes.entity.Clothes;
+import com.codeit.closet.module.user.entity.User;
+import com.codeit.closet.module.weather.entity.WeatherRegion;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -30,14 +38,17 @@ public class Feed {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(name = "user_id")
-  private UUID userId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-  @Column(name = "weather_id")
-  private UUID weatherId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "weather_id", nullable = false)
+  private WeatherRegion weather;
 
-  @Column(name = "clothe_id")
-  private UUID clotheId;
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "feed_id")
+  private List<Ootd> ootds;
 
   @Column(name = "content")
   private String content;
@@ -55,4 +66,17 @@ public class Feed {
   @UpdateTimestamp
   @Column(name = "updated_at")
   private Instant updatedAt;
+
+  @Transient
+  private Boolean likedByMe;
+
+  public void addOotd(Clothes clothes) {
+    this.ootds.add(Ootd.of(clothes));
+  }
+
+  public void updateFeed(String content) {
+    if (content != null) {
+      this.content = content;
+    }
+  }
 }
