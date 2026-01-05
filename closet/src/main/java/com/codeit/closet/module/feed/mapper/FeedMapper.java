@@ -26,12 +26,11 @@ public interface FeedMapper {
   @Mapping(target = "likedByMe", source = "feed.likedByMe", qualifiedByName = "getLikedByMe")
   FeedDTO toDTO(Feed feed);
 
-  @Mapping(target = "author", source = "user")
-  @Mapping(target = "weather", source = "weather")
-  @Mapping(target = "ootds", source = "ootds") //ootds 매핑이 안됨.
-  @Mapping(target = "likedByMe", source = "feed.likedByMe", qualifiedByName = "getLikedByMe")
   List<FeedDTO> toDTOs(List<Feed> feeds);
 
-  // 아직 제대로 사용은 못할꺼임.
+  @Mapping(target = "clothesId", source = "clothes.id")
+  @Mapping(target = "name", source = "clothes.name")
+  @Mapping(target = "imageUrl", source = "clothes.binaryContent.fileUrl")
+  @Mapping(target = "type", source = "clothes.type")
   OotdDTO toDTO(Ootd ootd);
 }

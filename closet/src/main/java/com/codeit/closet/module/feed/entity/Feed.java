@@ -16,6 +16,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -48,7 +49,8 @@ public class Feed {
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "feed_id")
-  private List<Ootd> ootds;
+  @Builder.Default
+  private List<Ootd> ootds = new ArrayList<>();
 
   @Column(name = "content")
   private String content;

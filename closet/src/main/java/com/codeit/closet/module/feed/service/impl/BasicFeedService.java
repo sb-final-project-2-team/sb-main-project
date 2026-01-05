@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,7 @@ public class BasicFeedService implements FeedService {
   private final FeedMapper feedMapper;
 
   @Override
+  @Transactional
   public FeedDTO createFeed(FeedCreateRequest request) {
 
     User user = userRepository.findById(request.authorId())
@@ -60,6 +62,7 @@ public class BasicFeedService implements FeedService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public FeedDTOCursorResponse findFeeds(String cursor, UUID idAfter, Integer limit, String sortBy,
       String sortDirection, String keywordLike, SkyStatus skyStatusEqual,
       PrecipitationType precipitationTypeEqual, UUID authorIdEqual) {
@@ -69,6 +72,7 @@ public class BasicFeedService implements FeedService {
   }
 
   @Override
+  @Transactional
   public FeedDTO updateFeed(UUID feedId, FeedUpdateRequest request) {
     Feed feed = feedRepository.findById(feedId).orElseThrow(
         () -> new NoSuchElementException("존재하지 않는 피드 입니다."));
@@ -79,6 +83,7 @@ public class BasicFeedService implements FeedService {
   }
 
   @Override
+  @Transactional
   public void deleteFeed(UUID feedId) {
     Feed feed = feedRepository.findById(feedId).orElseThrow(
         () -> new NoSuchElementException("존재하지 않는 피드 입니다."));
