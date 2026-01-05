@@ -2,8 +2,8 @@ package com.codeit.closet.module.feed.controller;
 
 import com.codeit.closet.module.feed.dto.FeedCreateRequest;
 import com.codeit.closet.module.feed.dto.FeedDTO;
+import com.codeit.closet.module.feed.dto.FeedDTOCursorResponse;
 import com.codeit.closet.module.feed.dto.FeedUpdateRequest;
-import com.codeit.closet.module.user.dto.user.UserDTOCursorResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +25,7 @@ public class FeedController {
   // 기본 틀만 잡고 차후에 Service 연동 할 예정
 
   @GetMapping
-  public ResponseEntity<UserDTOCursorResponse> getFeeds(
+  public ResponseEntity<FeedDTOCursorResponse> getFeeds(
       @RequestParam(required = false) String cursor,
       @RequestParam(required = false) UUID idAfter,
       @RequestParam Integer limit,
