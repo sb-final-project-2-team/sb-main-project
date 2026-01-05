@@ -1,5 +1,6 @@
 package com.codeit.closet.module.dm.entity;
 
+import com.codeit.closet.module.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -22,11 +23,13 @@ public class DirectMessage {
     @Column(name = "dm_key", nullable = false)
     private String dmKey;
 
-    @Column(name = "sender_id", nullable = false)
-    private UUID senderId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
 
-    @Column(name = "receiver_id", nullable = false)
-    private UUID receiverId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "receiver_id", nullable = false)
+    private User receiver;
 
     @Column(columnDefinition ="TEXT", nullable = false)
     private String content;

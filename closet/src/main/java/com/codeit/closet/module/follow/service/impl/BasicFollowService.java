@@ -39,7 +39,7 @@ public class BasicFollowService implements FollowService {
             UUID followerId,
             String cursor,
             UUID idAfter,
-            int limit,
+            Integer limit,
             String nameLike
     ) {
         return null;
@@ -51,7 +51,7 @@ public class BasicFollowService implements FollowService {
             UUID followeeId,
             String cursor,
             UUID idAfter,
-            int limit,
+            Integer limit,
             String nameLike
     ) {
         return null;
