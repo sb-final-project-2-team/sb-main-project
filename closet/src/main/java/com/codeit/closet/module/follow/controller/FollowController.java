@@ -43,7 +43,7 @@ public class FollowController {
             @RequestParam UUID followerId,
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) UUID idAfter,
-            @RequestParam int limit, // 필수니까 null 불가능이라 Integer -> int
+            @RequestParam Integer limit,
             @RequestParam(required = false) String nameLike
     ) {
         FollowListResponse result = followService.findFollowingList(
@@ -63,7 +63,7 @@ public class FollowController {
             @RequestParam UUID followeeId,
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) UUID idAfter,
-            @RequestParam int limit, // 필수니까 null 불가능이라 Integer -> int
+            @RequestParam int limit,
             @RequestParam(required = false) String nameLike
     ) {
         FollowListResponse result = followService.findFollowerList(

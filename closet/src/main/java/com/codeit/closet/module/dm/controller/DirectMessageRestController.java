@@ -38,13 +38,14 @@ public class DirectMessageRestController {
     // 이전 DM 내역 조회
     @GetMapping
     public DirectMessageDTOCursorResponse getDirectMessages(
-            @AuthenticationPrincipal Jwt jwt,
+//            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam UUID myUserId, // test용 내 id
             @RequestParam UUID userId, // 대화 상대 id
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) UUID idAfter,
             @RequestParam int limit
     ) {
-        UUID myUserId = jwt.getClaim("userId");
+//        UUID myUserId = jwt.getClaim("userId");
         return directMessageService.findDirectMessages(myUserId, userId, cursor, idAfter, limit);
     }
 }

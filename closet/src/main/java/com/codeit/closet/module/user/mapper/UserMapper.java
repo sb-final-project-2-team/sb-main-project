@@ -27,8 +27,9 @@ public interface UserMapper {
         return new UserSummary(
                 user.getId(),
                 user.getName(),
-                "url"
-//                user.getBinaryContent().getFileUrl() //binaryContent 연결 후 사용
+                user.getBinaryContent() != null
+                        ? user.getBinaryContent().getFileUrl()
+                        : null
         );
     }
 }
