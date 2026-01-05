@@ -30,13 +30,13 @@ public class BasicWeatherService implements WeatherService {
 
         WeatherRegion region = weatherRegionRepository.findByXAndY(grid.x(), grid.y())
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Weather region not found for coordinates: lon=" + longitude + ", lat=" + latitude
+                        "해당 좌표의 날씨 지역을 찾을 수 없습니다: lon=" + longitude + ", lat=" + latitude
                 ));
 
         List<WeatherData> dataList = weatherDataRepository.findByWeatherRegionId(region.getId());
         if (dataList.isEmpty()) {
             throw new IllegalArgumentException(
-                    "No weather data available for region: x=" + grid.x() + ", y=" + grid.y()
+                    "해당 지역의 날씨 데이터가 없습니다: x=" + grid.x() + ", y=" + grid.y()
             );
         }
 
@@ -54,7 +54,7 @@ public class BasicWeatherService implements WeatherService {
 
         WeatherRegion region = weatherRegionRepository.findByXAndY(grid.x(), grid.y())
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Weather region not found for coordinates: lon=" + longitude + ", lat=" + latitude
+                        "해당 좌표의 날씨 지역을 찾을 수 없습니다: lon=" + longitude + ", lat=" + latitude
                 ));
 
         return weatherMapper.toWeatherAPILocation(region, latitude, longitude);
