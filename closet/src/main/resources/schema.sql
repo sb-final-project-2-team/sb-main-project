@@ -166,7 +166,7 @@ CREATE TABLE feeds
 (
     id                UUID PRIMARY KEY,
     user_id           UUID NOT NULL,
-    weather_id        UUID,
+    weather_id        UUID NOT NULL,
     clothe_id         UUID NOT NULL,
     content           VARCHAR(2000),
     comment_count     INTEGER     DEFAULT 0,
@@ -186,7 +186,6 @@ CREATE TABLE comments
     user_id    UUID NOT NULL,
     content    TEXT NOT NULL CHECK (char_length(content) <= 500),
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ,
     FOREIGN KEY (feed_id) REFERENCES feeds (id),
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
