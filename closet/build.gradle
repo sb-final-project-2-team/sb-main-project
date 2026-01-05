@@ -66,17 +66,17 @@ dependencies {
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 
     /* =========================
-     * MapStruct
-     * ========================= */
-    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
-    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
-    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
-
-    /* =========================
-     * Lombok
+     * Lombok (Lombok annotationProcessor를 MapStruct보다 먼저 선언)
      * ========================= */
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    /* =========================
+     * MapStruct (Lombok 이후에 실행되어야 함)
+     * ========================= */
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
     /* =========================
      * Dev
