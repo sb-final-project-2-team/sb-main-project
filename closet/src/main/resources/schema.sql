@@ -127,7 +127,6 @@ CREATE TABLE comments
     user_id    UUID NOT NULL,
     content    TEXT NOT NULL CHECK (char_length(content) <= 500),
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ,
     FOREIGN KEY (feed_id) REFERENCES feeds (id),
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
