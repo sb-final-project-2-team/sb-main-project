@@ -147,9 +147,8 @@ CREATE TABLE likes
 -- 예보 종류
 CREATE TYPE forecast_kind_enum AS ENUM ('ULTRA_NOW', 'ULTRA_FCST', 'SHORT_FCST');
 
--- 하늘 상태
-CREATE TYPE sky_status_enum AS ENUM ('SUNNY', 'CLOUDY', 'OVERCAST', 'RAINY', 'SNOWY');
--- 필요하면 교체/추가
+-- 하늘 상태 (기상청 SKY 코드 매핑, 강수는 precipitation_type으로 분리)
+CREATE TYPE sky_status_enum AS ENUM ('CLEAR', 'MOSTLY_CLOUDY', 'CLOUDY');
 
 -- 강수 상태
 CREATE TYPE precipitation_type_enum AS ENUM ('NONE', 'RAIN', 'RAIN_SNOW', 'SNOW', 'SHOWER');
