@@ -43,7 +43,7 @@ public class DirectMessageRestController {
             @RequestParam UUID userId, // 대화 상대 id
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) UUID idAfter,
-            @RequestParam Integer limit
+            @RequestParam int limit
     ) {
 //        UUID myUserId = jwt.getClaim("userId");
         return directMessageService.findDirectMessages(myUserId, userId, cursor, idAfter, limit);
