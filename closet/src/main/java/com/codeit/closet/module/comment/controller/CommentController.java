@@ -2,7 +2,7 @@ package com.codeit.closet.module.comment.controller;
 
 import com.codeit.closet.module.comment.dto.CommentCreateRequest;
 import com.codeit.closet.module.comment.dto.CommentDTO;
-import com.codeit.closet.module.feed.dto.FeedDTOCursorResponse;
+import com.codeit.closet.module.comment.dto.CommentDTOCursorResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +29,7 @@ public class CommentController {
   }
 
   @GetMapping
-  public ResponseEntity<FeedDTOCursorResponse> getComments(@PathVariable("feedId") UUID id,
+  public ResponseEntity<CommentDTOCursorResponse> getComments(@PathVariable("feedId") UUID id,
       @RequestParam(required = false) String cursor,
       @RequestParam(required = false) UUID idAfter,
       @RequestParam Integer limit) {
