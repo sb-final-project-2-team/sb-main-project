@@ -1,10 +1,15 @@
 package com.codeit.closet.module.comment.entity;
 
+import com.codeit.closet.module.feed.entity.Feed;
+import com.codeit.closet.module.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
@@ -27,11 +32,13 @@ public class Comment {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(name = "user_id")
-  private UUID userId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-  @Column(name = "feed_id")
-  private UUID feedId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "feed_id", nullable = false)
+  private Feed feed;
 
   @Column(name = "content")
   private String content;
