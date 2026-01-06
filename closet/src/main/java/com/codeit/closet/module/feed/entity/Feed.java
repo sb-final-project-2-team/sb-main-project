@@ -1,6 +1,6 @@
 package com.codeit.closet.module.feed.entity;
 
-import com.codeit.closet.module.clothes.entity.Clothes;
+import com.codeit.closet.module.cloth.entity.Cloth;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.weather.entity.WeatherRegion;
 import jakarta.persistence.CascadeType;
@@ -72,13 +72,25 @@ public class Feed {
   @Transient
   private Boolean likedByMe;
 
-  public void addOotd(Clothes clothes) {
-    this.ootds.add(Ootd.of(clothes));
+  public void addOotd(Cloth cloth) {
+    this.ootds.add(Ootd.of(cloth));
   }
 
   public void updateFeed(String content) {
     if (content != null) {
       this.content = content;
     }
+  }
+
+  public void increaseCommentCount() {
+    commentCount++;
+  }
+
+  public void increaseLikeCount() {
+    likeCount++;
+  }
+
+  public void decreaseLikeCount() {
+    likeCount--;
   }
 }

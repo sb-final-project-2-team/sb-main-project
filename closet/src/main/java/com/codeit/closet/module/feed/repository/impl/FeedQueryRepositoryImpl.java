@@ -28,8 +28,7 @@ import org.springframework.stereotype.Repository;
 public class FeedQueryRepositoryImpl implements FeedQueryRepository {
 
   private final JPAQueryFactory jpaQueryFactory;
-  private final WeatherMapper weatherMapper;
-  private final FeedMapper feedMapper; // UserMapper랑 동일한 역할
+  private final FeedMapper feedMapper;
 
   private static final QFeed feed = QFeed.feed;
   private static final QUser user = QUser.user;
@@ -158,7 +157,6 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
     boolean desc = "DESCENDING".equalsIgnoreCase(sortDirection);
 
     if ("likeCount".equalsIgnoreCase(sortBy)) {
-      // ⚠️ 커서 기준은 createdAt + id 유지
       return new OrderSpecifier[]{
           desc ? feed.likeCount.desc() : feed.likeCount.asc(),
           desc ? feed.createdAt.desc() : feed.createdAt.asc(),
@@ -180,7 +178,6 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
     BooleanBuilder builder = new BooleanBuilder();
     boolean desc = "DESCENDING".equalsIgnoreCase(sortDirection);
 
-    // ⚠️ 커서는 항상 createdAt + id 기준
     if (desc) {
       builder.and(
           feed.createdAt.lt(cursor.createdAt())
