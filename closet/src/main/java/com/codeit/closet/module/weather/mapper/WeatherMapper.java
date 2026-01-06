@@ -38,10 +38,10 @@ public interface WeatherMapper {
 
     @Mapping(source = "latitude", target = "latitude")
     @Mapping(source = "longitude", target = "longitude")
-    @Mapping(source = "region.x", target = "x")
-    @Mapping(source = "region.y", target = "y")
-    @Mapping(source = "region.locationNames", target = "locationNames", qualifiedByName = "stringToList")
-    LocationDTO toLocationDTO(WeatherRegion region, Double latitude, Double longitude);
+    @Mapping(source = "x", target = "x")
+    @Mapping(source = "y", target = "y")
+    @Mapping(source = "locationNames", target = "locationNames", qualifiedByName = "stringToList")
+    LocationDTO toLocationDTO(WeatherRegion region);
 
     @Mapping(target = "weatherId", source = "id")
     @Mapping(target = "skyStatus", source = "weather.weatherData.skyStatus")
@@ -51,10 +51,10 @@ public interface WeatherMapper {
 
     @Mapping(source = "latitude", target = "latitude")
     @Mapping(source = "longitude", target = "longitude")
-    @Mapping(source = "region.x", target = "x")
-    @Mapping(source = "region.y", target = "y")
-    @Mapping(source = "region.locationNames", target = "locationNames", qualifiedByName = "stringToList")
-    WeatherAPILocation toWeatherAPILocation(WeatherRegion region, Double latitude, Double longitude);
+    @Mapping(source = "x", target = "x")
+    @Mapping(source = "y", target = "y")
+    @Mapping(source = "locationNames", target = "locationNames", qualifiedByName = "stringToList")
+    WeatherAPILocation toWeatherAPILocation(WeatherRegion region);
 
     @Mapping(source = "data.id", target = "id")
     @Mapping(source = "data.forecastedAt", target = "forecastedAt")
