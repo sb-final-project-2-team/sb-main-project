@@ -1,5 +1,6 @@
 package com.codeit.closet.module.like.controller;
 
+import com.codeit.closet.module.like.service.LikeService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,17 +15,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LikeController {
 
-  // 차후에 연동 예정
+  private final LikeService likeService;
 
   @PostMapping
   public ResponseEntity<Void> createLike(
       @PathVariable("feedId") UUID id) {
-    return null;
+    likeService.createLike(id);
+    return ResponseEntity.ok().build();
   }
 
   @DeleteMapping
   public ResponseEntity<Void> deleteLike(
       @PathVariable("feedId") UUID id) {
-    return null;
+    likeService.deleteLike(id);
+    return ResponseEntity.ok().build();
   }
 }
