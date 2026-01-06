@@ -1,4 +1,4 @@
-package com.codeit.closet.module.clothes.entity;
+package com.codeit.closet.module.cloth.entity;
 
 
 import com.codeit.closet.module.binarycontent.entity.BinaryContent;
@@ -11,12 +11,12 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "clothes")
+@Table(name = "cloth")
 @Builder
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Clothes {
+public class Cloth {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -35,7 +35,7 @@ public class Clothes {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
-    private ClothesType type;
+    private ClothType type;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
@@ -50,9 +50,12 @@ public class Clothes {
         this.name = name;
     }
 
-    public void updateType(ClothesType type) {
+    public void updateType(ClothType type) {
         this.type = type;
     }
 
-}
+    public void updateBinaryContent(BinaryContent binaryContent) {
+        this.binaryContent = binaryContent;
+    }
 
+}
