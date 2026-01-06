@@ -4,8 +4,12 @@ import com.codeit.closet.module.feed.dto.FeedCreateRequest;
 import com.codeit.closet.module.feed.dto.FeedDTO;
 import com.codeit.closet.module.feed.dto.FeedDTOCursorResponse;
 import com.codeit.closet.module.feed.dto.FeedUpdateRequest;
+import com.codeit.closet.module.feed.service.FeedService;
+import com.codeit.closet.module.weather.entity.PrecipitationType;
+import com.codeit.closet.module.weather.entity.SkyStatus;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class FeedController {
 
-  // 기본 틀만 잡고 차후에 Service 연동 할 예정
+  private final FeedService feedService;
 
   @GetMapping
   public ResponseEntity<FeedDTOCursorResponse> getFeeds(
@@ -32,28 +36,32 @@ public class FeedController {
       @RequestParam String sortBy,
       @RequestParam String sortDirection,
       @RequestParam(required = false) String keywordLike,
-//      @RequestParam(required = false) SkyStatus skyStatusEqual,
-//      @RequestParam(required = false) PrecipitationType precipitationTypeEqual,
+      @RequestParam(required = false) SkyStatus skyStatusEqual,
+      @RequestParam(required = false) PrecipitationType precipitationTypeEqual,
       @RequestParam(required = false) UUID authorIdEqual) {
-
-    return null;
+    FeedDTOCursorResponse results = feedService.findFeeds(cursor, idAfter, limit, sortBy,
+        sortDirection, keywordLike,
+        skyStatusEqual, precipitationTypeEqual, authorIdEqual);
+    return ResponseEntity.status(HttpStatus.OK).body(results);
   }
 
   @PostMapping
-  public ResponseEntity<FeedDTO> createFeed(
-      @RequestBody FeedCreateRequest request) {
-    return null;
+  public ResponseEntity<FeedDTO> createFeed(@RequestBody FeedCreateRequest request) {
+    FeedDTO result = feedService.createFeed(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(result);
   }
 
   @DeleteMapping("/{feedId}")
   public ResponseEntity<Void> deleteFeed(@PathVariable("feedId") UUID id) {
-    return null;
+    feedService.deleteFeed(id);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   @PatchMapping("/{feedId}")
   public ResponseEntity<FeedDTO> updateFeed(
       @PathVariable(name = "feedId") UUID id,
-    @RequestBody FeedUpdateRequest request) {
-    return null;
+      @RequestBody FeedUpdateRequest request) {
+    FeedDTO result = feedService.updateFeed(id, request);
+    return ResponseEntity.status(HttpStatus.OK).body(result);
   }
 }

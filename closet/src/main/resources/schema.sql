@@ -16,6 +16,7 @@ DROP TABLE IF EXISTS clothes CASCADE;
 DROP TABLE IF EXISTS clothes_attributes CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS binary_contents CASCADE;
+DROP TABLE IF EXISTS ootds CASCADE;
 
 -- ===========================
 -- DROP ENUM TYPES
@@ -166,18 +167,31 @@ CREATE TABLE weather_regions
 -- 7. Feeds (OOTD)
 CREATE TABLE feeds
 (
-    id                UUID PRIMARY KEY,
-    user_id           UUID NOT NULL,
-    weather_id        UUID NOT NULL,
-    clothe_id         UUID NOT NULL,
-    content           VARCHAR(2000),
-    comment_count     INTEGER     DEFAULT 0,
-    like_count        INTEGER     DEFAULT 0,
-    created_at        TIMESTAMPTZ DEFAULT NOW(),
-    updated_at        TIMESTAMPTZ,
+    id            UUID PRIMARY KEY,
+    user_id       UUID NOT NULL,
+    weather_id    UUID NOT NULL,
+    content       VARCHAR(2000),
+    comment_count INTEGER     DEFAULT 0,
+    like_count    INTEGER     DEFAULT 0,
+    created_at    TIMESTAMPTZ DEFAULT NOW(),
+    updated_at    TIMESTAMPTZ,
     FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (weather_id) REFERENCES weather_regions (id),
-    FOREIGN KEY (clothe_id) REFERENCES clothes (id)
+    FOREIGN KEY (weather_id) REFERENCES weather_regions (id)
+);
+
+CREATE TABLE ootds
+(
+    id         UUID PRIMARY KEY,
+    feed_id    UUID NOT NULL,
+    clothes_id UUID NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+
+    CONSTRAINT fk_ootds_feed
+        FOREIGN KEY (feed_id) REFERENCES feeds (id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_ootds_clothes
+        FOREIGN KEY (clothes_id) REFERENCES clothes (id)
 );
 
 -- 8. Comments
