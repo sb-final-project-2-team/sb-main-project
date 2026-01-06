@@ -30,7 +30,7 @@ public class BasicCommentService implements CommentService {
   @Transactional
   public CommentDTO createComment(UUID feedId, CommentCreateRequest request) {
 
-    Feed feed = feedRepository.findById(request.feedId()).orElseThrow(
+    Feed feed = feedRepository.findById(feedId).orElseThrow(
         () -> new NoSuchElementException("존재하지 않는 피드 입니다."));
 
     User user = userRepository.findById(request.authorId()).orElseThrow(

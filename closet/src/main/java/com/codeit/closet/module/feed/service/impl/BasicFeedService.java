@@ -67,10 +67,10 @@ public class BasicFeedService implements FeedService {
   @Transactional(readOnly = true)
   public FeedDTOCursorResponse findFeeds(String cursor, UUID idAfter, Integer limit, String sortBy,
       String sortDirection, String keywordLike, SkyStatus skyStatusEqual,
-      PrecipitationType precipitationTypeEqual, UUID authorIdEqual) {
+      PrecipitationType precipitationTypeEqual, UUID authorIdEqual, UUID principal) {
 
     return feedRepository.findFeedsByCursor(cursor, idAfter, limit, sortBy, sortDirection,
-        keywordLike, skyStatusEqual, precipitationTypeEqual, authorIdEqual);
+        keywordLike, skyStatusEqual, precipitationTypeEqual, authorIdEqual, principal);
   }
 
   @Override

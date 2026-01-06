@@ -25,14 +25,8 @@ public interface UserMapper {
     @Mapping(target = "location", source = "weather")
     ProfileDTO toProfileDTO(User user);
 
-    default UserSummary toUserSummary(User user) {
-        if (user == null) return null;
-        return new UserSummary(
-                user.getId(),
-                user.getName(),
-                user.getBinaryContent() != null
-                        ? user.getBinaryContent().getFileUrl()
-                        : null
-        );
-    }
+    @Mapping(target = "userId", source = "id")
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "profileImageUrl", source = "binaryContent.fileUrl")
+    UserSummary toUserSummary(User user);
 }

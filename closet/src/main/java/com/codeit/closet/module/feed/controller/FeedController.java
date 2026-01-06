@@ -1,5 +1,6 @@
 package com.codeit.closet.module.feed.controller;
 
+import com.codeit.closet.common.security.ClosetUserDetails;
 import com.codeit.closet.module.feed.dto.FeedCreateRequest;
 import com.codeit.closet.module.feed.dto.FeedDTO;
 import com.codeit.closet.module.feed.dto.FeedDTOCursorResponse;
@@ -11,6 +12,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -38,10 +41,12 @@ public class FeedController {
       @RequestParam(required = false) String keywordLike,
       @RequestParam(required = false) SkyStatus skyStatusEqual,
       @RequestParam(required = false) PrecipitationType precipitationTypeEqual,
-      @RequestParam(required = false) UUID authorIdEqual) {
+      @RequestParam(required = false) UUID authorIdEqual,
+  @AuthenticationPrincipal ClosetUserDetails UserDetails) {
+    UUID principal = UserDetails.getUserDTO().id();
     FeedDTOCursorResponse results = feedService.findFeeds(cursor, idAfter, limit, sortBy,
         sortDirection, keywordLike,
-        skyStatusEqual, precipitationTypeEqual, authorIdEqual);
+        skyStatusEqual, precipitationTypeEqual, authorIdEqual, principal);
     return ResponseEntity.status(HttpStatus.OK).body(results);
   }
 

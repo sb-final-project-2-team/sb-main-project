@@ -56,10 +56,12 @@ public class Feed {
   private String content;
 
   @Column(name = "like_count")
-  private Long likeCount;
+  @Builder.Default
+  private Long likeCount = 0L;
 
   @Column(name = "comment_count")
-  private Long commentCount;
+  @Builder.Default
+  private Long commentCount = 0L;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false, nullable = false)

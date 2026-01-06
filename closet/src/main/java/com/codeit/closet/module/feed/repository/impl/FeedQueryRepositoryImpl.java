@@ -1,10 +1,12 @@
 package com.codeit.closet.module.feed.repository.impl;
 
+import com.codeit.closet.module.feed.dto.FeedDTO;
 import com.codeit.closet.module.feed.dto.FeedDTOCursorResponse;
 import com.codeit.closet.module.feed.entity.Feed;
 import com.codeit.closet.module.feed.entity.QFeed;
 import com.codeit.closet.module.feed.mapper.FeedMapper;
 import com.codeit.closet.module.feed.repository.FeedQueryRepository;
+import com.codeit.closet.module.like.entity.QLike;
 import com.codeit.closet.module.user.entity.QUser;
 import com.codeit.closet.module.weather.entity.PrecipitationType;
 import com.codeit.closet.module.weather.entity.QWeatherData;
@@ -18,7 +20,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -32,13 +36,14 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
 
   private static final QFeed feed = QFeed.feed;
   private static final QUser user = QUser.user;
+  private static final QLike like = QLike.like;
   private static final QWeatherRegion weatherRegion = QWeatherRegion.weatherRegion;
   private static final QWeatherData weatherData = QWeatherData.weatherData;
   @Override
   public FeedDTOCursorResponse findFeedsByCursor(String cursor, UUID idAfter, Integer limit,
       String sortBy,
       String sortDirection, String keywordLike, SkyStatus skyStatusEqual,
-      PrecipitationType precipitationTypeEqual, UUID authorIdEqual) {
+      PrecipitationType precipitationTypeEqual, UUID authorIdEqual, UUID principal) {
 
     int pageSize = limit != null ? limit : 20;
     CursorInfo cursorInfo = parseCursor(cursor);
@@ -110,8 +115,27 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
       nextAfter = last.getId();
     }
 
+    List<UUID> feedIds = feeds.stream()
+        .map(Feed::getId)
+        .toList();
+
+    Set<UUID> likedFeedIds = new HashSet<>(
+        jpaQueryFactory
+            .select(like.feed.id)
+            .from(like)
+            .where(
+                like.feed.id.in(feedIds),
+                like.user.id.eq(principal)
+            )
+            .fetch()
+    );
+
+    List<FeedDTO> feedDTOs = feedMapper.toDTOs(feeds).stream()
+        .map(dto -> dto.withLikedByMe(likedFeedIds.contains(dto.id())))
+        .toList();
+
     return new FeedDTOCursorResponse(
-        feedMapper.toDTOs(feeds),
+        feedDTOs,
         nextCursor,
         nextAfter,
         hasNext,

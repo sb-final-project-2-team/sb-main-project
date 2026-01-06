@@ -18,5 +18,18 @@ public record FeedDTO(
     Integer commentCount,
     Boolean likedByMe
 ) {
-
+  public FeedDTO withLikedByMe(Boolean likedByMe) {
+    return new FeedDTO(
+        this.id,
+        this.createdAt,
+        this.updatedAt,
+        this.author,
+        this.weather,
+        this.ootds,
+        this.content,
+        this.likeCount,
+        this.commentCount,
+        likedByMe
+    );
+  }
 }
