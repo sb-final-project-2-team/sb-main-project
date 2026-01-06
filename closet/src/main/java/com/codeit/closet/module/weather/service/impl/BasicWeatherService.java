@@ -40,7 +40,7 @@ public class BasicWeatherService implements WeatherService {
             );
         }
 
-        LocationDTO location = weatherMapper.toLocationDTO(region, latitude, longitude);
+        LocationDTO location = weatherMapper.toLocationDTO(region);
 
         return dataList.stream()
                 .map(data -> weatherMapper.toWeatherDTO(data, location))
@@ -57,7 +57,7 @@ public class BasicWeatherService implements WeatherService {
                         "해당 좌표의 날씨 지역을 찾을 수 없습니다: lon=" + longitude + ", lat=" + latitude
                 ));
 
-        return weatherMapper.toWeatherAPILocation(region, latitude, longitude);
+        return weatherMapper.toWeatherAPILocation(region);
     }
 
     /**

@@ -68,7 +68,7 @@ public class WeatherData {
     @Column(name = "humidity_current", nullable = false)
     private Double humidityCurrent;
 
-    @Column(name = "humidity_compared_to_day_before", nullable = false)
+    @Column(name = "humidity_comp_to_day_before", nullable = false)
     private Double humidityComparedToDayBefore;
 
     // 바람 (2개)
