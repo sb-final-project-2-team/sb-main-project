@@ -25,9 +25,9 @@ public class CommentQueryRepositoryImpl implements CommentQueryRepository {
   private final JPAQueryFactory jpaQueryFactory;
   private final CommentMapper commentMapper;
 
-  private final QComment comment = QComment.comment;
-  private final QFeed feed = QFeed.feed;
-  private final QUser user = QUser.user;
+  private static final QComment comment = QComment.comment;
+  private static final QFeed feed = QFeed.feed;
+  private static final QUser user = QUser.user;
 
   @Override
   public CommentDTOCursorResponse findCommentsByCursor(UUID feedId, String cursor, UUID idAfter,
