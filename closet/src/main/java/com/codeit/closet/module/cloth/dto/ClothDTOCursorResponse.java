@@ -1,10 +1,10 @@
-package com.codeit.closet.module.clothes.dto;
+package com.codeit.closet.module.cloth.dto;
 
 import java.util.List;
 import java.util.UUID;
 
-public record ClothesDTOCursorResponse(
-        List<ClothesDTO> data,
+public record ClothDTOCursorResponse(
+        List<ClothDTO> data,
 
         String nextCursor,
         UUID nextIdAfter,
