@@ -13,9 +13,9 @@ public interface ClothService {
 
     ClothDTO find(UUID clothId);
 
-    ClothDTO update(UUID clothId, ClothUpdateRequest request);
+    ClothDTO update(UUID clothId, ClothUpdateRequest request, UUID requestUserId, boolean isAdmin);
 
-    void delete(UUID clothId);
+    void delete(UUID clothId, UUID requestUserId, boolean isAdmin);
 
     ClothDTOCursorResponse findAll(UUID ownerId,
                                      String cursor,

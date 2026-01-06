@@ -6,6 +6,7 @@ import com.codeit.closet.module.cloth.dto.ClothDTO;
 import com.codeit.closet.module.cloth.dto.ClothDTOCursorResponse;
 import com.codeit.closet.module.cloth.dto.ClothUpdateRequest;
 import com.codeit.closet.module.cloth.service.ClothService;
+import com.codeit.closet.module.user.entity.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,19 +65,23 @@ public class ClothController {
     // 옷 수정
     @PatchMapping("/{clothId}")
     public ResponseEntity<ClothDTO> updateClothes(
+            @AuthenticationPrincipal ClosetUserDetails userDetails,
             @PathVariable UUID clothId,
             @RequestBody ClothUpdateRequest request
     ) {
-        ClothDTO result = clothService.update(clothId, request);
+        boolean isAdmin = userDetails.getUserDTO().role() == UserRole.ADMIN;
+        ClothDTO result = clothService.update(clothId, request, userDetails.getUserDTO().id(), isAdmin);
         return ResponseEntity.ok(result);
     }
 
     // 옷 삭제
     @DeleteMapping("/{clothId}")
     public ResponseEntity<Void> deleteClothes(
+            @AuthenticationPrincipal ClosetUserDetails userDetails,
             @PathVariable UUID clothId
     ) {
-        clothService.delete(clothId);
+        boolean isAdmin = userDetails.getUserDTO().role() == UserRole.ADMIN;
+        clothService.delete(clothId, userDetails.getUserDTO().id(), isAdmin);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

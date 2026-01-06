@@ -63,10 +63,15 @@ public class BasicClothService implements ClothService {
 
     @Override
     @Transactional
-    public ClothDTO update(UUID clothId, ClothUpdateRequest request) {
-        // 조회
+    public ClothDTO update(UUID clothId, ClothUpdateRequest request, UUID requestUserId, boolean isAdmin) {
+        // 조회 및 존재 확인
         Cloth cloth = clothRepository.findById(clothId)
                 .orElseThrow(() -> new RuntimeException("Cloth not found: " + clothId));
+
+        // 소유자 또는 관리자만 수정 가능
+        if (!cloth.getOwnerId().equals(requestUserId) && !isAdmin) {
+            throw new RuntimeException("해당 옷을 수정할 권한이 없습니다");
+        }
 
         // 기본 정보 수정 (null이 아닌 값만)
         if (request.name() != null) {
@@ -93,17 +98,21 @@ public class BasicClothService implements ClothService {
 
     @Override
     @Transactional
-    public void delete(UUID clothId) {
-        // 존재 확인
-        if (!clothRepository.existsById(clothId)) {
-            throw new RuntimeException("Cloth not found: " + clothId);
+    public void delete(UUID clothId, UUID requestUserId, boolean isAdmin) {
+        // 조회 및 존재 확인
+        Cloth cloth = clothRepository.findById(clothId)
+                .orElseThrow(() -> new RuntimeException("Cloth not found: " + clothId));
+
+        // 소유자 또는 관리자만 삭제 가능
+        if (!cloth.getOwnerId().equals(requestUserId) && !isAdmin) {
+            throw new RuntimeException("해당 옷을 삭제할 권한이 없습니다");
         }
 
         // 속성 값 먼저 삭제
         clothAttributeValueRepository.deleteAllByClothId(clothId);
 
         // Cloth 삭제
-        clothRepository.deleteById(clothId);
+        clothRepository.delete(cloth);
     }
 
     @Override
