@@ -50,7 +50,6 @@ public class CommentQueryRepositoryImpl implements CommentQueryRepository {
       builder.and(comment.feed.id.eq(feedId));
     }
 
-
     List<Comment> comments = jpaQueryFactory
         .selectFrom(comment)
         .join(comment.user, user).fetchJoin()
@@ -60,12 +59,16 @@ public class CommentQueryRepositoryImpl implements CommentQueryRepository {
         .limit(pageSize + 1)
         .fetch();
 
-    Long totalCount = jpaQueryFactory
-        .select(feed.commentCount)
-        .where(feed.id.eq(feedId))
-        .from(feed)
-        .fetchOne();
+    Long totalCount = 0L;
+    if (feedId != null) {
+      Long count = jpaQueryFactory
+          .select(feed.commentCount)
+          .where(feed.id.eq(feedId))
+          .from(feed)
+          .fetchOne();
 
+      totalCount = count != null ? count : 0L;
+    }
     boolean hasNext = comments.size() > pageSize;
     if (hasNext) {
       comments.remove(pageSize);

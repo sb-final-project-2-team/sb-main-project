@@ -45,6 +45,10 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
       String sortDirection, String keywordLike, SkyStatus skyStatusEqual,
       PrecipitationType precipitationTypeEqual, UUID authorIdEqual, UUID principal) {
 
+    if (principal == null) {
+      throw new IllegalArgumentException("인증 정보가 없습니다.");
+    }
+
     int pageSize = limit != null ? limit : 20;
     CursorInfo cursorInfo = parseCursor(cursor);
 

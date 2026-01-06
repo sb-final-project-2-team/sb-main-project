@@ -85,14 +85,17 @@ public class Feed {
   }
 
   public void increaseCommentCount() {
+    if (commentCount == null) commentCount = 0L;
     commentCount++;
   }
 
   public void increaseLikeCount() {
+    if (likeCount == null) likeCount = 0L;
     likeCount++;
   }
 
   public void decreaseLikeCount() {
+    if (likeCount == null || likeCount <= 0) return;
     likeCount--;
   }
 }
