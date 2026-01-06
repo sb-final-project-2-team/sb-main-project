@@ -155,6 +155,8 @@ CREATE TABLE weather_regions
     weather_data_id   UUID,
     x                 INT         NOT NULL,
     y                 INT         NOT NULL,
+    latitude          DOUBLE PRECISION,
+    longitude         DOUBLE PRECISION,
     location_names    VARCHAR(255),
     last_collected_at TIMESTAMPTZ,
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
