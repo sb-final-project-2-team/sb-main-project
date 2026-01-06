@@ -1,6 +1,6 @@
-package com.codeit.closet.module.clothes.repository;
+package com.codeit.closet.module.cloth.repository;
 
-import com.codeit.closet.module.clothes.entity.Clothes;
+import com.codeit.closet.module.cloth.entity.Cloth;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,10 +9,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface ClothesRepository extends JpaRepository<Clothes, UUID> {
+public interface ClothRepository extends JpaRepository<Cloth, UUID> {
 
-    // 소유자의 Clothes 목록 조회
-    List<Clothes> findAllByOwnerId(UUID ownerId);
+    // 소유자의 Cloth 목록 조회
+    List<Cloth> findAllByOwnerId(UUID ownerId);
 
     // 중복 검사 (같은 소유자의 같은 이름)
     boolean existsByOwnerIdAndName(UUID ownerId, String name);
