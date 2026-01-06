@@ -1,6 +1,6 @@
 package com.codeit.closet.module.feed.entity;
 
-import com.codeit.closet.module.clothes.entity.Clothes;
+import com.codeit.closet.module.cloth.entity.Cloth;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,15 +33,15 @@ public class Ootd {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "clothes_id", nullable = false)
-  private Clothes clothes;
+  private Cloth cloth;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false, nullable = false)
   private Instant createdAt;
 
-  public static Ootd of(Clothes clothes) {
+  public static Ootd of(Cloth cloth) {
     return Ootd.builder()
-        .clothes(clothes)
+        .cloth(cloth)
         .build();
   }
 
