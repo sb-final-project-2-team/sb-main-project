@@ -10,10 +10,10 @@ import java.util.UUID;
 
 
 @Entity
-@Table(name = "cloth_attributes_values",
+@Table(name = "clothes_attributes_values",
         uniqueConstraints = @UniqueConstraint(
-        name = "uk_cloth_attr",
-        columnNames = {"cloth_id", "cloth_attributes_id"}
+        name = "uk_clothes_attr",
+        columnNames = {"clothes_id", "clothes_attributes_id"}
         ))
 @Builder
 @Getter
@@ -26,10 +26,10 @@ public class ClothAttributeValue {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "cloth_id", nullable = false)
+    @Column(name = "clothes_id", nullable = false)
     private UUID clothId;
 
-    @Column(name = "cloth_attributes_id", nullable = false)
+    @Column(name = "clothes_attributes_id", nullable = false)
     private UUID clothAttributeId;
 
     @Column(name = "value", nullable = false, length = 255)

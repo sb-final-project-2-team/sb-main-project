@@ -13,7 +13,7 @@ import java.util.UUID;
 
 
 @Entity
-@Table(name = "cloth_attributes")
+@Table(name = "clothes_attributes")
 @Builder
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

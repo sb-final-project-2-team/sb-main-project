@@ -11,7 +11,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "cloth")
+@Table(name = "clothes")
 @Builder
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
