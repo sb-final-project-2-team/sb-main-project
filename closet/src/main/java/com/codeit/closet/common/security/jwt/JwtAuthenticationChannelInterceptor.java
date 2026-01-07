@@ -1,10 +1,9 @@
 package com.codeit.closet.common.security.jwt;
 
 
-import static com.codeit.closet.common.security.jwt.JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME;
-
 import com.codeit.closet.common.security.ClosetUserDetails;
 import com.codeit.closet.module.user.dto.user.UserDTO;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +18,6 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -40,14 +37,15 @@ public class JwtAuthenticationChannelInterceptor implements ChannelInterceptor {
 
     if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
 
-      String token = resolveToken(accessor).orElseThrow(() -> new RuntimeException("INVALID_TOKEN"));
+      String token = resolveToken(accessor).orElseThrow(
+          () -> new RuntimeException("INVALID_TOKEN"));
 
       if (tokenProvider.validateAccessToken(token)
           && jwtRegistry.hasActiveJwtInformationByAccessToken(token)) {
 
         UserDTO userDTO = tokenProvider.parseAccessToken(token).userDTO();
 
-        ClosetUserDetails userDetails = new ClosetUserDetails(userDTO, null);
+        ClosetUserDetails userDetails = new ClosetUserDetails(userDTO, null, null, null);
 
         UsernamePasswordAuthenticationToken authentication =
             new UsernamePasswordAuthenticationToken(
@@ -72,7 +70,8 @@ public class JwtAuthenticationChannelInterceptor implements ChannelInterceptor {
     String prefix = "Bearer ";
 
     String authHeader = accessor.getFirstNativeHeader(HttpHeaders.AUTHORIZATION);
-    log.info("test authHeader: {}", StringUtils.hasText(authHeader) && authHeader.startsWith(prefix));
+    log.info("test authHeader: {}",
+        StringUtils.hasText(authHeader) && authHeader.startsWith(prefix));
     if (StringUtils.hasText(authHeader) && authHeader.startsWith(prefix)) {
       return Optional.of(authHeader.substring(prefix.length()));
     }
