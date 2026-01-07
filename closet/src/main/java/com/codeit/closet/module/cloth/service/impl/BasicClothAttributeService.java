@@ -1,7 +1,7 @@
 package com.codeit.closet.module.cloth.service.impl;
 
 import com.codeit.closet.module.cloth.dto.ClothAttributeCreateRequest;
-import com.codeit.closet.module.cloth.dto.ClothAttributeDto;
+import com.codeit.closet.module.cloth.dto.ClothAttributeDTO;
 import com.codeit.closet.module.cloth.dto.ClothAttributeUpdateRequest;
 import com.codeit.closet.module.cloth.entity.ClothAttribute;
 import com.codeit.closet.module.cloth.repository.ClothAttributeRepository;
@@ -21,7 +21,7 @@ public class BasicClothAttributeService implements ClothAttributeService {
 
     @Override
     @Transactional
-    public ClothAttributeDto create(ClothAttributeCreateRequest request) {
+    public ClothAttributeDTO createClothAttribute(ClothAttributeCreateRequest request) {
         // 중복 검사
         if (clothAttributeRepository.existsByName(request.name())) {
             throw new RuntimeException("이미 존재하는 속성 이름입니다: " + request.name());
@@ -42,7 +42,7 @@ public class BasicClothAttributeService implements ClothAttributeService {
 
     @Override
     @Transactional(readOnly = true)
-    public ClothAttributeDto find(UUID attributeId) {
+    public ClothAttributeDTO findClothAttribute(UUID attributeId) {
         ClothAttribute attribute = clothAttributeRepository.findById(attributeId)
                 .orElseThrow(() -> new RuntimeException("ClothAttribute not found: " + attributeId));
 
@@ -51,7 +51,7 @@ public class BasicClothAttributeService implements ClothAttributeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ClothAttributeDto> findAll() {
+    public List<ClothAttributeDTO> findAllClothAttributes() {
         List<ClothAttribute> attributes = clothAttributeRepository.findAll();
 
         return attributes.stream()
@@ -61,7 +61,7 @@ public class BasicClothAttributeService implements ClothAttributeService {
 
     @Override
     @Transactional
-    public ClothAttributeDto update(UUID attributeId, ClothAttributeUpdateRequest request) {
+    public ClothAttributeDTO updateClothAttribute(UUID attributeId, ClothAttributeUpdateRequest request) {
         // 조회
         ClothAttribute attribute = clothAttributeRepository.findById(attributeId)
                 .orElseThrow(() -> new RuntimeException("ClothAttribute not found: " + attributeId));
@@ -80,7 +80,7 @@ public class BasicClothAttributeService implements ClothAttributeService {
 
     @Override
     @Transactional
-    public void delete(UUID attributeId) {
+    public void deleteClothAttribute(UUID attributeId) {
         // 존재 확인
         if (!clothAttributeRepository.existsById(attributeId)) {
             throw new RuntimeException("ClothAttribute not found: " + attributeId);
@@ -91,8 +91,8 @@ public class BasicClothAttributeService implements ClothAttributeService {
     }
 
     // Entity -> DTO 변환
-    private ClothAttributeDto toDto(ClothAttribute attribute) {
-        return new ClothAttributeDto(
+    private ClothAttributeDTO toDto(ClothAttribute attribute) {
+        return new ClothAttributeDTO(
                 attribute.getId(),
                 attribute.getName(),
                 attribute.getAttributesValues(),

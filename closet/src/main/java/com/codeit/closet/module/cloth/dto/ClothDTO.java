@@ -9,6 +9,6 @@ public record ClothDTO(
         String name,
         String imageUrl,
         String type,
-        List<ClothAttributeValueDto> attributes  // 속성 값 목록
+        List<ClothAttributeValueDTO> attributes  // 속성 값 목록
 ) {
 }

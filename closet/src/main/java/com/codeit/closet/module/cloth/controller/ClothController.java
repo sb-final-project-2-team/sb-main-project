@@ -9,9 +9,11 @@ import com.codeit.closet.module.cloth.service.ClothService;
 import com.codeit.closet.module.user.entity.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -23,11 +25,12 @@ public class ClothController {
     private final ClothService clothService;
 
     // 옷 등록
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ClothDTO> createClothes(
-            @RequestBody ClothCreateRequest request
+            @RequestPart ClothCreateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile multipartFile
     ) {
-        ClothDTO result = clothService.create(request);
+        ClothDTO result = clothService.createCloth(request, multipartFile);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
@@ -47,7 +50,7 @@ public class ClothController {
             ownerId = userDetails.getUserDTO().id();
         }
 
-        ClothDTOCursorResponse result = clothService.findAll(
+        ClothDTOCursorResponse result = clothService.findAllCloths(
                 ownerId, cursor, idAfter, limit, sortBy, sortDirection
         );
         return ResponseEntity.status(HttpStatus.OK).body(result);
@@ -58,19 +61,20 @@ public class ClothController {
     public ResponseEntity<ClothDTO> findClothes(
             @PathVariable UUID clothId
     ) {
-        ClothDTO result = clothService.find(clothId);
+        ClothDTO result = clothService.findCloth(clothId);
         return ResponseEntity.ok(result);
     }
 
     // 옷 수정
-    @PatchMapping("/{clothId}")
+    @PatchMapping(value = "/{clothId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ClothDTO> updateClothes(
             @AuthenticationPrincipal ClosetUserDetails userDetails,
             @PathVariable UUID clothId,
-            @RequestBody ClothUpdateRequest request
+            @RequestPart ClothUpdateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile multipartFile
     ) {
         boolean isAdmin = userDetails.getUserDTO().role() == UserRole.ADMIN;
-        ClothDTO result = clothService.update(clothId, request, userDetails.getUserDTO().id(), isAdmin);
+        ClothDTO result = clothService.updateCloth(clothId, request, userDetails.getUserDTO().id(), isAdmin, multipartFile);
         return ResponseEntity.ok(result);
     }
 
@@ -81,7 +85,7 @@ public class ClothController {
             @PathVariable UUID clothId
     ) {
         boolean isAdmin = userDetails.getUserDTO().role() == UserRole.ADMIN;
-        clothService.delete(clothId, userDetails.getUserDTO().id(), isAdmin);
+        clothService.deleteCloth(clothId, userDetails.getUserDTO().id(), isAdmin);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

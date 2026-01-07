@@ -1,10 +1,9 @@
 package com.codeit.closet.module.cloth.service.impl;
 
-import com.codeit.closet.module.cloth.dto.ClothAttributeValueDto;
-import com.codeit.closet.module.cloth.dto.ClothCreateRequest;
-import com.codeit.closet.module.cloth.dto.ClothDTO;
-import com.codeit.closet.module.cloth.dto.ClothDTOCursorResponse;
-import com.codeit.closet.module.cloth.dto.ClothUpdateRequest;
+import com.codeit.closet.module.binarycontent.entity.BinaryContent;
+import com.codeit.closet.module.binarycontent.service.BinaryContentService;
+import com.codeit.closet.module.cloth.dto.*;
+import com.codeit.closet.module.cloth.dto.ClothAttributeValueDTO;
 import com.codeit.closet.module.cloth.entity.Cloth;
 import com.codeit.closet.module.cloth.entity.ClothAttributeValue;
 import com.codeit.closet.module.cloth.entity.ClothType;
@@ -14,8 +13,8 @@ import com.codeit.closet.module.cloth.service.ClothService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,13 +24,20 @@ public class BasicClothService implements ClothService {
 
     private final ClothRepository clothRepository;
     private final ClothAttributeValueRepository clothAttributeValueRepository;
+    private final BinaryContentService binaryContentService;
 
     @Override
     @Transactional
-    public ClothDTO create(ClothCreateRequest request) {
+    public ClothDTO createCloth(ClothCreateRequest request, MultipartFile multipartFile) {
         // 중복 검사
         if (clothRepository.existsByOwnerIdAndName(request.ownerId(), request.name())) {
             throw new RuntimeException("이미 존재하는 의상 이름입니다: " + request.name());
+        }
+
+        // 이미지 처리
+        BinaryContent binaryContent = null;
+        if (multipartFile != null) {
+            binaryContent = binaryContentService.createBinaryContent(multipartFile);
         }
 
         // Cloth Entity 생성 및 저장
@@ -39,6 +45,7 @@ public class BasicClothService implements ClothService {
                 .ownerId(request.ownerId())
                 .name(request.name())
                 .type(ClothType.valueOf(request.type()))
+                .binaryContent(binaryContent)
                 .build();
 
         Cloth saved = clothRepository.save(cloth);
@@ -54,7 +61,7 @@ public class BasicClothService implements ClothService {
 
     @Override
     @Transactional(readOnly = true)
-    public ClothDTO find(UUID clothId) {
+    public ClothDTO findCloth(UUID clothId) {
         Cloth cloth = clothRepository.findById(clothId)
                 .orElseThrow(() -> new RuntimeException("Cloth not found: " + clothId));
 
@@ -63,7 +70,7 @@ public class BasicClothService implements ClothService {
 
     @Override
     @Transactional
-    public ClothDTO update(UUID clothId, ClothUpdateRequest request, UUID requestUserId, boolean isAdmin) {
+    public ClothDTO updateCloth(UUID clothId, ClothUpdateRequest request, UUID requestUserId, boolean isAdmin, MultipartFile multipartFile) {
         // 조회 및 존재 확인
         Cloth cloth = clothRepository.findById(clothId)
                 .orElseThrow(() -> new RuntimeException("Cloth not found: " + clothId));
@@ -71,6 +78,12 @@ public class BasicClothService implements ClothService {
         // 소유자 또는 관리자만 수정 가능
         if (!cloth.getOwnerId().equals(requestUserId) && !isAdmin) {
             throw new RuntimeException("해당 옷을 수정할 권한이 없습니다");
+        }
+
+        // 이미지 처리
+        if (multipartFile != null) {
+            BinaryContent binaryContent = binaryContentService.createBinaryContent(multipartFile);
+            cloth.updateBinaryContent(binaryContent);
         }
 
         // 기본 정보 수정 (null이 아닌 값만)
@@ -98,7 +111,7 @@ public class BasicClothService implements ClothService {
 
     @Override
     @Transactional
-    public void delete(UUID clothId, UUID requestUserId, boolean isAdmin) {
+    public void deleteCloth(UUID clothId, UUID requestUserId, boolean isAdmin) {
         // 조회 및 존재 확인
         Cloth cloth = clothRepository.findById(clothId)
                 .orElseThrow(() -> new RuntimeException("Cloth not found: " + clothId));
@@ -117,7 +130,7 @@ public class BasicClothService implements ClothService {
 
     @Override
     @Transactional(readOnly = true)
-    public ClothDTOCursorResponse findAll(UUID ownerId,
+    public ClothDTOCursorResponse findAllCloths(UUID ownerId,
                                             String cursor,
                                             UUID idAfter,
                                             Integer limit,
@@ -142,8 +155,8 @@ public class BasicClothService implements ClothService {
     }
 
     // 사용자가 옷 등록시, 선택할때 테이블이 생성
-    private void saveAttributes(UUID clothId, List<ClothAttributeValueDto> attributes) {
-        for (ClothAttributeValueDto attrDto : attributes) {
+    private void saveAttributes(UUID clothId, List<ClothAttributeValueDTO> attributes) {
+        for (ClothAttributeValueDTO attrDto : attributes) {
             ClothAttributeValue attributeValue = ClothAttributeValue.builder()
                     .clothId(clothId)
                     .clothAttributeId(attrDto.attributeId())
@@ -161,18 +174,24 @@ public class BasicClothService implements ClothService {
                 clothAttributeValueRepository.findAllByClothId(cloth.getId());
 
         // ClothAttributeValue -> ClothAttributeValueDto 변환
-        List<ClothAttributeValueDto> attributeDtos = attributeValues.stream()
-                .map(av -> new ClothAttributeValueDto(
+        List<ClothAttributeValueDTO> attributeDtos = attributeValues.stream()
+                .map(av -> new ClothAttributeValueDTO(
                         av.getClothAttributeId(),
                         av.getValue()
                 ))
                 .toList();
 
+        // 이미지 URL 가져오기
+        String imageUrl = null;
+        if (cloth.getBinaryContent() != null) {
+            imageUrl = cloth.getBinaryContent().getFileUrl();
+        }
+
         return new ClothDTO(
                 cloth.getId(),
                 cloth.getOwnerId(),
                 cloth.getName(),
-                null,  // imageUrl
+                imageUrl,
                 cloth.getType().name(),
                 attributeDtos
         );
