@@ -1,5 +1,6 @@
 package com.codeit.closet.module.follow.entity;
 
+import com.codeit.closet.module.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,11 +24,14 @@ public class Follow {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "follower_id", nullable = false)
-    private UUID followerId; // User 객체로 바꿀지 고민, CHECK 제약은?
+    // DB엔 FK 안걸려있으므로 검증에 신경써야함
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "follower_id", nullable = false)
+    private User follower;
 
-    @Column(name = "followee_id", nullable = false)
-    private UUID followeeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "followee_id", nullable = false)
+    private User followee;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
