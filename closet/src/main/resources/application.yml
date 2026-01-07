@@ -2,22 +2,28 @@ spring:
   application:
     name: closet
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_USERNAME:hyunsoo3315@gmail.com}
+    password: ${SMTP_PASSWORD:dummypassword}
+    properties:
+      mail.smtp.debug: true
+      mail.smtp.connection.timeout: 1000 #1초
+      mail.smtp.starttls.enable: true
+      mail.smtp.auth: true
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/closet
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/closet}
     driver-class-name: org.postgresql.Driver
-    username: closet-user
-    password: closet_1234
+    username: ${DATABASE_USERNAME:closet-user}
+    password: ${DATABASE_PASSWORD:closet_1234}
 
   cache:
     # type: caffeine
     type: redis
     cache-names:
       - users # 추가 해주시면 됩니다. (yml 리스트 형식으로)
-    caffeine:
-      spec: >
-        maximumSize=100,
-        expireAfterAccess=600s,
-        recordStats
     redis:
       enable-statistics: true
   data:
