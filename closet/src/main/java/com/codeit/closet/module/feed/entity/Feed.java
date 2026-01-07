@@ -1,6 +1,6 @@
 package com.codeit.closet.module.feed.entity;
 
-import com.codeit.closet.module.clothes.entity.Clothes;
+import com.codeit.closet.module.cloth.entity.Cloth;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.weather.entity.WeatherRegion;
 import jakarta.persistence.CascadeType;
@@ -56,10 +56,12 @@ public class Feed {
   private String content;
 
   @Column(name = "like_count")
-  private Long likeCount;
+  @Builder.Default
+  private Long likeCount = 0L;
 
   @Column(name = "comment_count")
-  private Long commentCount;
+  @Builder.Default
+  private Long commentCount = 0L;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false, nullable = false)
@@ -72,13 +74,28 @@ public class Feed {
   @Transient
   private Boolean likedByMe;
 
-  public void addOotd(Clothes clothes) {
-    this.ootds.add(Ootd.of(clothes));
+  public void addOotd(Cloth cloth) {
+    this.ootds.add(Ootd.of(cloth));
   }
 
   public void updateFeed(String content) {
     if (content != null) {
       this.content = content;
     }
+  }
+
+  public void increaseCommentCount() {
+    if (commentCount == null) commentCount = 0L;
+    commentCount++;
+  }
+
+  public void increaseLikeCount() {
+    if (likeCount == null) likeCount = 0L;
+    likeCount++;
+  }
+
+  public void decreaseLikeCount() {
+    if (likeCount == null || likeCount <= 0) return;
+    likeCount--;
   }
 }

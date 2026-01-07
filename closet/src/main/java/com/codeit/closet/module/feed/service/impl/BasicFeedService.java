@@ -1,7 +1,7 @@
 package com.codeit.closet.module.feed.service.impl;
 
-import com.codeit.closet.module.clothes.entity.Clothes;
-import com.codeit.closet.module.clothes.repository.ClothesRepository;
+import com.codeit.closet.module.cloth.entity.Cloth;
+import com.codeit.closet.module.cloth.repository.ClothRepository;
 import com.codeit.closet.module.feed.dto.FeedCreateRequest;
 import com.codeit.closet.module.feed.dto.FeedDTO;
 import com.codeit.closet.module.feed.dto.FeedDTOCursorResponse;
@@ -29,7 +29,7 @@ public class BasicFeedService implements FeedService {
 
   private final UserRepository userRepository;
   private final WeatherRegionRepository weatherRegionRepository;
-  private final ClothesRepository clothesRepository;
+  private final ClothRepository clothRepository;
   private final FeedRepository feedRepository;
   private final FeedMapper feedMapper;
 
@@ -40,11 +40,13 @@ public class BasicFeedService implements FeedService {
     User user = userRepository.findById(request.authorId())
         .orElseThrow(() -> new NoSuchElementException("존재하지 않는 회원 정보입니다."));
 
+    // 생성을 하는쪽으로 가야함.
     WeatherRegion weatherRegion = weatherRegionRepository.findById(request.weatherId())
         .orElseThrow(() -> new NoSuchElementException("존재하지 않는 날씨 정보 입니다."));
 
-    List<Clothes> clothesList =
-        clothesRepository.findAllById(request.clothesIds());
+    // 나만의 전체 Clothe가 아닌 Ootd에서 추천해준 쪽으로 처리해야한다.
+    List<Cloth> clothList =
+        clothRepository.findAllById(request.clothesIds());
 
     Feed feed = Feed.builder()
         .user(user)
@@ -52,7 +54,7 @@ public class BasicFeedService implements FeedService {
         .content(request.content())
         .build();
 
-    for (Clothes clothes : clothesList) {
+    for (Cloth clothes : clothList) {
       feed.addOotd(clothes);
     }
 
@@ -65,10 +67,10 @@ public class BasicFeedService implements FeedService {
   @Transactional(readOnly = true)
   public FeedDTOCursorResponse findFeeds(String cursor, UUID idAfter, Integer limit, String sortBy,
       String sortDirection, String keywordLike, SkyStatus skyStatusEqual,
-      PrecipitationType precipitationTypeEqual, UUID authorIdEqual) {
+      PrecipitationType precipitationTypeEqual, UUID authorIdEqual, UUID principal) {
 
     return feedRepository.findFeedsByCursor(cursor, idAfter, limit, sortBy, sortDirection,
-        keywordLike, skyStatusEqual, precipitationTypeEqual, authorIdEqual);
+        keywordLike, skyStatusEqual, precipitationTypeEqual, authorIdEqual, principal);
   }
 
   @Override

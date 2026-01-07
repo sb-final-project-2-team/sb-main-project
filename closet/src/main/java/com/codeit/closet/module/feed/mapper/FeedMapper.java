@@ -14,23 +14,22 @@ import org.mapstruct.Mapping;
     componentModel = "spring",
     uses = {
         UserMapper.class,
-        WeatherMapper.class,
-        FeedHelper.class
+        WeatherMapper.class
     }
 )
 public interface FeedMapper {
 
   @Mapping(target = "author", source = "feed.user")
   @Mapping(target = "weather", source = "feed.weather")
-  @Mapping(target = "ootds", source = "feed.ootds") //ootds 매핑이 안됨.
-  @Mapping(target = "likedByMe", source = "feed.likedByMe", qualifiedByName = "getLikedByMe")
+  @Mapping(target = "ootds", source = "feed.ootds")
+  @Mapping(target = "likedByMe", ignore = true)
   FeedDTO toDTO(Feed feed);
 
   List<FeedDTO> toDTOs(List<Feed> feeds);
 
-  @Mapping(target = "clothesId", source = "clothes.id")
-  @Mapping(target = "name", source = "clothes.name")
-  @Mapping(target = "imageUrl", source = "clothes.binaryContent.fileUrl")
-  @Mapping(target = "type", source = "clothes.type")
+  @Mapping(target = "clothesId", source = "cloth.id")
+  @Mapping(target = "name", source = "cloth.name")
+  @Mapping(target = "imageUrl", source = "cloth.binaryContent.fileUrl")
+  @Mapping(target = "type", source = "cloth.type")
   OotdDTO toDTO(Ootd ootd);
 }

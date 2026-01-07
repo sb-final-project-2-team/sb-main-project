@@ -3,8 +3,10 @@ package com.codeit.closet.module.comment.controller;
 import com.codeit.closet.module.comment.dto.CommentCreateRequest;
 import com.codeit.closet.module.comment.dto.CommentDTO;
 import com.codeit.closet.module.comment.dto.CommentDTOCursorResponse;
+import com.codeit.closet.module.comment.service.CommentService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,13 +21,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CommentController {
 
-  // 차후에 연동 예정
+  private final CommentService commentService;
 
   @PostMapping
   public ResponseEntity<CommentDTO> createComment(
       @PathVariable("feedId") UUID id,
       @RequestBody CommentCreateRequest request) {
-    return null;
+
+    CommentDTO comment = commentService.createComment(id, request);
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(comment);
   }
 
   @GetMapping
@@ -33,6 +38,9 @@ public class CommentController {
       @RequestParam(required = false) String cursor,
       @RequestParam(required = false) UUID idAfter,
       @RequestParam Integer limit) {
-    return null;
+
+    CommentDTOCursorResponse comments = commentService.getComments(id, cursor, idAfter, limit);
+
+    return ResponseEntity.status(HttpStatus.OK).body(comments);
   }
 }

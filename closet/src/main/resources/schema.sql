@@ -78,8 +78,9 @@ CREATE TABLE clothes_attributes
 CREATE TABLE clothes
 (
     id                    UUID PRIMARY KEY,
-    owner_id              UUID NOT NULL,
-    clothes_attributes_id UUID NOT NULL,
+    owner_id              UUID         NOT NULL,
+    clothes_attributes_id UUID         NOT NULL,
+    name                  VARCHAR(255) NOT NULL,
     binary_content_id     UUID,
     type                  VARCHAR(10)
         CHECK (type IN
@@ -286,3 +287,6 @@ CREATE TABLE notifications
 CREATE INDEX idx_users_created_at_id ON users (created_at DESC, id DESC);
 CREATE INDEX idx_users_email_id ON users (email ASC, id ASC);
 CREATE INDEX idx_users_created_at_id_role_locked ON users (created_at DESC, id DESC, role, locked);
+
+CREATE INDEX idx_feed_created_at_id_desc ON feeds (created_at DESC, id DESC);
+CREATE INDEX idx_feed_like_Count_created_at_id_desc ON feeds (like_count DESC, created_at DESC, id DESC);

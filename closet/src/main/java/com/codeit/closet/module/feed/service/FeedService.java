@@ -20,7 +20,8 @@ public interface FeedService {
       String keywordLike,
       SkyStatus skyStatusEqual,
       PrecipitationType precipitationTypeEqual,
-      UUID authorIdEqual);
+      UUID authorIdEqual,
+      UUID principal);
 
   FeedDTO updateFeed(UUID feedId, FeedUpdateRequest request);
 

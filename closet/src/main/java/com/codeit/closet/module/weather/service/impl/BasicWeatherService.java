@@ -40,10 +40,8 @@ public class BasicWeatherService implements WeatherService {
             );
         }
 
-        LocationDTO location = weatherMapper.toLocationDTO(region);
-
         return dataList.stream()
-                .map(data -> weatherMapper.toWeatherDTO(data, location))
+                .map(weatherMapper::toWeatherDTO)
                 .toList();
     }
 

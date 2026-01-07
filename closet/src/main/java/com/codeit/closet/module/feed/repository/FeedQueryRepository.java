@@ -10,6 +10,7 @@ public interface FeedQueryRepository {
   FeedDTOCursorResponse findFeedsByCursor(
       String cursor, UUID idAfter, Integer limit, String sortBy,
       String sortDirection, String keywordLike, SkyStatus skyStatusEqual,
-      PrecipitationType precipitationTypeEqual, UUID authorIdEqual
+      PrecipitationType precipitationTypeEqual, UUID authorIdEqual,
+      UUID principal
   );
 }

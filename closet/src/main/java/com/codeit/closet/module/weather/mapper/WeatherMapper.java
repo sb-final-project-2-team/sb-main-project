@@ -19,13 +19,11 @@ public interface WeatherMapper {
     @Mapping(source = "temperatureCompPrevDay", target = "comparedToDayBefore")
     @Mapping(source = "temperatureMin", target = "min")
     @Mapping(source = "temperatureMax", target = "max")
-    @Named("toTemperatureDTO")
     TemperatureDTO toTemperatureDTO(WeatherData data);
 
     @Mapping(source = "precipitationType", target = "type")
     @Mapping(source = "precipitationAmount", target = "amount")
     @Mapping(source = "precipitationProb", target = "probability")
-    @Named("toPrecipitationDTO")
     PrecipitationDTO toPrecipitationDTO(WeatherData data);
 
     @Mapping(source = "humidityCurrent", target = "current")
@@ -45,8 +43,8 @@ public interface WeatherMapper {
 
     @Mapping(target = "weatherId", source = "id")
     @Mapping(target = "skyStatus", source = "weather.weatherData.skyStatus")
-    @Mapping(target = "precipitation", source = "weather.weatherData", qualifiedByName = "toPrecipitationDTO")
-    @Mapping(target = "temperature", source = "weather.weatherData", qualifiedByName = "toTemperatureDTO")
+    @Mapping(target = "precipitation", source = "weather.weatherData")
+    @Mapping(target = "temperature", source = "weather.weatherData")
     WeatherSummaryDTO toSummary(WeatherRegion weather);
 
     @Mapping(source = "latitude", target = "latitude")
@@ -59,13 +57,13 @@ public interface WeatherMapper {
     @Mapping(source = "data.id", target = "id")
     @Mapping(source = "data.forecastedAt", target = "forecastedAt")
     @Mapping(source = "data.forecastAt", target = "forecastAt")
-    @Mapping(source = "location", target = "location")
+    @Mapping(source = "data.weatherRegion", target = "location")
     @Mapping(source = "data.skyStatus", target = "skyStatus")
     @Mapping(source = "data", target = "precipitation")
     @Mapping(source = "data", target = "humidity")
     @Mapping(source = "data", target = "temperature")
     @Mapping(source = "data", target = "windSpeed")
-    WeatherDTO toWeatherDTO(WeatherData data, LocationDTO location);
+    WeatherDTO toWeatherDTO(WeatherData data);
 
     @Named("stringToList")
     default List<String> stringToList(String locationNames) {
