@@ -9,8 +9,8 @@ import com.codeit.closet.module.auth.dto.ResetPasswordRequest;
 import com.codeit.closet.module.auth.service.AuthService;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
+import java.security.SecureRandom;
 import java.util.NoSuchElementException;
-import java.util.Random;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -74,21 +74,26 @@ public class BasicAuthService implements AuthService {
     User user = userRepository.findByEmail(request.email()).orElseThrow(
         () -> new NoSuchElementException("존재하지 않는 회원입니다."));
 
-    String tempPassword = generateRandomString(8);
+    String tempPassword = generateRandomString();
 
-    user.updateTempPassword(passwordEncoder.encode(tempPassword));
+    updateUserTempPassword(user, tempPassword);
 
     mailService.sendResetPasswordMail(user.getEmail(), tempPassword);
   }
 
-  public static String generateRandomString(int length) {
+  @Transactional
+  protected void updateUserTempPassword(User user, String tempPassword) {
+    user.updateTempPassword(passwordEncoder.encode(tempPassword));
+  }
+
+  private static String generateRandomString() {
     String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    Random random = new Random();
+    SecureRandom random = new SecureRandom();
 
-    StringBuilder sb = new StringBuilder(length);
+    StringBuilder sb = new StringBuilder(8);
 
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < 8; i++) {
       int randomIndex = random.nextInt(characters.length());
       char randomChar = characters.charAt(randomIndex);
 

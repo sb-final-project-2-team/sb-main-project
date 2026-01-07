@@ -1,6 +1,7 @@
 package com.codeit.closet.common.mail.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,10 @@ public class MailService {
             "Closet 팀 드림"
     );
 
-    javaMailSender.send(message);
+    try {
+      javaMailSender.send(message);
+    } catch (MailException e) {
+      throw new RuntimeException("이메일 발송에 실패했습니다.", e);
+    }
   }
 }

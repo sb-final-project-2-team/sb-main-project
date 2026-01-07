@@ -43,6 +43,9 @@ public class ClosetDaoAuthenticationProvider extends DaoAuthenticationProvider {
 
     // 일반 비밀번호
     if (passwordEncoder.matches(rawPassword, closetUserDetails.getPassword())) {
+      if (closetUserDetails.getTempPassword() != null) {
+        userRepository.clearTempPassword(closetUserDetails.getUserDTO().id());
+      }
       return;
     }
 
