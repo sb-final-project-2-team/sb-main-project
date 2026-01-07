@@ -1,7 +1,7 @@
 package com.codeit.closet.module.cloth.controller;
 
 import com.codeit.closet.module.cloth.dto.ClothAttributeCreateRequest;
-import com.codeit.closet.module.cloth.dto.ClothAttributeDto;
+import com.codeit.closet.module.cloth.dto.ClothAttributeDTO;
 import com.codeit.closet.module.cloth.dto.ClothAttributeUpdateRequest;
 import com.codeit.closet.module.cloth.service.ClothAttributeService;
 import lombok.RequiredArgsConstructor;
@@ -21,36 +21,36 @@ public class ClothAttributeController {
 
     // 속성 정의 생성 (어드민 전용)
     @PostMapping
-    public ResponseEntity<ClothAttributeDto> createClothesAttribute(
+    public ResponseEntity<ClothAttributeDTO> createClothesAttribute(
             @RequestBody ClothAttributeCreateRequest request
     ) {
-        ClothAttributeDto result = clothAttributeService.create(request);
+        ClothAttributeDTO result = clothAttributeService.createClothAttribute(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     // 속성 정의 목록 조회
     @GetMapping
-    public ResponseEntity<List<ClothAttributeDto>> getClothesAttributes() {
-        List<ClothAttributeDto> result = clothAttributeService.findAll();
+    public ResponseEntity<List<ClothAttributeDTO>> getClothesAttributes() {
+        List<ClothAttributeDTO> result = clothAttributeService.findAllClothAttributes();
         return ResponseEntity.ok(result);
     }
 
     // 속성 정의 단건 조회
     @GetMapping("/{attributeId}")
-    public ResponseEntity<ClothAttributeDto> findClothesAttribute(
+    public ResponseEntity<ClothAttributeDTO> findClothesAttribute(
             @PathVariable UUID attributeId
     ) {
-        ClothAttributeDto result = clothAttributeService.find(attributeId);
+        ClothAttributeDTO result = clothAttributeService.findClothAttribute(attributeId);
         return ResponseEntity.ok(result);
     }
 
     // 속성 정의 수정 (어드민 전용)
     @PatchMapping("/{attributeId}")
-    public ResponseEntity<ClothAttributeDto> updateClothesAttribute(
+    public ResponseEntity<ClothAttributeDTO> updateClothesAttribute(
             @PathVariable UUID attributeId,
             @RequestBody ClothAttributeUpdateRequest request
     ) {
-        ClothAttributeDto result = clothAttributeService.update(attributeId, request);
+        ClothAttributeDTO result = clothAttributeService.updateClothAttribute(attributeId, request);
         return ResponseEntity.ok(result);
     }
 
@@ -59,7 +59,7 @@ public class ClothAttributeController {
     public ResponseEntity<Void> deleteClothesAttribute(
             @PathVariable UUID attributeId
     ) {
-        clothAttributeService.delete(attributeId);
+        clothAttributeService.deleteClothAttribute(attributeId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
