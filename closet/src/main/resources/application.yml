@@ -39,6 +39,46 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: true
+  security:
+    jwt:
+      issuer: closet
+      secret: ${JWT_SECRET:376352270f35f8070b7a7e2ae299ca43}
+      access-token-validity-seconds: 3600 # 1시간
+      refresh-token-validity-seconds: 1204000 # 14일
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:dummy}
+            client-secret: ${GOOGLE_CLIENT_SECRET:dummy}
+            client-name: Google
+            redirect-uri: ${BASEURL:http://localhost:8080}/login/oauth2/code/google
+            authorization-grant-type: authorization_code
+            scope:
+              - email
+              - profile
+
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID:dummy}
+            client-secret: ${KAKAO_CLIENT_SECRET:dummy}
+            client-name: Kakao
+            redirect-uri: ${BASEURL:http://localhost:8080}/login/oauth2/code/kakao
+            authorization-grant-type: authorization_code
+            scope:
+              - account_email
+              - profile_nickname
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
+
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
 
 closet:
   storage:
@@ -49,13 +89,6 @@ closet:
     username: ${ADMIN_USERNAME:admin}
     email: ${ADMIN_EMAIL:admin@admin.com}
     password: ${ADMIN_PASSWORD:admin123}
-
-security:
-  jwt:
-    issuer: closet
-    secret: ${JWT_SECRET:376352270f35f8070b7a7e2ae299ca43}
-    access-token-validity-seconds: 3600 # 1시간
-    refresh-token-validity-seconds: 1204000 # 14일
 
 logging:
   level:

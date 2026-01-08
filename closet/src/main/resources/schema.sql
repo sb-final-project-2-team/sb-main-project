@@ -52,6 +52,8 @@ CREATE TABLE users
     name                     VARCHAR(50)  NOT NULL,
     email                    VARCHAR(120) NOT NULL UNIQUE,
     password                 VARCHAR(255) NOT NULL,
+    provider                 VARCHAR(20)  NOT NULL DEFAULT 'LOCAL' CHECK (provider IN ('LOCAL', 'GOOGLE', 'KAKAO')),
+    provider_id              VARCHAR(255) NOT NULL,
     gender                   VARCHAR(10) CHECK (gender IN ('MALE', 'FEMALE', 'OTHER')),
     role                     VARCHAR(10)  NOT NULL DEFAULT 'USER' CHECK (role IN ('ADMIN', 'USER')),
     birth                    TIMESTAMPTZ,
