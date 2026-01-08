@@ -56,7 +56,10 @@ public class BasicWeatherService implements WeatherService {
             }
         }
 
-        return dataList.stream()
+        // 오늘(초단기실황) + 내일~5일후(단기예보) 일별 대표 데이터로 집계 (최대 6개)
+        List<WeatherData> aggregatedList = filterAndAggregateDailyWeather(dataList);
+
+        return aggregatedList.stream()
                 .map(weatherMapper::toWeatherDTO)
                 .toList();
     }
@@ -71,11 +74,37 @@ public class BasicWeatherService implements WeatherService {
 
         List<WeatherData> result = new ArrayList<>();
 
-        // 오늘: 초단기실황
+        // 오늘 날짜의 단기예보에서 최저/최고 온도 추출
+        List<WeatherData> todayForecasts = dataList.stream()
+                .filter(data -> data.getForecastKind() == ForecastKind.SHORT_FCST)
+                .filter(data -> data.getForecastAt().atZone(koreaZone).toLocalDate().equals(today))
+                .toList();
+
+        Double todayMin = todayForecasts.stream()
+                .map(WeatherData::getTemperatureMin)
+                .filter(temp -> temp != null && temp < 100) // 유효한 값만
+                .min(Double::compareTo)
+                .orElse(null);
+
+        Double todayMax = todayForecasts.stream()
+                .map(WeatherData::getTemperatureMax)
+                .filter(temp -> temp != null && temp > -100) // 유효한 값만
+                .max(Double::compareTo)
+                .orElse(null);
+
+        // 오늘: 초단기실황 + 단기예보의 최저/최고 온도 병합
         dataList.stream()
                 .filter(data -> data.getForecastKind() == ForecastKind.ULTRA_NOW)
                 .findFirst()
-                .ifPresent(result::add);
+                .ifPresent(ultraNow -> {
+                    if (todayMin != null) {
+                        ultraNow.setTemperatureMin(todayMin);
+                    }
+                    if (todayMax != null) {
+                        ultraNow.setTemperatureMax(todayMax);
+                    }
+                    result.add(ultraNow);
+                });
 
         // 내일~5일후: 단기예보를 일별로 그룹화
         Map<LocalDate, List<WeatherData>> dailyForecastMap = dataList.stream()

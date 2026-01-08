@@ -23,7 +23,7 @@ public class WeatherData {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "weather_region_id", nullable = false)
     private WeatherRegion weatherRegion;
 
@@ -93,6 +93,20 @@ public class WeatherData {
      */
     public void setTemperatureCompPrevDay(Double temperatureCompPrevDay) {
         this.temperatureCompPrevDay = temperatureCompPrevDay;
+    }
+
+    /**
+     * 최저 온도 설정 (단기예보 병합용)
+     */
+    public void setTemperatureMin(Double temperatureMin) {
+        this.temperatureMin = temperatureMin;
+    }
+
+    /**
+     * 최고 온도 설정 (단기예보 병합용)
+     */
+    public void setTemperatureMax(Double temperatureMax) {
+        this.temperatureMax = temperatureMax;
     }
 
     /**
