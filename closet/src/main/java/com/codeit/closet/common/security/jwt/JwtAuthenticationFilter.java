@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         UserDTO userDTO = jwtTokenProvider.parseAccessToken(token).userDTO();
-        ClosetUserDetails closetUserDetails = new ClosetUserDetails(userDTO, null);
+        ClosetUserDetails closetUserDetails = new ClosetUserDetails(userDTO, null, null, null);
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
             closetUserDetails, null, closetUserDetails.getAuthorities());
         authenticationToken.setDetails(

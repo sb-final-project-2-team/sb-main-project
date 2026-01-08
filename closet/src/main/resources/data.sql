@@ -291,7 +291,6 @@ ON CONFLICT DO NOTHING;
 
 INSERT INTO clothes (id,
                      owner_id,
-                     clothes_attributes_id,
                      name,
                      binary_content_id,
                      type,

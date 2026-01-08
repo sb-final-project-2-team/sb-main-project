@@ -3,6 +3,7 @@ package com.codeit.closet.module.auth.controller;
 import com.codeit.closet.common.security.jwt.JwtDTO;
 import com.codeit.closet.common.security.jwt.JwtInformation;
 import com.codeit.closet.common.security.jwt.JwtTokenProvider;
+import com.codeit.closet.module.auth.dto.ResetPasswordRequest;
 import com.codeit.closet.module.auth.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,6 +15,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,6 +49,12 @@ public class AuthController {
 
     return ResponseEntity.status(HttpStatus.OK).body(jwtDTO);
   }
-  // 비밀번호 초기화
-  //@PostMapping("/reset-password")
+
+  @PostMapping("/reset-password")
+  public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest request) {
+
+    authService.resetPassword(request);
+
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
 }

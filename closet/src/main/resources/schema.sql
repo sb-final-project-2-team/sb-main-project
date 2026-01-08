@@ -79,7 +79,6 @@ CREATE TABLE clothes
 (
     id                    UUID PRIMARY KEY,
     owner_id              UUID         NOT NULL,
-    clothes_attributes_id UUID         NOT NULL,
     name                  VARCHAR(255) NOT NULL,
     binary_content_id     UUID,
     type                  VARCHAR(10)
