@@ -140,13 +140,17 @@ public class KmaApiClient {
         // 발표 시각 10분 이전이면 이전 발표 시각 사용
         if (currentHour == baseHour && now.getMinute() < 10) {
             // 이전 발표 시각 찾기
+            boolean found = false;
             for (int i = baseTimes.length - 1; i >= 0; i--) {
                 if (baseTimes[i] < baseHour) {
                     baseHour = baseTimes[i];
+                    found = true;
                     break;
                 }
             }
-            if (baseHour == 23) {
+            // baseHour가 2(첫 번째 발표 시각)인 경우 전날 23시로 설정
+            if (!found) {
+                baseHour = 23;
                 now = now.minusDays(1);
             }
         }
