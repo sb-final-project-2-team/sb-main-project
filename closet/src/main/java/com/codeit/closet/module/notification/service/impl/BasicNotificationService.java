@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.codeit.closet.module.notification.dto.NotificationDTO;
 import com.codeit.closet.module.notification.entity.Notification;
+import com.codeit.closet.module.notification.entity.NotificationLevel;
 import com.codeit.closet.module.notification.event.NotificationEvent;
 import com.codeit.closet.module.notification.event.NotificationEventPublisher;
 import com.codeit.closet.module.notification.mapper.NotificationMapper;
@@ -50,7 +51,7 @@ public class BasicNotificationService implements NotificationService {
 		log.debug("알림 삭제 시작: notificationId={}, receiverId={}", id, receiverId);
 
 		Notification notification = notificationRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("Id를 찾을 수 없습니다." + id));
+			.orElseThrow(() -> new IllegalArgumentException("알림을 찾을 수 없습니다." + id));
 
 		if (!notification.getReceiverId().equals(receiverId)) {
 			throw new IllegalArgumentException("권한이 없습니다.: 수신자가 일치하지 않습니다.");
@@ -80,7 +81,7 @@ public class BasicNotificationService implements NotificationService {
 			saved.getReceiverId(),
 			saved.getTitle(),
 			saved.getContent(),
-			"INFO",
+			NotificationLevel.INFO,
 			getCreatedAt(saved)
 		);
 
@@ -93,7 +94,7 @@ public class BasicNotificationService implements NotificationService {
 	@Transactional
 	public void createMany(Set<UUID> receiverIds, String title, String content) {
 
-		List<Notification> notifications = new ArrayList<>();
+		List<Notification> notifications = new ArrayList<>(receiverIds.size());
 
 		for (UUID receiverId : receiverIds) {
 			notifications.add(
@@ -113,7 +114,7 @@ public class BasicNotificationService implements NotificationService {
 				saved.getReceiverId(),
 				saved.getTitle(),
 				saved.getContent(),
-				"INFO",
+				NotificationLevel.INFO,
 				getCreatedAt(saved)
 			);
 			eventPublisher.publish(event);
