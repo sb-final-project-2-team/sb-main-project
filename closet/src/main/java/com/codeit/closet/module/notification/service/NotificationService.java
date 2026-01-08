@@ -15,10 +15,10 @@ public interface NotificationService {
 	void deleteNotification(UUID id, UUID receiverId);
 
 	// (팔로우, 좋아요, 댓글, 권한변경, DM)
-	void create(UUID receiverId, String title, String content);
+	void createNotification(UUID receiverId, String title, String content);
 
 	// (급격한 날씨 변화 알림)
-	void createMany(Set<UUID> receiverIds, String title, String content);
+	void createManyNotification(Set<UUID> receiverIds, String title, String content);
 
 	// 템플릿 전용 오버로드
 
@@ -27,7 +27,7 @@ public interface NotificationService {
 	 * (DM,  Like, Comment, Feed)
 	 */
 	default void createWithRawContent(UUID receiverId, NotificationTemplate template, String rawContent, Object... titleArgs) {
-		create(receiverId, template.renderTitle(titleArgs), rawContent);
+		createNotification(receiverId, template.renderTitle(titleArgs), rawContent);
 	}
 
 	/**
@@ -35,6 +35,6 @@ public interface NotificationService {
 	 * (Role, Attribute, Weather)
 	 */
 	default void createWithRenderContent(UUID receiverId, NotificationTemplate template,Object[] titleArgs, Object... contentArgs) {
-		create(receiverId,template.renderTitle(), template.renderContent(contentArgs));
+		createNotification(receiverId,template.renderTitle(), template.renderContent(contentArgs));
 	}
 }

@@ -65,7 +65,7 @@ public class BasicNotificationService implements NotificationService {
 
 	@Override
 	@Transactional
-	public void create(UUID receiverId, String title, String content) {
+	public void createNotification(UUID receiverId, String title, String content) {
 
 		// 단일 알림 생성
 		Notification notification = Notification.builder()
@@ -92,7 +92,7 @@ public class BasicNotificationService implements NotificationService {
 
 	@Override
 	@Transactional
-	public void createMany(Set<UUID> receiverIds, String title, String content) {
+	public void createManyNotification(Set<UUID> receiverIds, String title, String content) {
 
 		List<Notification> notifications = new ArrayList<>(receiverIds.size());
 
