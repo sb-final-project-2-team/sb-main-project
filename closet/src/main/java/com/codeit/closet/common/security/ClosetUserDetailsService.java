@@ -13,13 +13,17 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ClosetUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email).orElseThrow(()
-                -> new UsernameNotFoundException("유저를 찾을 수 없습니다." + email));
-        return new ClosetUserDetails(userMapper.toUserDTO(user), user.getPassword());
-    }
+  @Override
+  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    User user = userRepository.findByEmail(email).orElseThrow(()
+        -> new UsernameNotFoundException("유저를 찾을 수 없습니다." + email));
+
+    return new ClosetUserDetails(userMapper.toUserDTO(user),
+        user.getPassword(),
+        user.getTempPassword(),
+        user.getTempPasswordExpiredAt());
+  }
 }

@@ -1,6 +1,7 @@
 package com.codeit.closet.common.config;
 
 import com.codeit.closet.common.redis.RedisLockProvider;
+import com.codeit.closet.common.security.ClosetDaoAuthenticationProvider;
 import com.codeit.closet.common.security.Http401UnauthorizedEntryPoint;
 import com.codeit.closet.common.security.Http403ForbiddenAccessDeniedHandler;
 import com.codeit.closet.common.security.LoginFailureHandler;
@@ -18,15 +19,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchyAuthoritiesMapper;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -48,11 +46,11 @@ public class SecurityConfig {
       JwtLoginSuccessHandler jwtLoginSuccessHandler,
       JwtLogoutHandler jwtLogoutHandler,
       LoginFailureHandler loginFailureHandler,
-      DaoAuthenticationProvider daoAuthenticationProvider,
+      ClosetDaoAuthenticationProvider closetDaoAuthenticationProvider,
       Http403ForbiddenAccessDeniedHandler forbiddenAccessDeniedHandler,
       Http401UnauthorizedEntryPoint unauthorizedEntryPoint) throws Exception {
     http
-        .authenticationProvider(daoAuthenticationProvider)
+        .authenticationProvider(closetDaoAuthenticationProvider)
 
         // 로그인
         .formLogin(login -> login
@@ -118,7 +116,7 @@ public class SecurityConfig {
     config.setAllowedHeaders(List.of("*"));
     config.setExposedHeaders(List.of("Authorization"));
 
-    config.setAllowCredentials(true); // 🔥 쿠키 사용 시 필수
+    config.setAllowCredentials(true);
 
     UrlBasedCorsConfigurationSource source =
         new UrlBasedCorsConfigurationSource();
@@ -132,16 +130,6 @@ public class SecurityConfig {
     return RoleHierarchyImpl.withDefaultRolePrefix()
         .role(UserRole.ADMIN.name()).implies(UserRole.USER.name())
         .build();
-  }
-
-  @Bean
-  public DaoAuthenticationProvider daoAuthenticationProvider(UserDetailsService userDetailsService,
-      PasswordEncoder passwordEncoder,
-      RoleHierarchy roleHierarchy) {
-    DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-    provider.setPasswordEncoder(passwordEncoder);
-    provider.setAuthoritiesMapper(new RoleHierarchyAuthoritiesMapper(roleHierarchy));
-    return provider;
   }
 
   @Bean

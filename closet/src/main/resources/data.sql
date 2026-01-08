@@ -273,31 +273,27 @@ VALUES ('cccccccc-cccc-cccc-cccc-cccccccccccc',
 
 INSERT INTO clothes (id,
                      owner_id,
-                     clothes_attributes_id,
                      name,
                      binary_content_id,
                      type,
                      created_at,
                      updated_at)
 VALUES ('11111111-1111-1111-1111-111111111111',
-        'a1e0942a-7c26-4f5b-a330-1a142027c752', -- 번거롭지만 따로 지정해서 넣기
-        'cccccccc-cccc-cccc-cccc-cccccccccccc',
+        'e90d5edb-e8c6-46bb-a638-5d4ce9a10bca', -- 번거롭지만 따로 지정해서 넣기
         'test1',
         NULL,
         'TOP',
         NOW(),
         NOW()),
        ('22222222-2222-2222-2222-222222222222',
-        'a1e0942a-7c26-4f5b-a330-1a142027c752', -- 번거롭지만 따로 지정해서 넣기
-        'cccccccc-cccc-cccc-cccc-cccccccccccc',
+        'e90d5edb-e8c6-46bb-a638-5d4ce9a10bca', -- 번거롭지만 따로 지정해서 넣기
         'test2',
         NULL,
         'BOTTOM',
         NOW(),
         NOW()),
        ('33333333-3333-3333-3333-333333333333',
-        'a1e0942a-7c26-4f5b-a330-1a142027c752', -- 번거롭지만 따로 지정해서 넣기
-        'cccccccc-cccc-cccc-cccc-cccccccccccc',
+        'e90d5edb-e8c6-46bb-a638-5d4ce9a10bca', -- 번거롭지만 따로 지정해서 넣기
         'test3',
         NULL,
         'OUTER',
@@ -315,7 +311,7 @@ INSERT INTO feeds (id,
                    created_at,
                    updated_at)
 VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-        'a1e0942a-7c26-4f5b-a330-1a142027c752', -- 번거롭지만 따로 지정해서 넣기
+        'e90d5edb-e8c6-46bb-a638-5d4ce9a10bca', -- 번거롭지만 따로 지정해서 넣기
         'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
         '오늘은 비 와서 레인코트 착용 ☔️',
         2,
@@ -332,7 +328,7 @@ INSERT INTO feeds (id,
                    like_count,
                    created_at)
 VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-        'a1e0942a-7c26-4f5b-a330-1a142027c752', -- 번거롭지만 따로 지정해서 넣기
+        'e90d5edb-e8c6-46bb-a638-5d4ce9a10bca', -- 번거롭지만 따로 지정해서 넣기
         'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
         '한파 대비 롱패딩 OOTD ❄️',
         0,
@@ -360,4 +356,4 @@ INSERT INTO ootds (
 
 UPDATE users
 SET weather_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
-WHERE id = 'a1e0942a-7c26-4f5b-a330-1a142027c752'; -- 번거롭지만 따로 지정해서 넣기
+WHERE id = 'e90d5edb-e8c6-46bb-a638-5d4ce9a10bca'; -- 번거롭지만 따로 지정해서 넣기
