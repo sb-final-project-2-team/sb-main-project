@@ -16,6 +16,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -109,6 +110,13 @@ public class User {
   public void updateLocked(Boolean locked) {
     if (locked != null) {
       this.locked = locked;
+    }
+  }
+
+  public void updateTempPassword(String encodedPassword) {
+    if (encodedPassword != null) {
+      this.tempPassword = encodedPassword;
+      this.tempPasswordExpiredAt = OffsetDateTime.now().plusMinutes(3).toInstant();
     }
   }
 
