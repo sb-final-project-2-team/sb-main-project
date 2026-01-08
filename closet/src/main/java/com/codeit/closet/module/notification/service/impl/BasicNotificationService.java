@@ -8,6 +8,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.codeit.closet.module.notification.dto.NotificationDTO;
 import com.codeit.closet.module.notification.entity.Notification;
@@ -93,6 +95,19 @@ public class BasicNotificationService implements NotificationService {
 	@Override
 	@Transactional
 	public void createManyNotification(Set<UUID> receiverIds, String title, String content) {
+		// 입력 검증
+		if (receiverIds == null || receiverIds.isEmpty()) {
+			throw new IllegalArgumentException("receiverIds는 필수입니다.");
+		}
+		if (receiverIds.contains(null)) {
+			throw new IllegalArgumentException("receiverIds에 null이 포함될 수 없습니다.");
+		}
+		if (title == null || title.isBlank()) {
+			throw new IllegalArgumentException("title은 필수입니다.");
+		}
+		if (content == null || content.isBlank()) {
+			throw new IllegalArgumentException("content는 필수 입니다.");
+		}
 
 		List<Notification> notifications = new ArrayList<>(receiverIds.size());
 
@@ -107,6 +122,12 @@ public class BasicNotificationService implements NotificationService {
 		}
 
 		List<Notification> savedList = notificationRepository.saveAll(notifications);
+		log.info("[Notification] 다건 알림 생성 완료 (count={}", savedList.size());
+	}
+
+		// 이벤트 발행은 별도로 처리
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void publishManyAfterCommit(List<Notification> savedList) {
 
 		for (Notification saved : savedList) {
 			NotificationEvent event = new NotificationEvent(
@@ -117,10 +138,12 @@ public class BasicNotificationService implements NotificationService {
 				NotificationLevel.INFO,
 				getCreatedAt(saved)
 			);
-			eventPublisher.publish(event);
+			try {
+				eventPublisher.publish(event);
+			} catch (Exception e) {
+			    log.error("[Notification] 이벤트 발행 실패 (id={}", saved.getId(), e); // 부분 실패 처리 전략: 로그만 기록하고 계속 진행
+			}
 		}
-
-		log.info("[Notification] 다건 알림 생성 완료 (count={})", savedList.size());
 	}
 
 	private Instant getCreatedAt(Notification notification) {
