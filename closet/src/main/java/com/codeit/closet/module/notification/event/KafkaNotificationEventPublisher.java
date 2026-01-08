@@ -1,5 +1,7 @@
 package com.codeit.closet.module.notification.event;
 
+import java.util.UUID;
+
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +17,7 @@ public class KafkaNotificationEventPublisher implements NotificationEventPublish
 	@Override
 	public void publish(NotificationEvent event) {
 
-		String notificationKey = event.receiverId().toString(); // 수신자 기준으로 지정
+		String notificationKey = toKey(event.receiverId()); // 수신자 기준으로 지정
 
 		kafkaTemplate.send(
 			NotificationTopics.NOTIFICATION_CREATED,
@@ -28,5 +30,9 @@ public class KafkaNotificationEventPublisher implements NotificationEventPublish
 			notificationKey,
 			event.id()
 		);
+	}
+
+	private String toKey(UUID receiverId) {
+		return receiverId != null ? receiverId.toString() : "unknown";
 	}
 }
