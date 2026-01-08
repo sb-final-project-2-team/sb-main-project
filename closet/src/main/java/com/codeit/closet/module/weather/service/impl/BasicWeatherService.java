@@ -56,13 +56,7 @@ public class BasicWeatherService implements WeatherService {
             }
         }
 
-dataList.stream()
-                .filter(data -> data.getForecastKind() == ForecastKind.ULTRA_NOW)
-                .forEach(data -> calculateComparedToDayBefore(data, region.getId()));
-
-        List<WeatherData> filteredData = filterAndAggregateDailyWeather(dataList);
-
-        return filteredData.stream()
+        return dataList.stream()
                 .map(weatherMapper::toWeatherDTO)
                 .toList();
     }
@@ -145,88 +139,6 @@ dataList.stream()
                 ));
 
         return weatherMapper.toWeatherAPILocation(region);
-    }
-
-    @Override
-    @Transactional
-    public WeatherDTO collectUltraSrtNcst(Integer nx, Integer ny) {
-        log.info("초단기실황 수집: nx={}, ny={}", nx, ny);
-
-        WeatherRegion region = weatherRegionRepository.findByXAndY(nx, ny)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "해당 격자 좌표의 지역이 등록되지 않았습니다: nx=" + nx + ", ny=" + ny));
-
-        KmaApiResponse response = kmaApiClient.getUltraSrtNcst(nx, ny);
-        WeatherData weatherData = kmaApiConverter.convertUltraSrtNcst(response, region);
-        WeatherData saved = weatherDataRepository.save(weatherData);
-        updateLastCollectedAt(region);
-
-        log.info("초단기실황 수집 완료: id={}", saved.getId());
-        return weatherMapper.toWeatherDTO(saved);
-    }
-
-    @Override
-    @Transactional
-    public List<WeatherDTO> collectVilageFcst(Integer nx, Integer ny) {
-        log.info("단기예보 수집: nx={}, ny={}", nx, ny);
-
-        WeatherRegion region = weatherRegionRepository.findByXAndY(nx, ny)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "해당 격자 좌표의 지역이 등록되지 않았습니다: nx=" + nx + ", ny=" + ny));
-
-        KmaApiResponse response = kmaApiClient.getVilageFcst(nx, ny);
-        List<WeatherData> weatherDataList = kmaApiConverter.convertVilageFcst(response, region);
-        List<WeatherData> savedList = weatherDataRepository.saveAll(weatherDataList);
-        updateLastCollectedAt(region);
-
-        log.info("단기예보 수집 완료: {}건", savedList.size());
-
-        return savedList.stream()
-                .map(weatherMapper::toWeatherDTO)
-                .toList();
-    }
-
-    @Override
-    @Transactional
-    public WeatherDTO collectUltraSrtNcstForRegion(UUID weatherRegionId) {
-        WeatherRegion region = weatherRegionRepository.findById(weatherRegionId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "WeatherRegion을 찾을 수 없습니다: " + weatherRegionId
-                ));
-
-        return collectUltraSrtNcst(region.getX(), region.getY());
-    }
-
-    @Override
-    @Transactional
-    public List<WeatherDTO> collectVilageFcstForRegion(UUID weatherRegionId) {
-        WeatherRegion region = weatherRegionRepository.findById(weatherRegionId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "WeatherRegion을 찾을 수 없습니다: " + weatherRegionId
-                ));
-
-        return collectVilageFcst(region.getX(), region.getY());
-    }
-
-    @Transactional
-    protected WeatherRegion createWeatherRegion(Integer x, Integer y, Double longitude, Double latitude) {
-        WeatherRegion newRegion = WeatherRegion.builder()
-                .x(x)
-                .y(y)
-                .latitude(latitude)
-                .longitude(longitude)
-                .locationNames(String.format("격자(%d, %d)", x, y))
-                .build();
-
-        WeatherRegion saved = weatherRegionRepository.save(newRegion);
-        log.info("WeatherRegion 생성: id={}, 격자({}, {})", saved.getId(), x, y);
-        return saved;
-    }
-
-    @Transactional
-    protected void updateLastCollectedAt(WeatherRegion region) {
-        weatherRegionRepository.findById(region.getId())
-                .ifPresent(WeatherRegion::updateLastCollectedAt);
     }
 
     /**

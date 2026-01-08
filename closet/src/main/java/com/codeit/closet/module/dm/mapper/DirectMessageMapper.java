@@ -2,23 +2,21 @@ package com.codeit.closet.module.dm.mapper;
 
 import com.codeit.closet.module.dm.dto.DirectMessageDTO;
 import com.codeit.closet.module.dm.entity.DirectMessage;
-import com.codeit.closet.module.user.dto.user.UserSummary;
+import com.codeit.closet.module.user.mapper.UserMapper;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+import java.util.List;
+
+@Mapper(
+        componentModel = "spring",
+        uses = UserMapper.class
+)
 public interface DirectMessageMapper {
 
-    default DirectMessageDTO toDirectMessageDTO(
-            DirectMessage dm,
-            UserSummary sender,
-            UserSummary receiver
-    ) {
-        return new DirectMessageDTO(
-                dm.getId(),
-                dm.getCreatedAt(),
-                sender,
-                receiver,
-                dm.getContent()
-        );
-    }
+    @Mapping(target = "sender", source = "sender")
+    @Mapping(target = "receiver", source = "receiver")
+    DirectMessageDTO toDTO(DirectMessage dm);
+
+    List<DirectMessageDTO> toDTOs(List<DirectMessage> messages);
 }

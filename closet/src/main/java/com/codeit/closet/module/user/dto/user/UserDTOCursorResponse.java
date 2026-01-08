@@ -8,8 +8,8 @@ public record UserDTOCursorResponse(
 
         String nextCursor,
         UUID nextAfter,
-        boolean hasNext,
-        long totalCount,
+        Boolean hasNext,
+        Long totalCount,
 
         String sortBy,
         String sortDirection

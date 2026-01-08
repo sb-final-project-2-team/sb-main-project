@@ -1,20 +1,22 @@
 package com.codeit.closet.common.config;
 
+import com.codeit.closet.common.redis.RedisLockProvider;
 import com.codeit.closet.common.security.Http401UnauthorizedEntryPoint;
 import com.codeit.closet.common.security.Http403ForbiddenAccessDeniedHandler;
 import com.codeit.closet.common.security.LoginFailureHandler;
 import com.codeit.closet.common.security.SpaCsrfTokenRequestHandler;
-import com.codeit.closet.common.security.jwt.InMemoryJwtRegistry;
 import com.codeit.closet.common.security.jwt.JwtAuthenticationFilter;
 import com.codeit.closet.common.security.jwt.JwtLoginSuccessHandler;
 import com.codeit.closet.common.security.jwt.JwtLogoutHandler;
 import com.codeit.closet.common.security.jwt.JwtRegistry;
 import com.codeit.closet.common.security.jwt.JwtTokenProvider;
+import com.codeit.closet.common.security.jwt.RedisJwtRegistry;
 import com.codeit.closet.module.user.entity.UserRole;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyAuthoritiesMapper;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
@@ -143,7 +145,8 @@ public class SecurityConfig {
   }
 
   @Bean
-  public JwtRegistry<UUID> jwtRegistry(JwtTokenProvider jwtTokenProvider) {
-    return new InMemoryJwtRegistry(1, jwtTokenProvider);
+  public JwtRegistry<UUID> jwtRegistry(JwtTokenProvider jwtTokenProvider,
+      RedisTemplate<String, Object> redisTemplate, RedisLockProvider redisLockProvider) {
+    return new RedisJwtRegistry(1, jwtTokenProvider, redisTemplate, redisLockProvider);
   }
 }

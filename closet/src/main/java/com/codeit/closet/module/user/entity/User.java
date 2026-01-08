@@ -1,6 +1,7 @@
 package com.codeit.closet.module.user.entity;
 
 import com.codeit.closet.module.binarycontent.entity.BinaryContent;
+import com.codeit.closet.module.weather.entity.WeatherRegion;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,14 +37,13 @@ public class User {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  // binaryContent 생성 후 연동할꺼임.
   @OneToOne(orphanRemoval = true, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @JoinColumn(name = "binary_content_id")
   private BinaryContent binaryContent;
 
-  // weather 추가되면 연동할꺼임.
-  @Column(name = "weather_id")
-  private UUID weatherId;
+  @OneToOne(orphanRemoval = true, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  @JoinColumn(name = "weather_id")
+  private WeatherRegion weather;
 
   @Column(length = 50, nullable = false)
   private String name;
@@ -93,6 +93,10 @@ public class User {
 
     if (role == null) {
       this.role = UserRole.USER;
+    }
+
+    if (locked == null) {
+      this.locked = false;
     }
   }
 
