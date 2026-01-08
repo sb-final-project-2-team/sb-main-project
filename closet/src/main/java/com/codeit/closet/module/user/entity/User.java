@@ -56,6 +56,13 @@ public class User {
   private String password;
 
   @Enumerated(EnumType.STRING)
+  @Column(length = 20, nullable = false)
+  private AuthProvider provider;
+
+  @Column(name = "provider_id", nullable = false)
+  private String providerId;
+
+  @Enumerated(EnumType.STRING)
   @Column(length = 10)
   private UserGender gender;
 
@@ -99,6 +106,14 @@ public class User {
     if (locked == null) {
       this.locked = false;
     }
+
+    if (provider == null) {
+      this.provider = AuthProvider.LOCAL;
+    }
+
+    if (provider == AuthProvider.LOCAL && providerId == null) {
+      this.providerId = this.email;
+    }
   }
 
   public void updateRole(UserRole role) {
@@ -110,6 +125,13 @@ public class User {
   public void updateLocked(Boolean locked) {
     if (locked != null) {
       this.locked = locked;
+    }
+  }
+
+  public void updateSocialInfo(AuthProvider provider, String providerId) {
+    if (provider != null && providerId != null) {
+      this.provider = provider;
+      this.providerId = providerId;
     }
   }
 
