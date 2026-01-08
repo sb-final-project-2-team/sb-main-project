@@ -31,7 +31,7 @@ public class BasicDirectMessageService implements DirectMessageService {
             UUID receiverId,
             String content
     ) {
-        log.info("[Service] 이전 DM 내역 조회 호출");
+        log.info("[Service] DM 저장 api 호출");
 
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new IllegalArgumentException("송신자를 찾을 수 없습니다."));
@@ -63,8 +63,11 @@ public class BasicDirectMessageService implements DirectMessageService {
             UUID idAfter,
             int limit
     ) {
-        log.info("[Service] DM 저장 api 호출");
+        log.info("[Service] 이전 DM 내역 조회 호출");
 
+        if(!userRepository.existsById(senderId)) {
+            throw new IllegalArgumentException("송신자를 찾을 수 없습니다.");
+        }
         if(!userRepository.existsById(receiverId)) {
             throw new IllegalArgumentException("수신자를 찾을 수 없습니다.");
         }
