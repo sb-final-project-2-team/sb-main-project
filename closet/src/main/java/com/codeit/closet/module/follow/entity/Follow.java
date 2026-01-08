@@ -24,7 +24,6 @@ public class Follow {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    // DB엔 FK 안걸려있으므로 검증에 신경써야함
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "follower_id", nullable = false)
     private User follower;
