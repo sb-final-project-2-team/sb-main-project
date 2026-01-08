@@ -61,9 +61,12 @@ public interface WeatherMapper {
 
     @Named("stringToList")
     default List<String> stringToList(String locationNames) {
-        if (locationNames == null || locationNames.isEmpty()) {
+        if (locationNames == null || locationNames.isBlank()) {
             return List.of();
         }
-        return Arrays.asList(locationNames.split(","));
+        return Arrays.stream(locationNames.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
     }
 }
