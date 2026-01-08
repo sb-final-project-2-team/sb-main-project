@@ -56,15 +56,14 @@ public class BasicWeatherService implements WeatherService {
             }
         }
 
-        dataList.stream()
+dataList.stream()
                 .filter(data -> data.getForecastKind() == ForecastKind.ULTRA_NOW)
                 .forEach(data -> calculateComparedToDayBefore(data, region.getId()));
 
-        LocationDTO location = weatherMapper.toLocationDTO(region);
         List<WeatherData> filteredData = filterAndAggregateDailyWeather(dataList);
 
         return filteredData.stream()
-                .map(data -> weatherMapper.toWeatherDTO(data, location))
+                .map(weatherMapper::toWeatherDTO)
                 .toList();
     }
 
@@ -158,12 +157,12 @@ public class BasicWeatherService implements WeatherService {
                         "해당 격자 좌표의 지역이 등록되지 않았습니다: nx=" + nx + ", ny=" + ny));
 
         KmaApiResponse response = kmaApiClient.getUltraSrtNcst(nx, ny);
-        WeatherData weatherData = kmaApiConverter.convertUltraSrtNcst(response, region.getId());
+        WeatherData weatherData = kmaApiConverter.convertUltraSrtNcst(response, region);
         WeatherData saved = weatherDataRepository.save(weatherData);
         updateLastCollectedAt(region);
 
         log.info("초단기실황 수집 완료: id={}", saved.getId());
-        return weatherMapper.toWeatherDTO(saved, weatherMapper.toLocationDTO(region));
+        return weatherMapper.toWeatherDTO(saved);
     }
 
     @Override
@@ -176,15 +175,14 @@ public class BasicWeatherService implements WeatherService {
                         "해당 격자 좌표의 지역이 등록되지 않았습니다: nx=" + nx + ", ny=" + ny));
 
         KmaApiResponse response = kmaApiClient.getVilageFcst(nx, ny);
-        List<WeatherData> weatherDataList = kmaApiConverter.convertVilageFcst(response, region.getId());
+        List<WeatherData> weatherDataList = kmaApiConverter.convertVilageFcst(response, region);
         List<WeatherData> savedList = weatherDataRepository.saveAll(weatherDataList);
         updateLastCollectedAt(region);
 
         log.info("단기예보 수집 완료: {}건", savedList.size());
 
-        LocationDTO location = weatherMapper.toLocationDTO(region);
         return savedList.stream()
-                .map(data -> weatherMapper.toWeatherDTO(data, location))
+                .map(weatherMapper::toWeatherDTO)
                 .toList();
     }
 

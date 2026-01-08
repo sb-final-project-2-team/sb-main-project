@@ -34,22 +34,30 @@ public interface WeatherMapper {
     @Mapping(source = "windAsWord", target = "asWord")
     WindSpeedDTO toWindSpeedDTO(WeatherData data);
 
+@Mapping(source = "latitude", target = "latitude")
+    @Mapping(source = "longitude", target = "longitude")
+    @Mapping(source = "x", target = "x")
+    @Mapping(source = "y", target = "y")
     @Mapping(source = "locationNames", target = "locationNames", qualifiedByName = "stringToList")
     LocationDTO toLocationDTO(WeatherRegion region);
 
+    @Mapping(source = "latitude", target = "latitude")
+    @Mapping(source = "longitude", target = "longitude")
+    @Mapping(source = "x", target = "x")
+    @Mapping(source = "y", target = "y")
     @Mapping(source = "locationNames", target = "locationNames", qualifiedByName = "stringToList")
     WeatherAPILocation toWeatherAPILocation(WeatherRegion region);
 
     @Mapping(source = "data.id", target = "id")
     @Mapping(source = "data.forecastedAt", target = "forecastedAt")
     @Mapping(source = "data.forecastAt", target = "forecastAt")
-    @Mapping(source = "location", target = "location")
+    @Mapping(source = "data.weatherRegion", target = "location")
     @Mapping(source = "data.skyStatus", target = "skyStatus")
     @Mapping(source = "data", target = "precipitation")
     @Mapping(source = "data", target = "humidity")
     @Mapping(source = "data", target = "temperature")
     @Mapping(source = "data", target = "windSpeed")
-    WeatherDTO toWeatherDTO(WeatherData data, LocationDTO location);
+    WeatherDTO toWeatherDTO(WeatherData data);
 
     @Named("stringToList")
     default List<String> stringToList(String locationNames) {
