@@ -1,6 +1,9 @@
 package com.codeit.closet.module.notification.service.impl;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -8,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.codeit.closet.module.notification.dto.NotificationDTO;
 import com.codeit.closet.module.notification.entity.Notification;
+import com.codeit.closet.module.notification.event.NotificationEvent;
+import com.codeit.closet.module.notification.event.NotificationEventPublisher;
 import com.codeit.closet.module.notification.mapper.NotificationMapper;
 import com.codeit.closet.module.notification.repository.NotificationRepository;
 import com.codeit.closet.module.notification.service.NotificationService;
@@ -22,6 +27,7 @@ public class BasicNotificationService implements NotificationService {
 
 	private final NotificationRepository notificationRepository;
 	private final NotificationMapper notificationMapper;
+	private final NotificationEventPublisher eventPublisher;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -54,6 +60,73 @@ public class BasicNotificationService implements NotificationService {
 
 		log.debug("알림 삭제 완료: id={}", id);
 
+	}
+
+	@Override
+	@Transactional
+	public void create(UUID receiverId, String title, String content) {
+
+		// 단일 알림 생성
+		Notification notification = Notification.builder()
+			.receiverId(receiverId)
+			.title(title)
+			.content(content)
+			.build();
+
+		Notification saved = notificationRepository.save(notification);
+
+		NotificationEvent event = new NotificationEvent(
+			saved.getId(),
+			saved.getReceiverId(),
+			saved.getTitle(),
+			saved.getContent(),
+			"INFO",
+			getCreatedAt(saved)
+		);
+
+		eventPublisher.publish(event);
+
+		log.info("[Notification] 단건 알림 생성 완료(id={} -> receiverId={})", saved.getId(), receiverId);
+	}
+
+	@Override
+	@Transactional
+	public void createMany(Set<UUID> receiverIds, String title, String content) {
+
+		List<Notification> notifications = new ArrayList<>();
+
+		for (UUID receiverId : receiverIds) {
+			notifications.add(
+				Notification.builder()
+					.receiverId(receiverId)
+					.title(title)
+					.content(content)
+					.build()
+			);
+		}
+
+		List<Notification> savedList = notificationRepository.saveAll(notifications);
+
+		for (Notification saved : savedList) {
+			NotificationEvent event = new NotificationEvent(
+				saved.getId(),
+				saved.getReceiverId(),
+				saved.getTitle(),
+				saved.getContent(),
+				"INFO",
+				getCreatedAt(saved)
+			);
+			eventPublisher.publish(event);
+		}
+
+		log.info("[Notification] 다건 알림 생성 완료 (count={})", savedList.size());
+	}
+
+	private Instant getCreatedAt(Notification notification) {
+		if (notification.getCreatedAt() != null) {
+			return notification.getCreatedAt();
+		}
+		return Instant.now();
 	}
 
 }
