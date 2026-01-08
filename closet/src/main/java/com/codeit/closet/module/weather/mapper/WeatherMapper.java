@@ -34,19 +34,11 @@ public interface WeatherMapper {
     @Mapping(source = "windAsWord", target = "asWord")
     WindSpeedDTO toWindSpeedDTO(WeatherData data);
 
-    @Mapping(source = "latitude", target = "latitude")
-    @Mapping(source = "longitude", target = "longitude")
-    @Mapping(source = "region.x", target = "x")
-    @Mapping(source = "region.y", target = "y")
-    @Mapping(source = "region.locationNames", target = "locationNames", qualifiedByName = "stringToList")
-    LocationDTO toLocationDTO(WeatherRegion region, Double latitude, Double longitude);
+    @Mapping(source = "locationNames", target = "locationNames", qualifiedByName = "stringToList")
+    LocationDTO toLocationDTO(WeatherRegion region);
 
-    @Mapping(source = "latitude", target = "latitude")
-    @Mapping(source = "longitude", target = "longitude")
-    @Mapping(source = "region.x", target = "x")
-    @Mapping(source = "region.y", target = "y")
-    @Mapping(source = "region.locationNames", target = "locationNames", qualifiedByName = "stringToList")
-    WeatherAPILocation toWeatherAPILocation(WeatherRegion region, Double latitude, Double longitude);
+    @Mapping(source = "locationNames", target = "locationNames", qualifiedByName = "stringToList")
+    WeatherAPILocation toWeatherAPILocation(WeatherRegion region);
 
     @Mapping(source = "data.id", target = "id")
     @Mapping(source = "data.forecastedAt", target = "forecastedAt")
@@ -61,7 +53,7 @@ public interface WeatherMapper {
 
     @Named("stringToList")
     default List<String> stringToList(String locationNames) {
-        if (locationNames == null || locationNames.trim().isEmpty()) {
+        if (locationNames == null || locationNames.isEmpty()) {
             return List.of();
         }
         return Arrays.asList(locationNames.split(","));

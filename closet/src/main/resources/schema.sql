@@ -169,7 +169,7 @@ CREATE TABLE weather_data
     sky_status                  sky_status_enum         NOT NULL,
 
     temperature_current         DOUBLE PRECISION        NOT NULL,
-    temperature_comp_prev_day   DOUBLE PRECISION        NOT NULL,
+    temperature_comp_prev_day   DOUBLE PRECISION,
     temperature_min             DOUBLE PRECISION        NOT NULL,
     temperature_max             DOUBLE PRECISION        NOT NULL,
 
@@ -178,7 +178,7 @@ CREATE TABLE weather_data
     precipitation_prob          DOUBLE PRECISION        NOT NULL,
 
     humidity_current            DOUBLE PRECISION        NOT NULL,
-    humidity_comp_to_day_before DOUBLE PRECISION        NOT NULL,
+    humidity_comp_to_day_before DOUBLE PRECISION,
 
     wind_speed                  DOUBLE PRECISION        NOT NULL,
     wind_as_word                wind_as_word_enum       NOT NULL,
@@ -195,6 +195,8 @@ CREATE TABLE weather_regions
     weather_data_id   UUID,
     x                 INT         NOT NULL,
     y                 INT         NOT NULL,
+    latitude          DOUBLE PRECISION,
+    longitude         DOUBLE PRECISION,
     location_names    VARCHAR(255),
     last_collected_at TIMESTAMPTZ,
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),

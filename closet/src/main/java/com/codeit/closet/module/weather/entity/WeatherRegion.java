@@ -32,6 +32,12 @@ public class WeatherRegion {
     @Column(name = "y", nullable = false)
     private Integer y;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     @Column(name = "location_names", length = 255, nullable = false)
     private String locationNames;  // 쉼표 구분 문자열 (예: "서울특별시,강남구,역삼동")
 
@@ -45,4 +51,17 @@ public class WeatherRegion {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    // Lombok @Getter가 컴파일 시점에 작동하지 않아 명시적으로 추가
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void updateLastCollectedAt() {
+        this.lastCollectedAt = Instant.now();
+    }
 }

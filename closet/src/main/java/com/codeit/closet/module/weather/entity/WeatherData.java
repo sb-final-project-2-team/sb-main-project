@@ -44,7 +44,7 @@ public class WeatherData {
     @Column(name = "temperature_current", nullable = false)
     private Double temperatureCurrent;
 
-    @Column(name = "temperature_comp_prev_day", nullable = false)
+    @Column(name = "temperature_comp_prev_day")
     private Double temperatureCompPrevDay;
 
     @Column(name = "temperature_min", nullable = false)
@@ -68,7 +68,7 @@ public class WeatherData {
     @Column(name = "humidity_current", nullable = false)
     private Double humidityCurrent;
 
-    @Column(name = "humidity_compared_to_day_before", nullable = false)
+    @Column(name = "humidity_comp_to_day_before")
     private Double humidityComparedToDayBefore;
 
     // 바람 (2개)
@@ -86,4 +86,18 @@ public class WeatherData {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    /**
+     * 어제 대비 온도 차이 설정
+     */
+    public void setTemperatureCompPrevDay(Double temperatureCompPrevDay) {
+        this.temperatureCompPrevDay = temperatureCompPrevDay;
+    }
+
+    /**
+     * 어제 대비 습도 차이 설정
+     */
+    public void setHumidityComparedToDayBefore(Double humidityComparedToDayBefore) {
+        this.humidityComparedToDayBefore = humidityComparedToDayBefore;
+    }
 }
