@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    include: kafka # 혹시 문제 생긴다면 지우시면 됩니다.
   application:
     name: closet
 
@@ -39,6 +41,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: true
+
 
 closet:
   storage:
