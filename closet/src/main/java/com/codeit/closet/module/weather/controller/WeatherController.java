@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/weathers")
@@ -33,5 +34,39 @@ public class WeatherController {
     ) {
         WeatherAPILocation result = weatherService.findWeatherLocation(longitude, latitude);
         return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
+    @PostMapping("/collect/ultra-srt-ncst")
+    public ResponseEntity<WeatherDTO> collectUltraSrtNcst(
+            @RequestParam Integer nx,
+            @RequestParam Integer ny
+    ) {
+        WeatherDTO result = weatherService.collectUltraSrtNcst(nx, ny);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @PostMapping("/collect/vilag-fcst")
+    public ResponseEntity<List<WeatherDTO>> collectVilageFcst(
+            @RequestParam Integer nx,
+            @RequestParam Integer ny
+    ) {
+        List<WeatherDTO> result = weatherService.collectVilageFcst(nx, ny);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @PostMapping("/collect/ultra-srt-ncst/region/{weatherRegionId}")
+    public ResponseEntity<WeatherDTO> collectUltraSrtNcstForRegion(
+            @PathVariable UUID weatherRegionId
+    ) {
+        WeatherDTO result = weatherService.collectUltraSrtNcstForRegion(weatherRegionId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @PostMapping("/collect/vilag-fcst/region/{weatherRegionId}")
+    public ResponseEntity<List<WeatherDTO>> collectVilageFcstForRegion(
+            @PathVariable UUID weatherRegionId
+    ) {
+        List<WeatherDTO> result = weatherService.collectVilageFcstForRegion(weatherRegionId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 }

@@ -34,18 +34,12 @@ public interface WeatherMapper {
     @Mapping(source = "windAsWord", target = "asWord")
     WindSpeedDTO toWindSpeedDTO(WeatherData data);
 
-    @Mapping(source = "latitude", target = "latitude")
+@Mapping(source = "latitude", target = "latitude")
     @Mapping(source = "longitude", target = "longitude")
     @Mapping(source = "x", target = "x")
     @Mapping(source = "y", target = "y")
     @Mapping(source = "locationNames", target = "locationNames", qualifiedByName = "stringToList")
     LocationDTO toLocationDTO(WeatherRegion region);
-
-    @Mapping(target = "weatherId", source = "id")
-    @Mapping(target = "skyStatus", source = "weather.weatherData.skyStatus")
-    @Mapping(target = "precipitation", source = "weather.weatherData")
-    @Mapping(target = "temperature", source = "weather.weatherData")
-    WeatherSummaryDTO toSummary(WeatherRegion weather);
 
     @Mapping(source = "latitude", target = "latitude")
     @Mapping(source = "longitude", target = "longitude")
@@ -67,9 +61,12 @@ public interface WeatherMapper {
 
     @Named("stringToList")
     default List<String> stringToList(String locationNames) {
-        if (locationNames == null || locationNames.trim().isEmpty()) {
+        if (locationNames == null || locationNames.isBlank()) {
             return List.of();
         }
-        return Arrays.asList(locationNames.split(","));
+        return Arrays.stream(locationNames.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
     }
 }

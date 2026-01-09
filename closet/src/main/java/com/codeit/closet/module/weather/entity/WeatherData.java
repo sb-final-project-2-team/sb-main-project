@@ -23,7 +23,7 @@ public class WeatherData {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "weather_region_id", nullable = false)
     private WeatherRegion weatherRegion;
 
@@ -45,7 +45,7 @@ public class WeatherData {
     @Column(name = "temperature_current", nullable = false)
     private Double temperatureCurrent;
 
-    @Column(name = "temperature_comp_prev_day", nullable = false)
+    @Column(name = "temperature_comp_prev_day")
     private Double temperatureCompPrevDay;
 
     @Column(name = "temperature_min", nullable = false)
@@ -69,7 +69,7 @@ public class WeatherData {
     @Column(name = "humidity_current", nullable = false)
     private Double humidityCurrent;
 
-    @Column(name = "humidity_comp_to_day_before", nullable = false)
+    @Column(name = "humidity_comp_to_day_before")
     private Double humidityComparedToDayBefore;
 
     // 바람 (2개)
@@ -87,4 +87,32 @@ public class WeatherData {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    /**
+     * 어제 대비 온도 차이 설정
+     */
+    public void setTemperatureCompPrevDay(Double temperatureCompPrevDay) {
+        this.temperatureCompPrevDay = temperatureCompPrevDay;
+    }
+
+    /**
+     * 최저 온도 설정 (단기예보 병합용)
+     */
+    public void setTemperatureMin(Double temperatureMin) {
+        this.temperatureMin = temperatureMin;
+    }
+
+    /**
+     * 최고 온도 설정 (단기예보 병합용)
+     */
+    public void setTemperatureMax(Double temperatureMax) {
+        this.temperatureMax = temperatureMax;
+    }
+
+    /**
+     * 어제 대비 습도 차이 설정
+     */
+    public void setHumidityComparedToDayBefore(Double humidityComparedToDayBefore) {
+        this.humidityComparedToDayBefore = humidityComparedToDayBefore;
+    }
 }

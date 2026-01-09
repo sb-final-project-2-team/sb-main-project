@@ -1,13 +1,21 @@
 package com.codeit.closet.module.notification.service.impl;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.codeit.closet.module.notification.dto.NotificationDTO;
 import com.codeit.closet.module.notification.entity.Notification;
+import com.codeit.closet.module.notification.entity.NotificationLevel;
+import com.codeit.closet.module.notification.event.NotificationEvent;
+import com.codeit.closet.module.notification.event.NotificationEventPublisher;
 import com.codeit.closet.module.notification.mapper.NotificationMapper;
 import com.codeit.closet.module.notification.repository.NotificationRepository;
 import com.codeit.closet.module.notification.service.NotificationService;
@@ -22,6 +30,7 @@ public class BasicNotificationService implements NotificationService {
 
 	private final NotificationRepository notificationRepository;
 	private final NotificationMapper notificationMapper;
+	private final NotificationEventPublisher eventPublisher;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -44,7 +53,7 @@ public class BasicNotificationService implements NotificationService {
 		log.debug("알림 삭제 시작: notificationId={}, receiverId={}", id, receiverId);
 
 		Notification notification = notificationRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("Id를 찾을 수 없습니다." + id));
+			.orElseThrow(() -> new IllegalArgumentException("알림을 찾을 수 없습니다." + id));
 
 		if (!notification.getReceiverId().equals(receiverId)) {
 			throw new IllegalArgumentException("권한이 없습니다.: 수신자가 일치하지 않습니다.");
@@ -54,6 +63,94 @@ public class BasicNotificationService implements NotificationService {
 
 		log.debug("알림 삭제 완료: id={}", id);
 
+	}
+
+	@Override
+	@Transactional
+	public void createNotification(UUID receiverId, String title, String content) {
+
+		// 단일 알림 생성
+		Notification notification = Notification.builder()
+			.receiverId(receiverId)
+			.title(title)
+			.content(content)
+			.build();
+
+		Notification saved = notificationRepository.save(notification);
+
+		NotificationEvent event = new NotificationEvent(
+			saved.getId(),
+			saved.getReceiverId(),
+			saved.getTitle(),
+			saved.getContent(),
+			NotificationLevel.INFO,
+			getCreatedAt(saved)
+		);
+
+		eventPublisher.publish(event);
+
+		log.info("[Notification] 단건 알림 생성 완료(id={} -> receiverId={})", saved.getId(), receiverId);
+	}
+
+	@Override
+	@Transactional
+	public void createManyNotification(Set<UUID> receiverIds, String title, String content) {
+		// 입력 검증
+		if (receiverIds == null || receiverIds.isEmpty()) {
+			throw new IllegalArgumentException("receiverIds는 필수입니다.");
+		}
+		if (receiverIds.contains(null)) {
+			throw new IllegalArgumentException("receiverIds에 null이 포함될 수 없습니다.");
+		}
+		if (title == null || title.isBlank()) {
+			throw new IllegalArgumentException("title은 필수입니다.");
+		}
+		if (content == null || content.isBlank()) {
+			throw new IllegalArgumentException("content는 필수 입니다.");
+		}
+
+		List<Notification> notifications = new ArrayList<>(receiverIds.size());
+
+		for (UUID receiverId : receiverIds) {
+			notifications.add(
+				Notification.builder()
+					.receiverId(receiverId)
+					.title(title)
+					.content(content)
+					.build()
+			);
+		}
+
+		List<Notification> savedList = notificationRepository.saveAll(notifications);
+		log.info("[Notification] 다건 알림 생성 완료 (count={}", savedList.size());
+	}
+
+		// 이벤트 발행은 별도로 처리
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void publishManyAfterCommit(List<Notification> savedList) {
+
+		for (Notification saved : savedList) {
+			NotificationEvent event = new NotificationEvent(
+				saved.getId(),
+				saved.getReceiverId(),
+				saved.getTitle(),
+				saved.getContent(),
+				NotificationLevel.INFO,
+				getCreatedAt(saved)
+			);
+			try {
+				eventPublisher.publish(event);
+			} catch (Exception e) {
+			    log.error("[Notification] 이벤트 발행 실패 (id={}", saved.getId(), e); // 부분 실패 처리 전략: 로그만 기록하고 계속 진행
+			}
+		}
+	}
+
+	private Instant getCreatedAt(Notification notification) {
+		if (notification.getCreatedAt() != null) {
+			return notification.getCreatedAt();
+		}
+		return Instant.now();
 	}
 
 }

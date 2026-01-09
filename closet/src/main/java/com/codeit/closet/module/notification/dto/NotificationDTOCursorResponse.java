@@ -3,7 +3,7 @@ package com.codeit.closet.module.notification.dto;
 import java.util.List;
 import java.util.UUID;
 
-public record NotificationDtoCursorResponse(
+public record NotificationDTOCursorResponse(
 	List<NotificationDTO> data,
 	String nextCursor,
 	UUID nextIdAfter,
