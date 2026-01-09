@@ -501,6 +501,54 @@ VALUES ('11111111-1111-1111-1111-111111111111',
         NOW());
 
 
+INSERT INTO clothes_attributes_values (id,
+                                       clothes_id,
+                                       clothes_attributes_id,
+                                       value)
+VALUES
+-- test1 (TOP)
+('a1111111-1111-1111-1111-111111111111',
+ '11111111-1111-1111-1111-111111111111', -- test1
+ 'cccccccc-cccc-cccc-cccc-cccccccccccc', -- COLOR
+ 'BLACK'),
+('a1111111-2222-2222-2222-222222222222',
+ '11111111-1111-1111-1111-111111111111', -- test1
+ 'dddddddd-dddd-dddd-dddd-dddddddddddd', -- SIZE
+ 'M'),
+('a1111111-3333-3333-3333-333333333333',
+ '11111111-1111-1111-1111-111111111111', -- test1
+ 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', -- SEASON
+ 'SUMMER'),
+
+-- test2 (BOTTOM)
+('a2222222-1111-1111-1111-111111111111',
+ '22222222-2222-2222-2222-222222222222', -- test2
+ 'cccccccc-cccc-cccc-cccc-cccccccccccc', -- COLOR
+ 'BLUE'),
+('a2222222-2222-2222-2222-222222222222',
+ '22222222-2222-2222-2222-222222222222', -- test2
+ 'dddddddd-dddd-dddd-dddd-dddddddddddd', -- SIZE
+ 'L'),
+('a2222222-3333-3333-3333-333333333333',
+ '22222222-2222-2222-2222-222222222222', -- test2
+ 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', -- SEASON
+ 'FALL'),
+
+-- test3 (OUTER)
+('a3333333-1111-1111-1111-111111111111',
+ '33333333-3333-3333-3333-333333333333', -- test3
+ 'cccccccc-cccc-cccc-cccc-cccccccccccc', -- COLOR
+ 'GRAY'),
+('a3333333-2222-2222-2222-222222222222',
+ '33333333-3333-3333-3333-333333333333', -- test3
+ 'dddddddd-dddd-dddd-dddd-dddddddddddd', -- SIZE
+ 'XL'),
+('a3333333-3333-3333-3333-333333333333',
+ '33333333-3333-3333-3333-333333333333', -- test3
+ 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', -- SEASON
+ 'WINTER');
+
+
 -- Feed 1
 INSERT INTO feeds (id,
                    user_id,
