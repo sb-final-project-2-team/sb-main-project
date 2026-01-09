@@ -17,11 +17,14 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -45,10 +48,34 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     response.setContentType("application/json");
 
     OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-    String email = oauth2User.getAttribute("email");
+    String registrationId = ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
+    String email = null;
+    String providerId = null;
 
-    User user = userRepository.findByEmail(email).orElseThrow(
-        () -> new NoSuchElementException("존재하지 않는 회원입니다."));
+    if ("google".equals(registrationId)) {
+      email = oauth2User.getAttribute("email");
+      providerId = oauth2User.getAttribute("sub");   // Google 고유 ID
+    }
+    else if ("kakao".equals(registrationId)) {
+    Map<String, Object> kakaoAccount = oauth2User.getAttribute("kakao_account");
+
+    if (kakaoAccount != null) {
+      email = (String) kakaoAccount.get("email"); // 카카오 이메일
+    }
+      providerId = String.valueOf((Long) oauth2User.getAttribute("id"));
+
+    }
+
+    User user;
+
+    if (email != null) {
+      user = userRepository.findByEmail(email).orElseThrow(
+          () -> new NoSuchElementException("존재하지 않는 회원입니다."));
+    } else {
+      user = userRepository.findByProviderId(providerId).orElseThrow(
+          () -> new NoSuchElementException("존재하지 않는 회원입니다."));
+    }
+
 
     UserDTO userDTO = userMapper.toUserDTO(user);
     ClosetUserDetails closetUserDetails = new ClosetUserDetails(userDTO, null, null, null);

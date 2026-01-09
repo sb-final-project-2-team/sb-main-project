@@ -6,6 +6,7 @@ import com.codeit.closet.module.user.repository.UserRepository;
 import java.util.Collections;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -16,6 +17,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
@@ -31,28 +33,37 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     String registrationId = userRequest.getClientRegistration().getRegistrationId();
     OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(registrationId,
         oauth2User.getAttributes());
-
     String email = userInfo.getEmail();
     String name = userInfo.getName();
     String providerId = userInfo.getId();
     AuthProvider provider = AuthProvider.valueOf(registrationId.toUpperCase());
 
-    // 카카오 로그인 처리
-    if (email == null) {
-      email = name + "_" + providerId + "@kakao.com";
+    log.info("email ={}, name = {}, providerId = {}, registrationId = {}", email, name, providerId, registrationId);
+    String attributeKey = null;
+
+    if (registrationId.equals("google")) {
+      attributeKey = "email";
+
+    } else if (registrationId.equals("kakao")) {
+      if (email == null) {
+        email = name + "_" + providerId + "@kakao.com";
+      }
+
+      attributeKey = "kakao_account";
     }
 
     String finalEmail = email;
-
     User user = userRepository.findByEmail(email)
         .map(existingUser -> updateProviderIfNeeded(existingUser, provider, providerId))
         .orElseGet(() -> createSocialUser(finalEmail, name, provider, providerId));
 
+
     return new DefaultOAuth2User(
         Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())),
         oauth2User.getAttributes(),
-        "email"
+        attributeKey
     );
+
   }
 
   @Transactional
