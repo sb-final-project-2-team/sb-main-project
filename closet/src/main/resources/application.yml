@@ -99,6 +99,8 @@ closet:
       service-key: ${KMA_SERVICE_KEY:dummyKey}
       timeout: 10000
       data-type: JSON
+  base_url:
+    redirect: ${DEPLOY_URL:http://localhost:8080}
 
 logging:
   level:

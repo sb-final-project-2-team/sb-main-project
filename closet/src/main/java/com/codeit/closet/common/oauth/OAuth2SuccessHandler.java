@@ -2,7 +2,6 @@ package com.codeit.closet.common.oauth;
 
 import com.codeit.closet.common.exception.ErrorResponse;
 import com.codeit.closet.common.security.ClosetUserDetails;
-import com.codeit.closet.common.security.jwt.JwtDTO;
 import com.codeit.closet.common.security.jwt.JwtInformation;
 import com.codeit.closet.common.security.jwt.JwtRegistry;
 import com.codeit.closet.common.security.jwt.JwtTokenProvider;
@@ -19,10 +18,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -40,6 +39,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
   private final ObjectMapper objectMapper;
   private final UserMapper userMapper;
 
+  @Value("${closet.base_url.redirect}")
+  private String base_url;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -88,7 +89,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
       refreshTokenCookie.setPath("/");
       response.addCookie(refreshTokenCookie);
 
-      response.sendRedirect("http://localhost:8080");
+      response.sendRedirect(base_url);
       response.setStatus(HttpServletResponse.SC_OK);
 
       jwtRegistry.registerJwtInformation(
