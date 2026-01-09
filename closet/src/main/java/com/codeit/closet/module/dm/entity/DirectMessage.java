@@ -23,6 +23,7 @@ public class DirectMessage {
     @Column(name = "dm_key", nullable = false)
     private String dmKey;
 
+    // DB엔 FK 안걸려있으므로 검증에 신경써야함
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;

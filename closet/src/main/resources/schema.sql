@@ -52,6 +52,8 @@ CREATE TABLE users
     name                     VARCHAR(50)  NOT NULL,
     email                    VARCHAR(120) NOT NULL UNIQUE,
     password                 VARCHAR(255) NOT NULL,
+    provider                 VARCHAR(20)  NOT NULL DEFAULT 'LOCAL' CHECK (provider IN ('LOCAL', 'GOOGLE', 'KAKAO')),
+    provider_id              VARCHAR(255) NOT NULL,
     gender                   VARCHAR(10) CHECK (gender IN ('MALE', 'FEMALE', 'OTHER')),
     role                     VARCHAR(10)  NOT NULL DEFAULT 'USER' CHECK (role IN ('ADMIN', 'USER')),
     birth                    TIMESTAMPTZ,
@@ -129,7 +131,7 @@ CREATE TABLE weather_data
     sky_status                  sky_status_enum         NOT NULL,
 
     temperature_current         DOUBLE PRECISION        NOT NULL,
-    temperature_comp_prev_day   DOUBLE PRECISION        NOT NULL,
+    temperature_comp_prev_day   DOUBLE PRECISION,
     temperature_min             DOUBLE PRECISION        NOT NULL,
     temperature_max             DOUBLE PRECISION        NOT NULL,
 
@@ -138,7 +140,7 @@ CREATE TABLE weather_data
     precipitation_prob          DOUBLE PRECISION        NOT NULL,
 
     humidity_current            DOUBLE PRECISION        NOT NULL,
-    humidity_comp_to_day_before DOUBLE PRECISION        NOT NULL,
+    humidity_comp_to_day_before DOUBLE PRECISION,
 
     wind_speed                  DOUBLE PRECISION        NOT NULL,
     wind_as_word                wind_as_word_enum       NOT NULL,

@@ -1,5 +1,6 @@
 package com.codeit.closet.module.dm.controller;
 
+import com.codeit.closet.common.security.ClosetUserDetails;
 import com.codeit.closet.module.dm.dto.DirectMessageDTO;
 import com.codeit.closet.module.dm.dto.DirectMessageDTOCursorResponse;
 import com.codeit.closet.module.dm.dto.DirectMessageSaveRequest;
@@ -7,7 +8,6 @@ import com.codeit.closet.module.dm.service.DirectMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -23,14 +23,17 @@ public class DirectMessageRestController {
     // DM 저장
     @PostMapping
     public DirectMessageDTO createDirectMessage(
-//            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal ClosetUserDetails userDetails,
             @RequestBody DirectMessageSaveRequest directMessageSaveRequest
-            ) {
-//        UUID senderId = jwt.getClaim("userId"); senderId는 jwt로 분리 예정
+    ) {
         log.info("[Controller] DM 저장 api 호출");
+
+        UUID senderId = userDetails.getUserDTO().id();
+        UUID receiverId = directMessageSaveRequest.receiverId();
+
         return directMessageService.create(
-                directMessageSaveRequest.senderId(),
-                directMessageSaveRequest.receiverId(),
+                senderId,
+                receiverId,
                 directMessageSaveRequest.content()
         );
     }
@@ -38,14 +41,14 @@ public class DirectMessageRestController {
     // 이전 DM 내역 조회
     @GetMapping
     public DirectMessageDTOCursorResponse getDirectMessages(
-//            @AuthenticationPrincipal Jwt jwt,
-            @RequestParam UUID myUserId, // test용 내 id
-            @RequestParam UUID userId, // 대화 상대 id
+            @AuthenticationPrincipal ClosetUserDetails userDetails,
+            @RequestParam("userId") UUID receiverId,
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) UUID idAfter,
             @RequestParam int limit
     ) {
-//        UUID myUserId = jwt.getClaim("userId");
-        return directMessageService.findDirectMessages(myUserId, userId, cursor, idAfter, limit);
+        log.info("[Controller] 이전 DM 내역 조회 호출");
+        UUID senderId = userDetails.getUserDTO().id();
+        return directMessageService.findDirectMessages(senderId, receiverId, cursor, idAfter, limit);
     }
 }
