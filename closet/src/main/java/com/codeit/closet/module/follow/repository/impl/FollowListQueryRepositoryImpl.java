@@ -59,7 +59,7 @@ public class FollowListQueryRepositoryImpl implements FollowListQueryRepository 
                 .selectFrom(follow)
                 .join(follow.followee, followingUser).fetchJoin()
                 .where(builder)
-                .orderBy(orderSpecifiers(sortBy, sortDirection))
+                .orderBy(orderSpecifiers(sortBy, sortDirection, followingUser))
                 .limit(pageSize + 1)
                 .fetch();
 
@@ -130,7 +130,7 @@ public class FollowListQueryRepositoryImpl implements FollowListQueryRepository 
                 .selectFrom(follow)
                 .join(follow.follower, followerUser).fetchJoin()
                 .where(builder)
-                .orderBy(orderSpecifiers(sortBy, sortDirection))
+                .orderBy(orderSpecifiers(sortBy, sortDirection, followerUser))
                 .limit(pageSize + 1)
                 .fetch();
 
@@ -200,13 +200,12 @@ public class FollowListQueryRepositoryImpl implements FollowListQueryRepository 
     }
 
     // ==================== 정렬 & 커서 조건 ====================
-    private OrderSpecifier<?>[] orderSpecifiers(String sortBy, String sortDirection) {
+    private OrderSpecifier<?>[] orderSpecifiers(String sortBy, String sortDirection, QUser targetUser) {
         boolean desc = "DESCENDING".equalsIgnoreCase(sortDirection);
 
         if ("name".equalsIgnoreCase(sortBy)) {
             return new OrderSpecifier[]{
-                    desc ? followerUser.name.desc().nullsLast() : followerUser.name.asc().nullsLast(),
-                    desc ? followingUser.name.desc().nullsLast() : followingUser.name.asc().nullsLast(),
+                    desc ? targetUser.name.desc().nullsLast() : targetUser.name.asc().nullsLast(),
                     desc ? follow.id.desc() : follow.id.asc()
             };
         }

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
-@Repository
 public interface FollowRepository extends JpaRepository<Follow, UUID>, FollowListQueryRepository, FollowSummaryQueryRepository {
-
+    boolean existsByFollowee_IdAndFollower_Id(UUID followeeId, UUID followerId);
 }

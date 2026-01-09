@@ -28,6 +28,14 @@ public class BasicFollowService implements FollowService {
     public FollowDTO createFollow(
             FollowCreateRequest followCreateRequest
     ) {
+        if (followCreateRequest.followerId().equals(followCreateRequest.followeeId())) {
+            throw new IllegalArgumentException("자기 자신을 팔로우할 수 없습니다.");
+        }
+        if (followRepository.existsByFollowee_IdAndFollower_Id(
+                followCreateRequest.followeeId(),
+                followCreateRequest.followerId())) {
+            throw new IllegalArgumentException("이미 팔로우한 사용자입니다.");
+        }
         User followee = userRepository.findById(followCreateRequest.followeeId())
                 .orElseThrow(() -> new IllegalArgumentException("팔로우할 사용자를 찾을 수 없습니다."));
         User follower = userRepository.findById(followCreateRequest.followerId())
