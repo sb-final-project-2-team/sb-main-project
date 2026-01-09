@@ -43,7 +43,8 @@ public class ClothController {
             @RequestParam(required = false) UUID idAfter,
             @RequestParam(required = false) Integer limit,
             @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String sortDirection
+            @RequestParam(required = false) String sortDirection,
+            @RequestParam(required = false) String typeEqual
     ) {
         // ownerId가 없으면 현재 로그인한 사용자의 ID 사용
         if (ownerId == null) {
@@ -51,7 +52,7 @@ public class ClothController {
         }
 
         ClothDTOCursorResponse result = clothService.findAllCloths(
-                ownerId, cursor, idAfter, limit, sortBy, sortDirection
+                ownerId, cursor, idAfter, limit, sortBy, sortDirection, typeEqual
         );
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
