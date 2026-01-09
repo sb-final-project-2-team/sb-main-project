@@ -49,6 +49,12 @@ closet:
     username: ${ADMIN_USERNAME:admin}
     email: ${ADMIN_EMAIL:admin@admin.com}
     password: ${ADMIN_PASSWORD:admin123}
+  weather:
+    api:
+      base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
+      service-key: ${KMA_SERVICE_KEY}
+      timeout: 10000
+      data-type: JSON
 
 security:
   jwt:
