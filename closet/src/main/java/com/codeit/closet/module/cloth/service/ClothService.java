@@ -23,5 +23,6 @@ public interface ClothService {
                                      UUID idAfter,
                                      Integer limit,
                                      String sortBy,
-                                     String sortDirection);
+                                     String sortDirection,
+                                     String typeEqual);
 }

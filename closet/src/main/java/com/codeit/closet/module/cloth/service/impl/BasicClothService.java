@@ -7,7 +7,11 @@ import com.codeit.closet.module.cloth.dto.ClothAttributeValueDTO;
 import com.codeit.closet.module.cloth.entity.Cloth;
 import com.codeit.closet.module.cloth.entity.ClothAttributeValue;
 import com.codeit.closet.module.cloth.entity.ClothType;
+import com.codeit.closet.module.cloth.exception.ClothNotFoundException;
+import com.codeit.closet.module.cloth.exception.DuplicateClothNameException;
+import com.codeit.closet.module.cloth.mapper.ClothMapper;
 import com.codeit.closet.module.cloth.repository.ClothAttributeValueRepository;
+import com.codeit.closet.module.cloth.repository.ClothQueryRepository;
 import com.codeit.closet.module.cloth.repository.ClothRepository;
 import com.codeit.closet.module.cloth.service.ClothService;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +29,15 @@ public class BasicClothService implements ClothService {
     private final ClothRepository clothRepository;
     private final ClothAttributeValueRepository clothAttributeValueRepository;
     private final BinaryContentService binaryContentService;
+    private final ClothMapper clothMapper;
+    private final ClothQueryRepository clothQueryRepository;
 
     @Override
     @Transactional
     public ClothDTO createCloth(ClothCreateRequest request, MultipartFile multipartFile) {
         // 중복 검사
         if (clothRepository.existsByOwnerIdAndName(request.ownerId(), request.name())) {
-            throw new RuntimeException("이미 존재하는 의상 이름입니다: " + request.name());
+            throw new DuplicateClothNameException(request.name());
         }
 
         // 이미지 처리
@@ -63,7 +69,7 @@ public class BasicClothService implements ClothService {
     @Transactional(readOnly = true)
     public ClothDTO findCloth(UUID clothId) {
         Cloth cloth = clothRepository.findById(clothId)
-                .orElseThrow(() -> new RuntimeException("Cloth not found: " + clothId));
+                .orElseThrow(() -> new ClothNotFoundException(clothId));
 
         return toDto(cloth);
     }
@@ -73,7 +79,7 @@ public class BasicClothService implements ClothService {
     public ClothDTO updateCloth(UUID clothId, ClothUpdateRequest request, UUID requestUserId, boolean isAdmin, MultipartFile multipartFile) {
         // 조회 및 존재 확인
         Cloth cloth = clothRepository.findById(clothId)
-                .orElseThrow(() -> new RuntimeException("Cloth not found: " + clothId));
+                .orElseThrow(() -> new ClothNotFoundException(clothId));
 
         // 소유자 또는 관리자만 수정 가능
         if (!cloth.getOwnerId().equals(requestUserId) && !isAdmin) {
@@ -82,6 +88,10 @@ public class BasicClothService implements ClothService {
 
         // 이미지 처리
         if (multipartFile != null) {
+            // 기존 이미지 삭제
+            if (cloth.getBinaryContent() != null) {
+                binaryContentService.deleteBinaryContent(cloth.getBinaryContent().getId());
+            }
             BinaryContent binaryContent = binaryContentService.createBinaryContent(multipartFile);
             cloth.updateBinaryContent(binaryContent);
         }
@@ -114,7 +124,7 @@ public class BasicClothService implements ClothService {
     public void deleteCloth(UUID clothId, UUID requestUserId, boolean isAdmin) {
         // 조회 및 존재 확인
         Cloth cloth = clothRepository.findById(clothId)
-                .orElseThrow(() -> new RuntimeException("Cloth not found: " + clothId));
+                .orElseThrow(() -> new ClothNotFoundException(clothId));
 
         // 소유자 또는 관리자만 삭제 가능
         if (!cloth.getOwnerId().equals(requestUserId) && !isAdmin) {
@@ -123,6 +133,11 @@ public class BasicClothService implements ClothService {
 
         // 속성 값 먼저 삭제
         clothAttributeValueRepository.deleteAllByClothId(clothId);
+
+        // 이미지 삭제
+        if (cloth.getBinaryContent() != null) {
+            binaryContentService.deleteBinaryContent(cloth.getBinaryContent().getId());
+        }
 
         // Cloth 삭제
         clothRepository.delete(cloth);
@@ -135,22 +150,16 @@ public class BasicClothService implements ClothService {
                                             UUID idAfter,
                                             Integer limit,
                                             String sortBy,
-                                            String sortDirection) {
-        // 일단 간단하게 전체 목록 조회 (페이징은 나중에 구현)
-        List<Cloth> clothList = clothRepository.findAllByOwnerId(ownerId);
-
-        List<ClothDTO> dtoList = clothList.stream()
-                .map(this::toDto)
-                .toList();
-
-        return new ClothDTOCursorResponse(
-                dtoList,
-                null,  // nextCursor
-                null,  // nextIdAfter
-                false, // hasNext
-                dtoList.size(), // totalCount
+                                            String sortDirection,
+                                            String typeEqual) {
+        return clothQueryRepository.findClothsByCursor(
+                ownerId,
+                cursor,
+                idAfter,
+                limit,
                 sortBy,
-                sortDirection
+                sortDirection,
+                typeEqual
         );
     }
 
@@ -159,7 +168,7 @@ public class BasicClothService implements ClothService {
         for (ClothAttributeValueDTO attrDto : attributes) {
             ClothAttributeValue attributeValue = ClothAttributeValue.builder()
                     .clothId(clothId)
-                    .clothAttributeId(attrDto.attributeId())
+                    .clothAttributeId(attrDto.definitionId())
                     .value(attrDto.value())
                     .build();
 
@@ -173,26 +182,17 @@ public class BasicClothService implements ClothService {
         List<ClothAttributeValue> attributeValues =
                 clothAttributeValueRepository.findAllByClothId(cloth.getId());
 
-        // ClothAttributeValue -> ClothAttributeValueDto 변환
-        List<ClothAttributeValueDTO> attributeDtos = attributeValues.stream()
-                .map(av -> new ClothAttributeValueDTO(
-                        av.getClothAttributeId(),
-                        av.getValue()
-                ))
-                .toList();
+        // Mapper를 사용하여 변환
+        ClothDTO clothDTO = clothMapper.toDTO(cloth);
+        List<ClothAttributeValueDTO> attributeDtos = clothMapper.toAttributeDTOs(attributeValues);
 
-        // 이미지 URL 가져오기
-        String imageUrl = null;
-        if (cloth.getBinaryContent() != null) {
-            imageUrl = cloth.getBinaryContent().getFileUrl();
-        }
-
+        // attributes 필드는 ignore 되어 있으므로 수동으로 설정
         return new ClothDTO(
-                cloth.getId(),
-                cloth.getOwnerId(),
-                cloth.getName(),
-                imageUrl,
-                cloth.getType().name(),
+                clothDTO.id(),
+                clothDTO.ownerId(),
+                clothDTO.name(),
+                clothDTO.imageUrl(),
+                clothDTO.type(),
                 attributeDtos
         );
     }
