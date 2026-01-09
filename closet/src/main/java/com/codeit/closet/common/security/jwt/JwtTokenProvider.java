@@ -41,10 +41,10 @@ public class JwtTokenProvider {
   private final JWSVerifier refreshTokenVerifier;
 
   public JwtTokenProvider(
-      @Value("${security.jwt.secret}") String secret,
-      @Value("${security.jwt.access-token-validity-seconds}") long accessTokenValiditySeconds,
-      @Value("${security.jwt.refresh-token-validity-seconds}") long refreshTokenValiditySeconds,
-      @Value("${security.jwt.issuer}") String issuer
+      @Value("${spring.security.jwt.secret}") String secret,
+      @Value("${spring.security.jwt.access-token-validity-seconds}") long accessTokenValiditySeconds,
+      @Value("${spring.security.jwt.refresh-token-validity-seconds}") long refreshTokenValiditySeconds,
+      @Value("${spring.security.jwt.issuer}") String issuer
   ) throws JOSEException {
     this.accessTokenExpirationMs = accessTokenValiditySeconds * 1000L;
     this.refreshTokenExpirationMs = refreshTokenValiditySeconds * 1000L;

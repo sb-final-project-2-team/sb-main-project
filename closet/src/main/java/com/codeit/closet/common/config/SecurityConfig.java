@@ -1,5 +1,7 @@
 package com.codeit.closet.common.config;
 
+import com.codeit.closet.common.oauth.CustomOAuth2UserService;
+import com.codeit.closet.common.oauth.OAuth2SuccessHandler;
 import com.codeit.closet.common.redis.RedisLockProvider;
 import com.codeit.closet.common.security.ClosetDaoAuthenticationProvider;
 import com.codeit.closet.common.security.Http401UnauthorizedEntryPoint;
@@ -42,8 +44,10 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http,
+      CustomOAuth2UserService oAuth2UserService,
       JwtAuthenticationFilter jwtAuthenticationFilter,
       JwtLoginSuccessHandler jwtLoginSuccessHandler,
+      OAuth2SuccessHandler oAuth2SuccessHandler,
       JwtLogoutHandler jwtLogoutHandler,
       LoginFailureHandler loginFailureHandler,
       ClosetDaoAuthenticationProvider closetDaoAuthenticationProvider,
@@ -57,6 +61,12 @@ public class SecurityConfig {
             .loginProcessingUrl("/api/auth/sign-in")
             .successHandler(jwtLoginSuccessHandler)
             .failureHandler(loginFailureHandler)
+        )
+        .oauth2Login(oauth -> oauth
+            .userInfoEndpoint(userInfo -> userInfo
+                .userService(oAuth2UserService)
+            )
+            .successHandler(oAuth2SuccessHandler)
         )
 
         .logout(logout -> logout
