@@ -60,9 +60,9 @@ public interface WeatherMapper {
     WeatherDTO toWeatherDTO(WeatherData data);
 
     @Mapping(target = "weatherId", source = "id")
-    @Mapping(target = "skyStatus", source = "weather.weatherData.skyStatus")
-    @Mapping(target = "precipitation", source = "weather.weatherData")
-    @Mapping(target = "temperature", source = "weather.weatherData")
+    @Mapping(target = "skyStatus", source = "weatherData.skyStatus")
+    @Mapping(target = "precipitation", source = "weatherData")
+    @Mapping(target = "temperature", source = "weatherData")
     WeatherSummaryDTO toWeatherSummaryDTO(WeatherRegion weather);
 
     @Named("stringToList")
