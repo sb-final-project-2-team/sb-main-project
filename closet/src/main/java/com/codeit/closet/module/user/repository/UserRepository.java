@@ -16,6 +16,8 @@ public interface UserRepository extends JpaRepository<User, UUID>, UserQueryRepo
 
   Optional<User> findByEmail(String email);
 
+  Optional<User> findByProviderId(String providerId);
+
   @Transactional
   @Modifying(clearAutomatically = true)
   @Query("UPDATE User u SET u.tempPassword = NULL, u.tempPasswordExpiredAt = NULL WHERE u.id = :userId")

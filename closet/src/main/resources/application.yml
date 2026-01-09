@@ -64,6 +64,7 @@ spring:
             client-id: ${KAKAO_CLIENT_ID:dummy}
             client-secret: ${KAKAO_CLIENT_SECRET:dummy}
             client-name: Kakao
+            client-authentication-method: client_secret_post
             redirect-uri: ${BASEURL:http://localhost:8080}/login/oauth2/code/kakao
             authorization-grant-type: authorization_code
             scope:
@@ -95,9 +96,11 @@ closet:
   weather:
     api:
       base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
-      service-key: ${KMA_SERVICE_KEY}
+      service-key: ${KMA_SERVICE_KEY:dummyKey}
       timeout: 10000
       data-type: JSON
+  base_url:
+    redirect: ${DEPLOY_URL:http://localhost:8080}
 
 logging:
   level:

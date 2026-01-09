@@ -31,28 +31,38 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     String registrationId = userRequest.getClientRegistration().getRegistrationId();
     OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(registrationId,
         oauth2User.getAttributes());
-
     String email = userInfo.getEmail();
     String name = userInfo.getName();
     String providerId = userInfo.getId();
     AuthProvider provider = AuthProvider.valueOf(registrationId.toUpperCase());
 
-    // 카카오 로그인 처리
-    if (email == null) {
-      email = name + "_" + providerId + "@kakao.com";
+    String attributeKey = null;
+
+    if (registrationId.equals("google")) {
+      attributeKey = "email";
+
+    } else if (registrationId.equals("kakao")) {
+      if (email == null) {
+        email = name + "_" + providerId + "@kakao.com";
+      }
+
+      attributeKey = "kakao_account";
+    } else {
+      throw new OAuth2AuthenticationException("지원하지 않는 OAuth2 제공자 입니다! : " + registrationId);
     }
 
     String finalEmail = email;
-
     User user = userRepository.findByEmail(email)
         .map(existingUser -> updateProviderIfNeeded(existingUser, provider, providerId))
         .orElseGet(() -> createSocialUser(finalEmail, name, provider, providerId));
 
+
     return new DefaultOAuth2User(
         Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())),
         oauth2User.getAttributes(),
-        "email"
+        attributeKey
     );
+
   }
 
   @Transactional

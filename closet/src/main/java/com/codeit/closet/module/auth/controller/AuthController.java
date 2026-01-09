@@ -30,8 +30,6 @@ public class AuthController {
 
   @GetMapping("/csrf-token")
   public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
-    String token = csrfToken.getToken();
-    log.info("csrfToken: {}", token);
 
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
@@ -40,7 +38,6 @@ public class AuthController {
   public ResponseEntity<JwtDTO> createRefreshToken(
       @CookieValue(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME) String refreshToken,
       HttpServletResponse response) {
-    log.info("Refresh Token: {}", refreshToken);
     JwtInformation jwtInformation = authService.refreshToken(refreshToken);
     Cookie cookie = jwtTokenProvider.generateRefreshTokenCookie(jwtInformation.getRefreshToken());
     response.addCookie(cookie);
