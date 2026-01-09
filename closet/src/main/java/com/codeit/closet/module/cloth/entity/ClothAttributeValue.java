@@ -32,12 +32,7 @@ public class ClothAttributeValue {
     @Column(name = "clothes_attributes_id", nullable = false)
     private UUID clothAttributeId;
 
-    @Column(name = "value", nullable = false, length = 255)
+    @Column(name = "value", nullable = false)
     private String value;
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false, nullable = false)
-    private Instant createdAt;
-
 
 }
