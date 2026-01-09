@@ -1,5 +1,6 @@
 package com.codeit.closet.module.follow.controller;
 
+import com.codeit.closet.common.security.ClosetUserDetails;
 import com.codeit.closet.module.follow.dto.FollowCreateRequest;
 import com.codeit.closet.module.follow.dto.FollowDTO;
 import com.codeit.closet.module.follow.dto.FollowListResponse;
@@ -8,6 +9,7 @@ import com.codeit.closet.module.follow.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -31,9 +33,11 @@ public class FollowController {
     // 팔로우 요약 정보 조회
     @GetMapping("/summary")
     public ResponseEntity<FollowSummaryDTO> findFollowSummary(
-            @RequestParam UUID userId
+            @RequestParam UUID userId,
+            @AuthenticationPrincipal ClosetUserDetails userDetails
     ) {
-        FollowSummaryDTO result = followService.findFollowSummary(userId);
+        UUID viewerId = userDetails.getUserDTO().id();
+        FollowSummaryDTO result = followService.findFollowSummary(userId, viewerId);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
@@ -43,7 +47,9 @@ public class FollowController {
             @RequestParam UUID followerId,
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) UUID idAfter,
-            @RequestParam Integer limit,
+            @RequestParam int limit,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection,
             @RequestParam(required = false) String nameLike
     ) {
         FollowListResponse result = followService.findFollowingList(
@@ -51,6 +57,8 @@ public class FollowController {
                 cursor,
                 idAfter,
                 limit,
+                sortBy,
+                sortDirection,
                 nameLike
         );
         return ResponseEntity.status(HttpStatus.OK).body(result);
@@ -64,6 +72,8 @@ public class FollowController {
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) UUID idAfter,
             @RequestParam int limit,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection,
             @RequestParam(required = false) String nameLike
     ) {
         FollowListResponse result = followService.findFollowerList(
@@ -71,6 +81,8 @@ public class FollowController {
                 cursor,
                 idAfter,
                 limit,
+                sortBy,
+                sortDirection,
                 nameLike
         );
         return ResponseEntity.status(HttpStatus.OK).body(result);
