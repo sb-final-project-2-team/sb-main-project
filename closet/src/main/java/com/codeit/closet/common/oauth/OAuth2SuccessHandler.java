@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -65,6 +66,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         providerId = String.valueOf(idObj);
       }
 
+    } else {
+      throw new OAuth2AuthenticationException("지원하지 않는 OAuth2 제공자 입니다: " + registrationId);
     }
     if (email == null && providerId == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

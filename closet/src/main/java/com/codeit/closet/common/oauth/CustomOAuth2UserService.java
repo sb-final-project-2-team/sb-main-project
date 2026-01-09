@@ -47,6 +47,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       }
 
       attributeKey = "kakao_account";
+    } else {
+      throw new OAuth2AuthenticationException("지원하지 않는 OAuth2 제공자 입니다! : " + registrationId);
     }
 
     String finalEmail = email;
