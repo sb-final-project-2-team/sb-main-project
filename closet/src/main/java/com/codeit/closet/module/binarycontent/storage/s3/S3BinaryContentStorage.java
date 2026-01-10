@@ -4,6 +4,7 @@ import static software.amazon.awssdk.core.sync.RequestBody.fromInputStream;
 
 import com.codeit.closet.module.binarycontent.entity.BinaryContent;
 import com.codeit.closet.module.binarycontent.storage.BinaryContentStorage;
+import jakarta.annotation.PreDestroy;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +41,11 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   @Value("${closet.storage.s3.presigned-url-expiration}")
   private long presignedUrlExpiration; // 초 단위 (기본값 600초 = 10분)
 
+  @PreDestroy
+  public void resourceCleanup() {
+    if (s3Client != null) s3Client.close();
+    if (presigner != null) presigner.close();
+  }
   S3BinaryContentStorage(
       @Value("${closet.storage.s3.access-key}") String accessKey,
       @Value("${closet.storage.s3.secret-key}") String secretKey,
@@ -114,7 +120,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         .build();
 
     GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-        .signatureDuration(Duration.ofMinutes(presignedUrlExpiration))
+        .signatureDuration(Duration.ofSeconds(presignedUrlExpiration))
         .getObjectRequest(getObjectRequest)
         .build();
 
