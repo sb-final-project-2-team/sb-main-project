@@ -16,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.beans.factory.annotation.Value;
 
 @Entity
 @Getter
@@ -53,7 +54,7 @@ public class BinaryContent {
   @PrePersist
   public void initFileUrl() {
     if (fileUrl == null && id != null) {
-      this.fileUrl = "/storage/" + id;
+      this.fileUrl = "https://closet-s3-bucket.s3.ap-northeast-2.amazonaws.com/" + id;
     }
   }
 }
