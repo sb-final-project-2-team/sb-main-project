@@ -35,7 +35,13 @@ public class DirectMessage {
     @Column(columnDefinition ="TEXT", nullable = false)
     private String content;
 
-    @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    @PrePersist
+    private void prePersist() {
+        if (this.createdAt == null) {
+            this.createdAt = Instant.now();
+        }
+    }
 }
