@@ -22,8 +22,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -79,18 +82,36 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
       builder.and(feed.weather.weatherData.precipitationType.eq(precipitationTypeEqual));
     }
 
-    List<Feed> feeds = jpaQueryFactory
-        .selectFrom(feed)
-        .join(feed.user, user).fetchJoin()
-        .join(feed.weather, weatherRegion).fetchJoin()
-        .join(feed.weather.weatherData, weatherData).fetchJoin()
-        .join(feed.ootds, ootd).fetchJoin()
-        .join(ootd.cloth, cloth).fetchJoin()
-        .join(cloth.clothAttributeValues, clothAttributeValue).fetchJoin()
+    List<UUID> feedIds = jpaQueryFactory
+        .select(feed.id)
+        .from(feed)
         .where(builder)
         .orderBy(orderSpecifiers(sortBy, sortDirection))
         .limit(pageSize + 1)
         .fetch();
+
+    boolean hasNext = feedIds.size() > pageSize;
+
+    if (hasNext) {
+      feedIds = feedIds.subList(0, pageSize);
+    }
+
+    List<Feed> feeds = jpaQueryFactory
+        .selectFrom(feed).distinct()
+        .join(feed.user, user).fetchJoin()
+        .join(feed.weather, weatherRegion).fetchJoin()
+        .join(feed.weather.weatherData, weatherData).fetchJoin()
+        .leftJoin(feed.ootds, ootd).fetchJoin()
+        .leftJoin(ootd.cloth, cloth).fetchJoin()
+        .where(feed.id.in(feedIds))
+        .fetch();
+
+    Map<UUID, Integer> orderMap = new HashMap<>();
+    for (int i = 0; i < feedIds.size(); i++) {
+      orderMap.put(feedIds.get(i), i);
+    }
+
+    feeds.sort(Comparator.comparingInt(feed -> orderMap.get(feed.getId())));
 
     Long totalCount = jpaQueryFactory
         .select(feed.count())
@@ -113,9 +134,9 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
         )
         .fetchOne();
 
-    boolean hasNext = feeds.size() > pageSize;
+
     if (hasNext) {
-      feeds.remove(pageSize);
+      feeds = feeds.subList(0, pageSize);
     }
 
     String nextCursor = null;
@@ -126,10 +147,6 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
       nextCursor = encodeCursor(last);
       nextAfter = last.getId();
     }
-
-    List<UUID> feedIds = feeds.stream()
-        .map(Feed::getId)
-        .toList();
 
     Set<UUID> likedFeedIds = new HashSet<>(
         jpaQueryFactory
