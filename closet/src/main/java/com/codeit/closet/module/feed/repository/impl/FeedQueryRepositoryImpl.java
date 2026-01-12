@@ -134,7 +134,7 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
             .fetch()
     );
 
-    List<FeedDTO> feedDTOs = feedMapper.toDTOs(feeds).stream()
+    List<FeedDTO> feedDTOs = feedMapper.toFeedDTOs(feeds).stream()
         .map(dto -> dto.withLikedByMe(likedFeedIds.contains(dto.id())))
         .toList();
 

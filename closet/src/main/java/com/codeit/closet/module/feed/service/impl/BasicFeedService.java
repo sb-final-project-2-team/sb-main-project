@@ -60,7 +60,7 @@ public class BasicFeedService implements FeedService {
 
     Feed saved = feedRepository.save(feed);
 
-    return feedMapper.toDTO(saved);
+    return feedMapper.toFeedDTO(saved);
   }
 
   @Override
@@ -81,7 +81,7 @@ public class BasicFeedService implements FeedService {
 
     feed.updateFeed(request.content());
 
-    return feedMapper.toDTO(feed);
+    return feedMapper.toFeedDTO(feed);
   }
 
   @Override
