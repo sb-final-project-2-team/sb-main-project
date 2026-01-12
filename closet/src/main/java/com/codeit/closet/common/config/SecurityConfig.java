@@ -70,9 +70,9 @@ public class SecurityConfig {
         )
 
         .logout(logout -> logout
-                .logoutUrl("/api/auth/sign-out")
-                .addLogoutHandler(jwtLogoutHandler)
-                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
+                  .logoutUrl("/api/auth/sign-out")
+                  .addLogoutHandler(jwtLogoutHandler)
+                  .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
 
         // CSRF 사용용 설정
         .csrf(csrf -> csrf
