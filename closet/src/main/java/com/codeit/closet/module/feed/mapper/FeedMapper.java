@@ -1,5 +1,6 @@
 package com.codeit.closet.module.feed.mapper;
 
+import com.codeit.closet.module.cloth.mapper.ClothMapper;
 import com.codeit.closet.module.feed.dto.FeedDTO;
 import com.codeit.closet.module.feed.dto.OotdDTO;
 import com.codeit.closet.module.feed.entity.Feed;
@@ -14,7 +15,8 @@ import org.mapstruct.Mapping;
     componentModel = "spring",
     uses = {
         UserMapper.class,
-        WeatherMapper.class
+        WeatherMapper.class,
+        ClothMapper.class
     }
 )
 public interface FeedMapper {
@@ -23,13 +25,14 @@ public interface FeedMapper {
   @Mapping(target = "weather", source = "feed.weather")
   @Mapping(target = "ootds", source = "feed.ootds")
   @Mapping(target = "likedByMe", ignore = true)
-  FeedDTO toDTO(Feed feed);
+  FeedDTO toFeedDTO(Feed feed);
 
-  List<FeedDTO> toDTOs(List<Feed> feeds);
+  List<FeedDTO> toFeedDTOs(List<Feed> feeds);
 
   @Mapping(target = "clothesId", source = "cloth.id")
   @Mapping(target = "name", source = "cloth.name")
   @Mapping(target = "imageUrl", source = "cloth.binaryContent.fileUrl")
   @Mapping(target = "type", source = "cloth.type")
-  OotdDTO toDTO(Ootd ootd);
+  @Mapping(target = "attributes", source = "cloth.clothAttributeValues")
+  OotdDTO toOotdDTO(Ootd ootd);
 }

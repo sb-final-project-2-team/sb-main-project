@@ -1,9 +1,12 @@
 package com.codeit.closet.module.feed.repository.impl;
 
+import com.codeit.closet.module.cloth.entity.QCloth;
+import com.codeit.closet.module.cloth.entity.QClothAttributeValue;
 import com.codeit.closet.module.feed.dto.FeedDTO;
 import com.codeit.closet.module.feed.dto.FeedDTOCursorResponse;
 import com.codeit.closet.module.feed.entity.Feed;
 import com.codeit.closet.module.feed.entity.QFeed;
+import com.codeit.closet.module.feed.entity.QOotd;
 import com.codeit.closet.module.feed.mapper.FeedMapper;
 import com.codeit.closet.module.feed.repository.FeedQueryRepository;
 import com.codeit.closet.module.like.entity.QLike;
@@ -12,7 +15,6 @@ import com.codeit.closet.module.weather.entity.PrecipitationType;
 import com.codeit.closet.module.weather.entity.QWeatherData;
 import com.codeit.closet.module.weather.entity.QWeatherRegion;
 import com.codeit.closet.module.weather.entity.SkyStatus;
-import com.codeit.closet.module.weather.mapper.WeatherMapper;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -20,8 +22,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +42,9 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
   private static final QFeed feed = QFeed.feed;
   private static final QUser user = QUser.user;
   private static final QLike like = QLike.like;
+  private static final QOotd ootd = QOotd.ootd;
+  private static final QCloth cloth = QCloth.cloth;
+  private static final QClothAttributeValue clothAttributeValue = QClothAttributeValue.clothAttributeValue;
   private static final QWeatherRegion weatherRegion = QWeatherRegion.weatherRegion;
   private static final QWeatherData weatherData = QWeatherData.weatherData;
   @Override
@@ -74,15 +82,36 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
       builder.and(feed.weather.weatherData.precipitationType.eq(precipitationTypeEqual));
     }
 
-    List<Feed> feeds = jpaQueryFactory
-        .selectFrom(feed)
-        .join(feed.user, user).fetchJoin()
-        .join(feed.weather, weatherRegion).fetchJoin()
-        .join(feed.weather.weatherData, weatherData).fetchJoin()
+    List<UUID> feedIds = jpaQueryFactory
+        .select(feed.id)
+        .from(feed)
         .where(builder)
         .orderBy(orderSpecifiers(sortBy, sortDirection))
         .limit(pageSize + 1)
         .fetch();
+
+    boolean hasNext = feedIds.size() > pageSize;
+
+    if (hasNext) {
+      feedIds = feedIds.subList(0, pageSize);
+    }
+
+    List<Feed> feeds = jpaQueryFactory
+        .selectFrom(feed).distinct()
+        .join(feed.user, user).fetchJoin()
+        .join(feed.weather, weatherRegion).fetchJoin()
+        .join(feed.weather.weatherData, weatherData).fetchJoin()
+        .leftJoin(feed.ootds, ootd).fetchJoin()
+        .leftJoin(ootd.cloth, cloth).fetchJoin()
+        .where(feed.id.in(feedIds))
+        .fetch();
+
+    Map<UUID, Integer> orderMap = new HashMap<>();
+    for (int i = 0; i < feedIds.size(); i++) {
+      orderMap.put(feedIds.get(i), i);
+    }
+
+    feeds.sort(Comparator.comparingInt(feed -> orderMap.get(feed.getId())));
 
     Long totalCount = jpaQueryFactory
         .select(feed.count())
@@ -105,9 +134,9 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
         )
         .fetchOne();
 
-    boolean hasNext = feeds.size() > pageSize;
+
     if (hasNext) {
-      feeds.remove(pageSize);
+      feeds = feeds.subList(0, pageSize);
     }
 
     String nextCursor = null;
@@ -118,10 +147,6 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
       nextCursor = encodeCursor(last);
       nextAfter = last.getId();
     }
-
-    List<UUID> feedIds = feeds.stream()
-        .map(Feed::getId)
-        .toList();
 
     Set<UUID> likedFeedIds = new HashSet<>(
         jpaQueryFactory
@@ -134,7 +159,7 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
             .fetch()
     );
 
-    List<FeedDTO> feedDTOs = feedMapper.toDTOs(feeds).stream()
+    List<FeedDTO> feedDTOs = feedMapper.toFeedDTOs(feeds).stream()
         .map(dto -> dto.withLikedByMe(likedFeedIds.contains(dto.id())))
         .toList();
 
