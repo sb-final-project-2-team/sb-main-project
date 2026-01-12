@@ -58,7 +58,7 @@ public class BasicUserService implements UserService {
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @Cacheable(value = "users", key = "'all'")
+  @Cacheable(value = "users", key = "{#cursor, #idAfter, #limit, #sortBy, #sortDirection, #emailLike, #roleEqual, #locked}")
   @Override
   @Transactional(readOnly = true)
   public UserDTOCursorResponse findUsers(
@@ -89,7 +89,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  @CacheEvict(value = "userProfile", key = "#userId")
+  @Cacheable(value = "userProfile", key = "#userId")
   @PreAuthorize("principal.userDTO.id == #userId")
   @Transactional(readOnly = true)
   public ProfileDTO findUserProfile(UUID userId) {
