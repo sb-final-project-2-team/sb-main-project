@@ -79,9 +79,11 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handleValidationExceptions(
       MethodArgumentNotValidException ex) {
+
     log.error("요청 유효성 검사 실패: {}", ex.getMessage());
 
-    Map<String, Object> validationErrors = new HashMap<>();
+    Map<String, String> validationErrors = new HashMap<>();
+
     ex.getBindingResult().getAllErrors().forEach(error -> {
       String fieldName = ((FieldError) error).getField();
       String errorMessage = error.getDefaultMessage();
@@ -89,11 +91,9 @@ public class GlobalExceptionHandler {
     });
 
     ErrorResponse errorResponse = new ErrorResponse(
-        Instant.now(),
         "VALIDATION_ERROR",
         "요청 데이터 유효성 검사에 실패했습니다",
         validationErrors,
-        ex.getClass().getSimpleName(),
         HttpStatus.BAD_REQUEST.value()
     );
 
