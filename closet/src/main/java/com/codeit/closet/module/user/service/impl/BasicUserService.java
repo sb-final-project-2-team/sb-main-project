@@ -64,7 +64,7 @@ public class BasicUserService implements UserService {
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @Cacheable(value = "users", key = "'all'")
+  @Cacheable(value = "users", key = "{#cursor, #idAfter, #limit, #sortBy, #sortDirection, #emailLike, #roleEqual, #locked}")
   @Override
   @Transactional(readOnly = true)
   public UserDTOCursorResponse findUsers(
@@ -95,7 +95,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  @CacheEvict(value = "userProfile", key = "#userId")
+  @Cacheable(value = "userProfile", key = "#userId")
   @PreAuthorize("principal.userDTO.id == #userId")
   @Transactional(readOnly = true)
   public ProfileDTO findUserProfile(UUID userId) {
@@ -118,9 +118,12 @@ public class BasicUserService implements UserService {
     if (multipartFile != null) {
       binaryContent = binaryContentService.createBinaryContent(multipartFile);
     }
+    WeatherRegion weatherRegion = null;
 
-    WeatherRegion weatherRegion = weatherService.findWeatherRegion(request.location().longitude(),
-        request.location().latitude());
+    if (request.location() != null) {
+      weatherRegion = weatherService.findWeatherRegion(request.location().longitude(),
+          request.location().latitude());
+    }
 
     user.updateProfile(request.name(), request.birthDate(),
         request.temperatureSensitivity(), request.gender(), weatherRegion, binaryContent);
