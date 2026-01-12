@@ -1,9 +1,13 @@
 package com.codeit.closet.module.feed.repository.impl;
 
+import com.codeit.closet.module.cloth.entity.QCloth;
+import com.codeit.closet.module.cloth.entity.QClothAttribute;
+import com.codeit.closet.module.cloth.entity.QClothAttributeValue;
 import com.codeit.closet.module.feed.dto.FeedDTO;
 import com.codeit.closet.module.feed.dto.FeedDTOCursorResponse;
 import com.codeit.closet.module.feed.entity.Feed;
 import com.codeit.closet.module.feed.entity.QFeed;
+import com.codeit.closet.module.feed.entity.QOotd;
 import com.codeit.closet.module.feed.mapper.FeedMapper;
 import com.codeit.closet.module.feed.repository.FeedQueryRepository;
 import com.codeit.closet.module.like.entity.QLike;
@@ -37,6 +41,9 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
   private static final QFeed feed = QFeed.feed;
   private static final QUser user = QUser.user;
   private static final QLike like = QLike.like;
+  private static final QOotd ootd = QOotd.ootd;
+  private static final QCloth cloth = QCloth.cloth;
+  private static final QClothAttributeValue clothAttributeValue = QClothAttributeValue.clothAttributeValue;
   private static final QWeatherRegion weatherRegion = QWeatherRegion.weatherRegion;
   private static final QWeatherData weatherData = QWeatherData.weatherData;
   @Override
@@ -79,6 +86,9 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
         .join(feed.user, user).fetchJoin()
         .join(feed.weather, weatherRegion).fetchJoin()
         .join(feed.weather.weatherData, weatherData).fetchJoin()
+        .join(feed.ootds, ootd).fetchJoin()
+        .join(ootd.cloth, cloth).fetchJoin()
+        .join(cloth.clothAttributeValues, clothAttributeValue).fetchJoin()
         .where(builder)
         .orderBy(orderSpecifiers(sortBy, sortDirection))
         .limit(pageSize + 1)
