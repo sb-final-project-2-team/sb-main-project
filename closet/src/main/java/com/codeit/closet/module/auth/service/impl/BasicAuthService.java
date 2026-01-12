@@ -53,7 +53,6 @@ public class BasicAuthService implements AuthService {
       String newAccessToken = jwtTokenProvider.generateAccessToken(closetUserDetails);
       String newRefreshToken = jwtTokenProvider.generateRefreshToken(closetUserDetails);
 
-      log.info("new RefreshToken : {}", newRefreshToken);
       JwtInformation newJwtInformation = new JwtInformation(
           closetUserDetails.getUserDTO(),
           newAccessToken,

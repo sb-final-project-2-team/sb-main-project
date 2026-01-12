@@ -14,9 +14,14 @@ import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.mapper.UserMapper;
 import com.codeit.closet.module.user.repository.UserRepository;
 import com.codeit.closet.module.user.service.UserService;
+import com.codeit.closet.module.weather.entity.WeatherRegion;
+import com.codeit.closet.module.weather.service.WeatherService;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.Cache;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,11 +33,14 @@ import org.springframework.web.multipart.MultipartFile;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
   private final BinaryContentService binaryContentService;
+  private final WeatherService weatherService;
+
+  private final UserMapper userMapper;
 
   @Override
+  @CacheEvict(value = "users", allEntries = true)
   @Transactional
   public UserDTO createUser(UserCreateRequest request) {
     if (userRepository.existsByEmail(request.email())) {
@@ -51,6 +59,7 @@ public class BasicUserService implements UserService {
   }
 
   @PreAuthorize("hasRole('ADMIN')")
+  @Cacheable(value = "users", key = "'all'")
   @Override
   @Transactional(readOnly = true)
   public UserDTOCursorResponse findUsers(
@@ -63,9 +72,11 @@ public class BasicUserService implements UserService {
       String roleEqual,
       Boolean locked) {
 
-    return userRepository.findUsersByCursor(cursor, idAfter, limit, sortBy, sortDirection, emailLike, roleEqual, locked);
+    return userRepository.findUsersByCursor(cursor, idAfter, limit, sortBy, sortDirection,
+        emailLike, roleEqual, locked);
   }
 
+  @CacheEvict(value = "users", allEntries = true)
   @PreAuthorize("hasRole('ADMIN')")
   @Override
   @Transactional
@@ -79,6 +90,8 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @CacheEvict(value = "userProfile", key = "#userId")
+  @PreAuthorize("principal.userDTO.id == #userId")
   @Transactional(readOnly = true)
   public ProfileDTO findUserProfile(UUID userId) {
     User user = userRepository.findById(userId).orElseThrow(
@@ -88,6 +101,8 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @CacheEvict(value = "userProfile", key = "#userId")
+  @PreAuthorize("principal.userDTO.id == #userId")
   @Transactional
   public ProfileDTO updateUserProfile(UUID userId, ProfileUpdateRequest request,
       MultipartFile multipartFile) {
@@ -99,15 +114,17 @@ public class BasicUserService implements UserService {
       binaryContent = binaryContentService.createBinaryContent(multipartFile);
     }
 
-    // 차후에 Location 처리 넣어야함.
+    WeatherRegion weatherRegion = weatherService.findWeatherRegion(request.location().longitude(),
+        request.location().latitude());
 
     user.updateProfile(request.name(), request.birthDate(),
-        request.temperatureSensitivity(), request.gender(), binaryContent);
+        request.temperatureSensitivity(), request.gender(), weatherRegion, binaryContent);
 
     return userMapper.toProfileDTO(user);
   }
 
   @Override
+  @PreAuthorize("principal.userDTO.id == #userId")
   @Transactional
   public void updateUserPassword(UUID userId, ChangePasswordRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
@@ -120,6 +137,7 @@ public class BasicUserService implements UserService {
 
 
   @PreAuthorize("hasRole('ADMIN')")
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   @Transactional
   public UserDTO updateUserLock(UUID userId, UserLockUpdateRequest request) {

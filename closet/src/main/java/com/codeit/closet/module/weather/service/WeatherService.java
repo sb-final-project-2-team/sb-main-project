@@ -3,6 +3,7 @@ package com.codeit.closet.module.weather.service;
 import com.codeit.closet.module.weather.dto.location.WeatherAPILocation;
 import com.codeit.closet.module.weather.dto.weather.WeatherDTO;
 
+import com.codeit.closet.module.weather.entity.WeatherRegion;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,4 +32,9 @@ public interface WeatherService {
      * 특정 지역의 단기예보 수집
      */
     List<WeatherDTO> collectVilageFcstForRegion(UUID weatherRegionId);
+
+    /**
+     * 내부 API용 WeatherRegion 처리
+     */
+    WeatherRegion findWeatherRegion(Double longitude, Double latitude);
 }

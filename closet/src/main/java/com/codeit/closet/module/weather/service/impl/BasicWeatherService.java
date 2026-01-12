@@ -3,7 +3,6 @@ package com.codeit.closet.module.weather.service.impl;
 import com.codeit.closet.module.weather.client.KmaApiClient;
 import com.codeit.closet.module.weather.converter.KmaApiConverter;
 import com.codeit.closet.module.weather.dto.api.KmaApiResponse;
-import com.codeit.closet.module.weather.dto.location.LocationDTO;
 import com.codeit.closet.module.weather.dto.location.WeatherAPILocation;
 import com.codeit.closet.module.weather.dto.weather.WeatherDTO;
 import com.codeit.closet.module.weather.entity.ForecastKind;
@@ -13,15 +12,21 @@ import com.codeit.closet.module.weather.mapper.WeatherMapper;
 import com.codeit.closet.module.weather.repository.WeatherDataRepository;
 import com.codeit.closet.module.weather.repository.WeatherRegionRepository;
 import com.codeit.closet.module.weather.service.WeatherService;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.*;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -229,6 +234,16 @@ public class BasicWeatherService implements WeatherService {
                 ));
 
         return collectVilageFcst(region.getX(), region.getY());
+    }
+
+    @Override
+    @Transactional
+    public WeatherRegion findWeatherRegion(Double longitude, Double latitude) {
+        WeatherAPILocation weatherLocation = findWeatherLocation(longitude, latitude);
+
+      return weatherRegionRepository.findByXAndY(weatherLocation.x(),
+          weatherLocation.y()).orElseThrow(
+          () -> new NoSuchElementException("존재하지 않는 날씨 데이터 입니다."));
     }
 
     @Transactional
