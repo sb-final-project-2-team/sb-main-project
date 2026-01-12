@@ -19,7 +19,6 @@ import com.codeit.closet.module.weather.service.WeatherService;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.Cache;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -113,9 +112,12 @@ public class BasicUserService implements UserService {
     if (multipartFile != null) {
       binaryContent = binaryContentService.createBinaryContent(multipartFile);
     }
+    WeatherRegion weatherRegion = null;
 
-    WeatherRegion weatherRegion = weatherService.findWeatherRegion(request.location().longitude(),
-        request.location().latitude());
+    if (request.location() != null) {
+      weatherRegion = weatherService.findWeatherRegion(request.location().longitude(),
+          request.location().latitude());
+    }
 
     user.updateProfile(request.name(), request.birthDate(),
         request.temperatureSensitivity(), request.gender(), weatherRegion, binaryContent);
