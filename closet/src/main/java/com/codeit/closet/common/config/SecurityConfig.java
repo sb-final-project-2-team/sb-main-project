@@ -76,6 +76,7 @@ public class SecurityConfig {
 
         // CSRF 사용용 설정
         .csrf(csrf -> csrf
+            .ignoringRequestMatchers("/api/direct-messages/**") // dm 저장 요청
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
 
