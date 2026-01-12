@@ -1,6 +1,7 @@
 package com.codeit.closet.module.user.entity;
 
 import com.codeit.closet.module.binarycontent.entity.BinaryContent;
+import com.codeit.closet.module.weather.dto.location.WeatherAPILocation;
 import com.codeit.closet.module.weather.entity.WeatherRegion;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -143,7 +144,7 @@ public class User {
   }
 
   public void updateProfile(String name, Instant birthDate, Integer temperatureSensitivity,
-      UserGender gender, BinaryContent binaryContent) {
+      UserGender gender, WeatherRegion weather,BinaryContent binaryContent) {
     if (binaryContent != null) {
       this.binaryContent = binaryContent;
     }
@@ -162,6 +163,10 @@ public class User {
 
     if (gender != null) {
       this.gender = gender;
+    }
+
+    if (weather != null) {
+      this. weather = weather;
     }
   }
 

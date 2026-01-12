@@ -2,7 +2,7 @@ package com.codeit.closet.module.user.dto.profile;
 
 import com.codeit.closet.common.util.converter.FlexibleInstantDeserializer;
 import com.codeit.closet.module.user.entity.UserGender;
-import com.codeit.closet.module.weather.dto.location.LocationDTO;
+import com.codeit.closet.module.weather.dto.location.WeatherAPILocation;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.time.Instant;
 
@@ -12,7 +12,7 @@ public record ProfileUpdateRequest(
 
         @JsonDeserialize(using = FlexibleInstantDeserializer.class)
         Instant birthDate,
-        LocationDTO location,
+        WeatherAPILocation location,
         Integer temperatureSensitivity
 ) {
 }
