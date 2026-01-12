@@ -1,7 +1,6 @@
 package com.codeit.closet.module.feed.repository.impl;
 
 import com.codeit.closet.module.cloth.entity.QCloth;
-import com.codeit.closet.module.cloth.entity.QClothAttribute;
 import com.codeit.closet.module.cloth.entity.QClothAttributeValue;
 import com.codeit.closet.module.feed.dto.FeedDTO;
 import com.codeit.closet.module.feed.dto.FeedDTOCursorResponse;
@@ -16,7 +15,6 @@ import com.codeit.closet.module.weather.entity.PrecipitationType;
 import com.codeit.closet.module.weather.entity.QWeatherData;
 import com.codeit.closet.module.weather.entity.QWeatherRegion;
 import com.codeit.closet.module.weather.entity.SkyStatus;
-import com.codeit.closet.module.weather.mapper.WeatherMapper;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
