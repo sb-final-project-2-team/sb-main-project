@@ -30,7 +30,6 @@ public class RedisJwtRegistry implements JwtRegistry<UUID> {
   private final RedisTemplate<String, Object> redisTemplate;
   private final RedisLockProvider redisLockProvider;
 
-  @CacheEvict(value = "users", key = "'all'")
   @Retryable(retryFor = RedisLockAcquisitionException.class, maxAttempts = 10,
       backoff = @Backoff(delay = 100, multiplier = 2))
   @Override
@@ -60,7 +59,6 @@ public class RedisJwtRegistry implements JwtRegistry<UUID> {
 
   }
 
-  @CacheEvict(value = "users", key = "'all'")
   @Retryable(retryFor = RedisLockAcquisitionException.class, maxAttempts = 10,
       backoff = @Backoff(delay = 100, multiplier = 2))
   @Override
