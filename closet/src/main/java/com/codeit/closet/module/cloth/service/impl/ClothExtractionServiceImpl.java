@@ -57,11 +57,11 @@ public class ClothExtractionServiceImpl implements ClothExtractionService {
             String imageUrl = doc.select("meta[property=og:image]")
                     .attr("content");
 
-            if (name == null || name.isBlank()) {
+            if (name.isBlank()) {
                 name = doc.title();
             }
 
-            if (imageUrl == null || imageUrl.isBlank()) {
+            if (imageUrl.isBlank()) {
                 throw new IllegalArgumentException("대표 이미지(og:image) 추출 실패");
             }
 
