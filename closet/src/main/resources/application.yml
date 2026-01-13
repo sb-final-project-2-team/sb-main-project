@@ -30,6 +30,7 @@ spring:
       - followingFirstPage
       - followerFirstPage
       - dmHistoryFirstPage
+      - userProfile
     redis:
       enable-statistics: true
   data:

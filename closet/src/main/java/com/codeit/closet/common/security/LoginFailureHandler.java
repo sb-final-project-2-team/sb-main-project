@@ -30,6 +30,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
     // 응답값 생성
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setCharacterEncoding("UTF-8");
     ErrorResponse errorResponse = new ErrorResponse(exception, HttpServletResponse.SC_UNAUTHORIZED);
     response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
   }
