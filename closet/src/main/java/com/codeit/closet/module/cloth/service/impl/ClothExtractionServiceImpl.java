@@ -78,7 +78,12 @@ public class ClothExtractionServiceImpl implements ClothExtractionService {
 
     private URI toUri(String url) {
         try {
-            return URI.create(url);
+            URI uri = URI.create(url);
+            String scheme = uri.getScheme();
+            if (scheme == null || (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https"))) {
+                throw new IllegalArgumentException("http 또는 https URL만 지원합니다.");
+                }
+            return uri;
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("올바르지 않은 URL 형식입니다.");
         }
