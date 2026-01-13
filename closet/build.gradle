@@ -86,6 +86,11 @@ dependencies {
     implementation 'software.amazon.awssdk:s3:2.31.7'
 
     /* =========================
+     * jsoup
+     * ========================= */
+    implementation 'org.jsoup:jsoup:1.17.2'
+
+    /* =========================
      * Dev
      * ========================= */
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
