@@ -61,9 +61,7 @@ public class ClothExtractionServiceImpl implements ClothExtractionService {
                 name = doc.title();
             }
 
-            if (imageUrl.isBlank()) {
-                throw new IllegalArgumentException("대표 이미지(og:image) 추출 실패");
-            }
+            imageUrl = filterImageUrl(imageUrl); // gif 차단
 
             return new ClothExtractionResult(name, imageUrl);
         } catch (IOException e) {
@@ -98,5 +96,19 @@ public class ClothExtractionServiceImpl implements ClothExtractionService {
                 || host.endsWith(".zigzag.kr")
                 || host.endsWith(".musinsa.com")
                 || host.endsWith(".29cm.co.kr");
+    }
+
+    private String filterImageUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return null;
+        }
+
+        String lower = imageUrl.toLowerCase();
+
+        if (lower.endsWith(".gif")) {
+            return null;
+        }
+
+        return imageUrl; // jpg/png/webp 허용
     }
 }
