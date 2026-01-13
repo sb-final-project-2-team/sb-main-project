@@ -1,5 +1,6 @@
 package com.codeit.closet.module.weather.service.impl;
 
+import com.codeit.closet.module.weather.client.KakaoApiClient;
 import com.codeit.closet.module.weather.client.KmaApiClient;
 import com.codeit.closet.module.weather.converter.KmaApiConverter;
 import com.codeit.closet.module.weather.dto.api.KmaApiResponse;
@@ -20,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +37,7 @@ public class BasicWeatherService implements WeatherService {
     private final WeatherDataRepository weatherDataRepository;
     private final WeatherMapper weatherMapper;
     private final KmaApiClient kmaApiClient;
+    private final KakaoApiClient kakaoApiClient;
     private final KmaApiConverter kmaApiConverter;
 
     @Override
@@ -239,11 +240,14 @@ public class BasicWeatherService implements WeatherService {
     @Override
     @Transactional
     public WeatherRegion findWeatherRegion(Double longitude, Double latitude) {
-        WeatherAPILocation weatherLocation = findWeatherLocation(longitude, latitude);
+        GridCoordinates grid = convertToGrid(longitude, latitude);
 
-      return weatherRegionRepository.findByXAndY(weatherLocation.x(),
-          weatherLocation.y()).orElseThrow(
-          () -> new NoSuchElementException("존재하지 않는 날씨 데이터 입니다."));
+        return weatherRegionRepository.findByXAndY(grid.x(), grid.y())
+            .orElseGet(() -> {
+                log.info("WeatherRegion 없음 → 새로 생성: lon={}, lat={}, grid=({}, {})",
+                    longitude, latitude, grid.x(), grid.y());
+                return createWeatherRegion(grid.x(), grid.y(), longitude, latitude);
+            });
     }
 
     @Transactional
@@ -253,7 +257,7 @@ public class BasicWeatherService implements WeatherService {
                 .y(y)
                 .latitude(latitude)
                 .longitude(longitude)
-                .locationNames(String.format("격자(%d, %d)", x, y))
+                .locationNames(kakaoApiClient.getRegionByCoordinate(longitude, latitude))
                 .build();
 
         WeatherRegion saved = weatherRegionRepository.save(newRegion);
