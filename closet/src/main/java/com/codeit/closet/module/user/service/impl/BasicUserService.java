@@ -1,5 +1,8 @@
 package com.codeit.closet.module.user.service.impl;
 
+import com.codeit.closet.common.exception.ErrorCode;
+import com.codeit.closet.common.exception.user.DuplicateUserException;
+import com.codeit.closet.common.exception.user.UserNotFoundException;
 import com.codeit.closet.module.binarycontent.entity.BinaryContent;
 import com.codeit.closet.module.binarycontent.service.BinaryContentService;
 import com.codeit.closet.module.user.dto.profile.ProfileDTO;
@@ -19,6 +22,7 @@ import com.codeit.closet.module.weather.service.WeatherService;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
 
@@ -43,7 +48,8 @@ public class BasicUserService implements UserService {
   @Transactional
   public UserDTO createUser(UserCreateRequest request) {
     if (userRepository.existsByEmail(request.email())) {
-      throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+      log.warn("이미 같은 아이디가 존재합니다. email = {}", request.email());
+      throw DuplicateUserException.withEmail(request.email());
     }
 
     User user = User.builder()
@@ -94,7 +100,7 @@ public class BasicUserService implements UserService {
   @Transactional(readOnly = true)
   public ProfileDTO findUserProfile(UUID userId) {
     User user = userRepository.findById(userId).orElseThrow(
-        () -> new NoSuchElementException("존재하지 않는 회원입니다."));
+        UserNotFoundException::new);
 
     return userMapper.toProfileDTO(user);
   }
@@ -130,7 +136,8 @@ public class BasicUserService implements UserService {
   @Transactional
   public void updateUserPassword(UUID userId, ChangePasswordRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
-        () -> new NoSuchElementException("존재하지 않는 회원입니다."));
+        () -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND,
+            UserNotFoundException.withMessage("올바른 회원을 적어주세요")));
 
     String encodedNewPassword = passwordEncoder.encode(request.password());
 
@@ -144,7 +151,7 @@ public class BasicUserService implements UserService {
   @Transactional
   public UserDTO updateUserLock(UUID userId, UserLockUpdateRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
-        () -> new NoSuchElementException("존재하지 않는 회원입니다."));
+        UserNotFoundException::new);
 
     user.updateLocked(request.locked());
 
