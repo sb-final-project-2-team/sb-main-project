@@ -26,6 +26,10 @@ spring:
     type: redis
     cache-names:
       - users # 추가 해주시면 됩니다. (yml 리스트 형식으로)
+      - followSummary
+      - followingFirstPage
+      - followerFirstPage
+      - dmHistoryFirstPage
     redis:
       enable-statistics: true
   data:
