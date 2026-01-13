@@ -43,7 +43,7 @@ public class User {
   @JoinColumn(name = "binary_content_id")
   private BinaryContent binaryContent;
 
-  @OneToOne(orphanRemoval = true, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "weather_id")
   private WeatherRegion weather;
 

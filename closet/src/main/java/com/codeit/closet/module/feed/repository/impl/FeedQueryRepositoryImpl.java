@@ -44,7 +44,6 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
   private static final QLike like = QLike.like;
   private static final QOotd ootd = QOotd.ootd;
   private static final QCloth cloth = QCloth.cloth;
-  private static final QClothAttributeValue clothAttributeValue = QClothAttributeValue.clothAttributeValue;
   private static final QWeatherRegion weatherRegion = QWeatherRegion.weatherRegion;
   private static final QWeatherData weatherData = QWeatherData.weatherData;
   @Override

@@ -30,7 +30,7 @@ spring:
       - followingFirstPage
       - followerFirstPage
       - dmHistoryFirstPage
-      - userProfile
+      - userProfiles # 예시입닏가.
     redis:
       enable-statistics: true
   data:
@@ -110,6 +110,11 @@ closet:
       service-key: ${KMA_SERVICE_KEY:dummyKey}
       timeout: 10000
       data-type: JSON
+  kakao:
+    api:
+      base-url: ${KAKAO_BASE_URL:https://dapi.kakao.com}
+      rest-key: ${KAKAO_CLIENT_ID:dummy}
+      timeout: 3000
   base_url:
     redirect: ${DEPLOY_URL:http://localhost:8080}
 
