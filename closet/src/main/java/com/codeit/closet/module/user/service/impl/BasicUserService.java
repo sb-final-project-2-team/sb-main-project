@@ -1,6 +1,5 @@
 package com.codeit.closet.module.user.service.impl;
 
-import com.codeit.closet.common.exception.ErrorCode;
 import com.codeit.closet.common.exception.user.DuplicateUserException;
 import com.codeit.closet.common.exception.user.UserNotFoundException;
 import com.codeit.closet.module.binarycontent.entity.BinaryContent;
@@ -23,16 +22,14 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-@Service
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
 
@@ -44,7 +41,6 @@ public class BasicUserService implements UserService {
   private final UserMapper userMapper;
 
   @Override
-  @CacheEvict(value = "users", allEntries = true)
   @Transactional
   public UserDTO createUser(UserCreateRequest request) {
     if (userRepository.existsByEmail(request.email())) {
@@ -63,9 +59,8 @@ public class BasicUserService implements UserService {
     return userMapper.toUserDTO(save);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
-  @Cacheable(value = "users", key = "{#cursor, #idAfter, #limit, #sortBy, #sortDirection, #emailLike, #roleEqual, #locked}")
   @Override
+  @PreAuthorize("hasRole('ADMIN')")
   @Transactional(readOnly = true)
   public UserDTOCursorResponse findUsers(
       String cursor,
@@ -81,13 +76,12 @@ public class BasicUserService implements UserService {
         emailLike, roleEqual, locked);
   }
 
-  @CacheEvict(value = "users", allEntries = true)
-  @PreAuthorize("hasRole('ADMIN')")
   @Override
+  @PreAuthorize("hasRole('ADMIN')")
   @Transactional
   public UserDTO updateUserRole(UUID userId, UserRoleUpdateRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
-        () -> new NoSuchElementException("존재하지 않는 회원입니다."));
+        UserNotFoundException::new);
 
     user.updateRole(request.role());
 
@@ -95,34 +89,34 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  @Cacheable(value = "userProfile", key = "#userId")
   @PreAuthorize("principal.userDTO.id == #userId")
   @Transactional(readOnly = true)
   public ProfileDTO findUserProfile(UUID userId) {
     User user = userRepository.findById(userId).orElseThrow(
-        UserNotFoundException::new);
+        () -> new NoSuchElementException("존재하지 않는 회원입니다."));
 
     return userMapper.toProfileDTO(user);
   }
 
   @Override
-  @CacheEvict(value = "userProfile", key = "#userId")
   @PreAuthorize("principal.userDTO.id == #userId")
   @Transactional
   public ProfileDTO updateUserProfile(UUID userId, ProfileUpdateRequest request,
       MultipartFile multipartFile) {
     User user = userRepository.findById(userId).orElseThrow(
-        () -> new NoSuchElementException("존재하지 않는 회원입니다."));
+        () -> UserNotFoundException.withMessage("올바른 회원을 적어주세요"));
 
     BinaryContent binaryContent = null;
     if (multipartFile != null) {
       binaryContent = binaryContentService.createBinaryContent(multipartFile);
     }
-    WeatherRegion weatherRegion = null;
+    WeatherRegion weatherRegion = user.getWeather();
 
     if (request.location() != null) {
-      weatherRegion = weatherService.findWeatherRegion(request.location().longitude(),
-          request.location().latitude());
+      double lon = request.location().longitude();
+      double lat = request.location().latitude();
+
+      weatherRegion = weatherService.findWeatherRegion(lon, lat);
     }
 
     user.updateProfile(request.name(), request.birthDate(),
@@ -136,8 +130,7 @@ public class BasicUserService implements UserService {
   @Transactional
   public void updateUserPassword(UUID userId, ChangePasswordRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
-        () -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND,
-            UserNotFoundException.withMessage("올바른 회원을 적어주세요")));
+        () -> UserNotFoundException.withMessage("올바른 회원을 적어주세요"));
 
     String encodedNewPassword = passwordEncoder.encode(request.password());
 
@@ -145,9 +138,8 @@ public class BasicUserService implements UserService {
   }
 
 
-  @PreAuthorize("hasRole('ADMIN')")
-  @CacheEvict(value = "users", allEntries = true)
   @Override
+  @PreAuthorize("hasRole('ADMIN')")
   @Transactional
   public UserDTO updateUserLock(UUID userId, UserLockUpdateRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
