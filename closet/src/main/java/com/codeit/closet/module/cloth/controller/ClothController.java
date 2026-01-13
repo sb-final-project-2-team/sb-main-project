@@ -5,6 +5,7 @@ import com.codeit.closet.module.cloth.dto.ClothCreateRequest;
 import com.codeit.closet.module.cloth.dto.ClothDTO;
 import com.codeit.closet.module.cloth.dto.ClothDTOCursorResponse;
 import com.codeit.closet.module.cloth.dto.ClothUpdateRequest;
+import com.codeit.closet.module.cloth.service.ClothExtractionService;
 import com.codeit.closet.module.cloth.service.ClothService;
 import com.codeit.closet.module.user.entity.UserRole;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.UUID;
 public class ClothController {
 
     private final ClothService clothService;
+    private final ClothExtractionService clothExtractionService;
 
     // 옷 등록
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -88,5 +90,14 @@ public class ClothController {
         boolean isAdmin = userDetails.getUserDTO().role() == UserRole.ADMIN;
         clothService.deleteCloth(clothId, userDetails.getUserDTO().id(), isAdmin);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    // 구매 링크로 옷 정보 불러오기
+    @GetMapping("/extractions")
+    public ResponseEntity<ClothDTO> getClothesExtractions(
+            @RequestParam("url") String url
+    ){
+        ClothDTO result = clothExtractionService.extract(url);
+        return ResponseEntity.ok(result);
     }
 }
