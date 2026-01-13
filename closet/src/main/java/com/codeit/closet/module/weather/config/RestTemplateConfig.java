@@ -17,8 +17,8 @@ public class RestTemplateConfig {
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder, WeatherApiProperties properties) {
         return builder
-                .setConnectTimeout(Duration.ofMillis(properties.getTimeout()))
-                .setReadTimeout(Duration.ofMillis(properties.getTimeout()))
+                .connectTimeout(Duration.ofMillis(properties.getTimeout()))
+                .readTimeout(Duration.ofMillis(properties.getTimeout()))
                 .additionalInterceptors(userAgentInterceptor())
                 .build();
     }
