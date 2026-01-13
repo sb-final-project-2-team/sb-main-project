@@ -11,11 +11,16 @@ import com.codeit.closet.module.follow.service.FollowService;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicFollowService implements FollowService {
@@ -25,6 +30,11 @@ public class BasicFollowService implements FollowService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "followSummary", allEntries = true),
+            @CacheEvict(cacheNames = "followingFirstPage", allEntries = true),
+            @CacheEvict(cacheNames = "followerFirstPage", allEntries = true)
+    })
     public FollowDTO createFollow(
             FollowCreateRequest followCreateRequest
     ) {
@@ -52,6 +62,10 @@ public class BasicFollowService implements FollowService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(
+            cacheNames = "followSummary",
+            key = "{#userId, #viewerId}"
+    )
     public FollowSummaryDTO findFollowSummary(
             UUID userId,
             UUID viewerId
@@ -64,6 +78,11 @@ public class BasicFollowService implements FollowService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(
+            cacheNames = "followingFirstPage",
+            key = "{#followerId, #limit, #sortBy, #sortDirection, #nameLike}",
+            condition = "(#cursor == null || #cursor.isEmpty()) && #idAfter == null"
+    )
     public FollowListResponse findFollowingList(
             UUID followerId,
             String cursor,
@@ -89,6 +108,11 @@ public class BasicFollowService implements FollowService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(
+            cacheNames = "followerFirstPage",
+            key = "{#followeeId, #limit, #sortBy, #sortDirection, #nameLike}",
+            condition = "(#cursor == null || #cursor.isEmpty()) && #idAfter == null"
+    )
     public FollowListResponse findFollowerList(
             UUID followeeId,
             String cursor,
@@ -114,6 +138,11 @@ public class BasicFollowService implements FollowService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "followSummary", allEntries = true),
+            @CacheEvict(cacheNames = "followingFirstPage", allEntries = true),
+            @CacheEvict(cacheNames = "followerFirstPage", allEntries = true)
+    })
     public void deleteFollow(UUID followId) {
         if(!followRepository.existsById(followId)) {
             throw new IllegalArgumentException("팔로우 정보가 없습니다.");

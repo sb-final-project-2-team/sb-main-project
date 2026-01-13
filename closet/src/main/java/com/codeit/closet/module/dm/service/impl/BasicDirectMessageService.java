@@ -11,6 +11,8 @@ import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,10 @@ public class BasicDirectMessageService implements DirectMessageService {
 
     @Override
     @Transactional
+    @CacheEvict(
+            cacheNames = "dmHistoryFirstPage",
+            key = "{T(com.codeit.closet.module.dm.util.DmKeyUtil).of(#senderId, #receiverId)}"
+    )
     public DirectMessageDTO create(
             UUID senderId,
             UUID receiverId,
@@ -56,6 +62,11 @@ public class BasicDirectMessageService implements DirectMessageService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(
+            cacheNames = "dmHistoryFirstPage",
+            key = "{T(com.codeit.closet.module.dm.util.DmKeyUtil).of(#senderId, #receiverId)}",
+            condition = "(#cursor == null || #cursor.isEmpty()) && #idAfter == null"
+    )
     public DirectMessageDTOCursorResponse findDirectMessages(
             UUID senderId,
             UUID receiverId,

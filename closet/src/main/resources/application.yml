@@ -25,6 +25,11 @@ spring:
     # type: caffeine
     type: redis
     cache-names:
+      - users # 추가 해주시면 됩니다. (yml 리스트 형식으로)
+      - followSummary
+      - followingFirstPage
+      - followerFirstPage
+      - dmHistoryFirstPage
       - userProfiles # 예시입닏가.
     redis:
       enable-statistics: true
