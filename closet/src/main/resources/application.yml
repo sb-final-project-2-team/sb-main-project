@@ -123,3 +123,18 @@ logging:
     root: info
     org.hibernate.sql: info
     org.hibernate.type: info
+
+management:
+  server:
+    port: 9101
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
