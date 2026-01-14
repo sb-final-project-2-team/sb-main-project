@@ -12,8 +12,8 @@ import java.util.UUID;
 public interface ClothRepository extends JpaRepository<Cloth, UUID> {
 
     // 소유자의 Cloth 목록 조회
-    List<Cloth> findAllByOwnerId(UUID ownerId);
+    List<Cloth> findAllByOwner_Id(UUID ownerId);
 
     // 중복 검사 (같은 소유자의 같은 이름)
-    boolean existsByOwnerIdAndName(UUID ownerId, String name);
+    boolean existsByOwner_IdAndName(UUID ownerId, String name);
 }

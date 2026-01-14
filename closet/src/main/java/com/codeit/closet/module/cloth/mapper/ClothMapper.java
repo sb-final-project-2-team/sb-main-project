@@ -12,6 +12,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ClothMapper {
 
+    @Mapping(target = "ownerId", source = "owner.id")
     @Mapping(target = "imageUrl", source = "binaryContent.fileUrl")
     @Mapping(target = "type", expression = "java(cloth.getType().name())")
     @Mapping(target = "attributes", ignore = true)
@@ -19,7 +20,7 @@ public interface ClothMapper {
 
     List<ClothDTO> toDTOs(List<Cloth> clothes);
 
-    @Mapping(target = "definitionId", source = "clothAttributeId")
+    @Mapping(target = "definitionId", source = "clothAttribute.id")
     @Mapping(target = "value", source = "value")
     ClothAttributeValueDTO toDTO(ClothAttributeValue clothAttributeValue);
 

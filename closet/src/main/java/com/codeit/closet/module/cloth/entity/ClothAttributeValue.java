@@ -3,9 +3,6 @@ package com.codeit.closet.module.cloth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.Instant;
 import java.util.UUID;
 
 
@@ -26,11 +23,13 @@ public class ClothAttributeValue {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "clothes_id", nullable = false)
-    private UUID clothId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "clothes_id", nullable = false)
+    private Cloth cloth;
 
-    @Column(name = "clothes_attributes_id", nullable = false)
-    private UUID clothAttributeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "clothes_attributes_id", nullable = false)
+    private ClothAttribute clothAttribute;
 
     @Column(name = "value", nullable = false)
     private String value;

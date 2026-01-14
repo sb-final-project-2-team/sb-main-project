@@ -47,7 +47,7 @@ public class ClothQueryRepositoryImpl implements ClothQueryRepository {
         BooleanBuilder builder = new BooleanBuilder();
 
         // ownerId 필터 (필수)
-        builder.and(cloth.ownerId.eq(ownerId));
+        builder.and(cloth.owner.id.eq(ownerId));
 
         // typeEqual 필터 (선택)
         if (typeEqual != null && !typeEqual.isEmpty()) {
@@ -71,7 +71,7 @@ public class ClothQueryRepositoryImpl implements ClothQueryRepository {
         Long totalCount = jpaQueryFactory
                 .select(cloth.count())
                 .from(cloth)
-                .where(cloth.ownerId.eq(ownerId))
+                .where(cloth.owner.id.eq(ownerId))
                 .fetchOne();
 
         // hasNext 판단
@@ -171,7 +171,7 @@ public class ClothQueryRepositoryImpl implements ClothQueryRepository {
 
     // Entity -> DTO 변환 (attributes 포함)
     private ClothDTO toDto(Cloth cloth) {
-        var attributeValues = clothAttributeValueRepository.findAllByClothId(cloth.getId());
+        var attributeValues = clothAttributeValueRepository.findAllByCloth_Id(cloth.getId());
         var clothDTO = clothMapper.toDTO(cloth);
         var attributeDtos = clothMapper.toAttributeDTOs(attributeValues);
 

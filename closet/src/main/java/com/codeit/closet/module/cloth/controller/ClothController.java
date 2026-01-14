@@ -40,10 +40,10 @@ public class ClothController {
     @GetMapping
     public ResponseEntity<ClothDTOCursorResponse> getClothes(
             @AuthenticationPrincipal ClosetUserDetails userDetails,
-            @RequestParam(required = false) UUID ownerId,
+            @RequestParam UUID ownerId,
             @RequestParam(required = false) String cursor,
             @RequestParam(required = false) UUID idAfter,
-            @RequestParam(required = false) Integer limit,
+            @RequestParam Integer limit,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection,
             @RequestParam(required = false) String typeEqual
