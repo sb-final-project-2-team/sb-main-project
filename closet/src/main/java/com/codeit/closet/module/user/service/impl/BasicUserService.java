@@ -89,7 +89,6 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  @PreAuthorize("principal.userDTO.id == #userId")
   @Transactional(readOnly = true)
   public ProfileDTO findUserProfile(UUID userId) {
     User user = userRepository.findById(userId).orElseThrow(
