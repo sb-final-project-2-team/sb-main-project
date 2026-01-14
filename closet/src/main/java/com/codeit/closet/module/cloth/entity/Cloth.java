@@ -2,6 +2,7 @@ package com.codeit.closet.module.cloth.entity;
 
 
 import com.codeit.closet.module.binarycontent.entity.BinaryContent;
+import com.codeit.closet.module.user.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,8 +41,9 @@ public class Cloth {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "owner_id", nullable = false)
-    private UUID ownerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
 
     @Column(name = "name", nullable = false, length = 255)
     private String name;

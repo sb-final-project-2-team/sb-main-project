@@ -5,6 +5,7 @@ import com.codeit.closet.module.binarycontent.service.BinaryContentService;
 import com.codeit.closet.module.cloth.dto.*;
 import com.codeit.closet.module.cloth.dto.ClothAttributeValueDTO;
 import com.codeit.closet.module.cloth.entity.Cloth;
+import com.codeit.closet.module.cloth.entity.ClothAttribute;
 import com.codeit.closet.module.cloth.entity.ClothAttributeValue;
 import com.codeit.closet.module.cloth.entity.ClothType;
 import com.codeit.closet.module.cloth.exception.ClothNotFoundException;
@@ -14,12 +15,15 @@ import com.codeit.closet.module.cloth.repository.ClothAttributeValueRepository;
 import com.codeit.closet.module.cloth.repository.ClothQueryRepository;
 import com.codeit.closet.module.cloth.repository.ClothRepository;
 import com.codeit.closet.module.cloth.service.ClothService;
+import com.codeit.closet.module.user.entity.User;
+import com.codeit.closet.module.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -31,12 +35,17 @@ public class BasicClothService implements ClothService {
     private final BinaryContentService binaryContentService;
     private final ClothMapper clothMapper;
     private final ClothQueryRepository clothQueryRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
     public ClothDTO createCloth(ClothCreateRequest request, MultipartFile multipartFile) {
+        // User 조회
+        User owner = userRepository.findById(request.ownerId())
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 사용자입니다."));
+
         // 중복 검사
-        if (clothRepository.existsByOwnerIdAndName(request.ownerId(), request.name())) {
+        if (clothRepository.existsByOwner_IdAndName(request.ownerId(), request.name())) {
             throw new DuplicateClothNameException(request.name());
         }
 
@@ -48,7 +57,7 @@ public class BasicClothService implements ClothService {
 
         // Cloth Entity 생성 및 저장
         Cloth cloth = Cloth.builder()
-                .ownerId(request.ownerId())
+                .owner(owner)
                 .name(request.name())
                 .type(ClothType.valueOf(request.type()))
                 .binaryContent(binaryContent)
@@ -58,7 +67,7 @@ public class BasicClothService implements ClothService {
 
         // 속성 값 저장
         if (request.attributes() != null && !request.attributes().isEmpty()) {
-            saveAttributes(saved.getId(), request.attributes());
+            saveAttributes(saved, request.attributes());
         }
 
         // DTO 변환 (속성 값 포함)
@@ -82,7 +91,7 @@ public class BasicClothService implements ClothService {
                 .orElseThrow(() -> new ClothNotFoundException(clothId));
 
         // 소유자 또는 관리자만 수정 가능
-        if (!cloth.getOwnerId().equals(requestUserId) && !isAdmin) {
+        if (!cloth.getOwner().getId().equals(requestUserId) && !isAdmin) {
             throw new RuntimeException("해당 옷을 수정할 권한이 없습니다");
         }
 
@@ -107,11 +116,11 @@ public class BasicClothService implements ClothService {
         // 속성 값 수정 (기존 삭제 후 재생성)
         if (request.attributes() != null) {
             // 기존 속성 값 삭제
-            clothAttributeValueRepository.deleteAllByClothId(clothId);
+            clothAttributeValueRepository.deleteAllByCloth_Id(clothId);
 
             // 새 속성 값 저장
             if (!request.attributes().isEmpty()) {
-                saveAttributes(clothId, request.attributes());
+                saveAttributes(cloth, request.attributes());
             }
         }
 
@@ -127,12 +136,12 @@ public class BasicClothService implements ClothService {
                 .orElseThrow(() -> new ClothNotFoundException(clothId));
 
         // 소유자 또는 관리자만 삭제 가능
-        if (!cloth.getOwnerId().equals(requestUserId) && !isAdmin) {
+        if (!cloth.getOwner().getId().equals(requestUserId) && !isAdmin) {
             throw new RuntimeException("해당 옷을 삭제할 권한이 없습니다");
         }
 
         // 속성 값 먼저 삭제
-        clothAttributeValueRepository.deleteAllByClothId(clothId);
+        clothAttributeValueRepository.deleteAllByCloth_Id(clothId);
 
         // 이미지 삭제
         if (cloth.getBinaryContent() != null) {
@@ -164,11 +173,15 @@ public class BasicClothService implements ClothService {
     }
 
     // 사용자가 옷 등록시, 선택할때 테이블이 생성
-    private void saveAttributes(UUID clothId, List<ClothAttributeValueDTO> attributes) {
+    private void saveAttributes(Cloth cloth, List<ClothAttributeValueDTO> attributes) {
         for (ClothAttributeValueDTO attrDto : attributes) {
+            ClothAttribute clothAttribute = ClothAttribute.builder()
+                    .id(attrDto.definitionId())
+                    .build();
+
             ClothAttributeValue attributeValue = ClothAttributeValue.builder()
-                    .clothId(clothId)
-                    .clothAttributeId(attrDto.definitionId())
+                    .cloth(cloth)
+                    .clothAttribute(clothAttribute)
                     .value(attrDto.value())
                     .build();
 
@@ -180,7 +193,7 @@ public class BasicClothService implements ClothService {
     private ClothDTO toDto(Cloth cloth) {
         // 속성 값 조회
         List<ClothAttributeValue> attributeValues =
-                clothAttributeValueRepository.findAllByClothId(cloth.getId());
+                clothAttributeValueRepository.findAllByCloth_Id(cloth.getId());
 
         // Mapper를 사용하여 변환
         ClothDTO clothDTO = clothMapper.toDTO(cloth);

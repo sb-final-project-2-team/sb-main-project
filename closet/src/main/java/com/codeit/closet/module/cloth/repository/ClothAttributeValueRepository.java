@@ -14,10 +14,10 @@ import java.util.UUID;
 public interface ClothAttributeValueRepository extends JpaRepository<ClothAttributeValue, UUID> {
 
     // 특정 옷의 속성 값 목록 조회
-    List<ClothAttributeValue> findAllByClothId(UUID clothId);
+    List<ClothAttributeValue> findAllByCloth_Id(UUID clothId);
 
     // 특정 옷의 속성 값 삭제
     @Modifying
-    @Query("delete from ClothAttributeValue cav where cav.clothId = :clothId")
-    void deleteAllByClothId(@Param("clothId") UUID clothId);
+    @Query("delete from ClothAttributeValue cav where cav.cloth.id = :clothId")
+    void deleteAllByCloth_Id(@Param("clothId") UUID clothId);
 }
