@@ -18,7 +18,7 @@ jobs:
           POSTGRES_USER: closet-user
           POSTGRES_PASSWORD: closet_1234
         ports:
-          - 5433:5432
+          - 5432:5432
         options: >-
           --health-cmd="pg_isready -U closet-user"
           --health-interval=10s
