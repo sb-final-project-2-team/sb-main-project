@@ -14,7 +14,7 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_DB: closet
+          POSTGRES_DB: closet-test
           POSTGRES_USER: closet-user
           POSTGRES_PASSWORD: closet_1234
         ports:
