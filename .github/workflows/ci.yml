@@ -18,7 +18,7 @@ jobs:
           POSTGRES_USER: closet-user
           POSTGRES_PASSWORD: closet_1234
         ports:
-          - 5432:5432
+          - 5433:5432
         options: >-
           --health-cmd="pg_isready -U closet-user"
           --health-interval=10s
@@ -31,7 +31,7 @@ jobs:
 
       - name: Create closettest database for JDBC
         run: |
-          PGPASSWORD=closet_1234 psql -h localhost -U closet-user -d closet-test -c "CREATE DATABASE closettest;"
+          PGPASSWORD=closet_1234 psql -h localhost -p 5433 -U closet-user -d closet-test -c "CREATE DATABASE closettest;"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -46,8 +46,6 @@ jobs:
 
       - name: Build with Gradle
         working-directory: closet
-        env:
-          DB_PORT: 5432
         run: ./gradlew build
 
 # 컴파일 에러 ❌ → CI 실패
