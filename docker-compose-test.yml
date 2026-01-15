@@ -5,15 +5,15 @@ services:
     image: postgres:15-alpine
     container_name: closet-test-db
     environment:
-      POSTGRES_DB: testdb
-      POSTGRES_USER: testuser
-      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: closet-test
+      POSTGRES_USER: closet-user
+      POSTGRES_PASSWORD: closet_1234
     ports:
-      - "5433:5432"  # 호스트의 5433 포트로 매핑 (기본 5432와 충돌 방지)
+      - "5432:5432"
     volumes:
       - postgres-test-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U testuser -d testdb"]
+      test: ["CMD-SHELL", "pg_isready -U closet-user -d closet-test"]
       interval: 5s
       timeout: 5s
       retries: 5

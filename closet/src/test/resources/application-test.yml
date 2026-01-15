@@ -1,17 +1,20 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/testdb
-    username: testuser
-    password: testpass
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=VALUE,JSONB
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop   # 테스트 시 자동으로 테이블 생성/삭제
+      ddl-auto: create-drop
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.H2Dialect
     show-sql: false
+  h2:
+    console:
+      enabled: false
   sql:
     init:
-      mode: never       # 기존 schema.sql 자동 실행 방지
+      mode: never
