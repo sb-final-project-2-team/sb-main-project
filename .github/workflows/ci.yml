@@ -46,7 +46,9 @@ jobs:
 
       - name: Build with Gradle
         working-directory: closet
-        run: ./gradlew build -Dspring.profiles.active=ci
+        env:
+          DB_PORT: 5432
+        run: ./gradlew build
 
 # 컴파일 에러 ❌ → CI 실패
 #
