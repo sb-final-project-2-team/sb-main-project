@@ -50,6 +50,7 @@ dependencies {
     testImplementation 'org.springframework.kafka:spring-kafka-test'
 
     runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'com.h2database:h2'  // 테스트용 H2 DB
 
     /* =========================
      * Observability
