@@ -178,7 +178,7 @@ CREATE TABLE feeds
     created_at    TIMESTAMPTZ DEFAULT NOW(),
     updated_at    TIMESTAMPTZ,
     FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (weather_id) REFERENCES weather_regions (id)
+    FOREIGN KEY (weather_id) REFERENCES weather_data (id)
 );
 
 CREATE TABLE ootds
@@ -291,3 +291,6 @@ CREATE INDEX idx_users_created_at_id_role_locked ON users (created_at DESC, id D
 
 CREATE INDEX idx_feed_created_at_id_desc ON feeds (created_at DESC, id DESC);
 CREATE INDEX idx_feed_like_Count_created_at_id_desc ON feeds (like_count DESC, created_at DESC, id DESC);
+
+CREATE UNIQUE INDEX uk_weather_data
+    ON weather_data (weather_region_id, forecast_at, forecast_kind);

@@ -56,10 +56,9 @@ public interface WeatherMapper {
   WeatherDTO toWeatherDTO(WeatherData data);
 
   @Mapping(target = "weatherId", source = "id")
-  @Mapping(target = "skyStatus", source = "weatherData.skyStatus")
-  @Mapping(target = "precipitation", source = "weatherData")
-  @Mapping(target = "temperature", source = "weatherData")
-  WeatherSummaryDTO toWeatherSummaryDTO(WeatherRegion weather);
+  @Mapping(target = "temperature", expression = "java(toTemperatureDTO(weatherData))")
+  @Mapping(target = "precipitation", expression = "java(toPrecipitationDTO(weatherData))")
+  WeatherSummaryDTO toWeatherSummaryDTO(WeatherData weatherData);
 
   @Named("stringToList")
   default List<String> stringToList(String locationNames) {
