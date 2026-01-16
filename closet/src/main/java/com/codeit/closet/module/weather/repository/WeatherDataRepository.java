@@ -34,4 +34,16 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, UUID> 
         @Param("startTime") Instant startTime,
         @Param("endTime") Instant endTime
     );
+
+    /**
+     * 특정 지역의 가장 최신 날씨 데이터 조회 (추천 기능용)
+     * 가장 최근에 생성된 데이터 반환
+     */
+    @Query("""
+        SELECT w FROM WeatherData w
+        WHERE w.weatherRegion.id = :weatherRegionId
+        ORDER BY w.forecastedAt DESC, w.forecastAt DESC
+        LIMIT 1
+        """)
+    Optional<WeatherData> findLatestByWeatherRegionId(@Param("weatherRegionId") UUID weatherRegionId);
 }
