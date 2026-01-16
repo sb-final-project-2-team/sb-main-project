@@ -99,7 +99,7 @@ public class SeasonFilter {
 
         // 일반 계절 필터링
         return allowedSeasons.stream()
-                .anyMatch(season -> clothSeason.toUpperCase().contains(season));
+                .anyMatch(season -> season.equalsIgnoreCase(clothSeason));
     }
 
     /**
@@ -142,7 +142,7 @@ public class SeasonFilter {
         }
 
         return allowedSeasons.stream()
-                .anyMatch(season -> clothSeason.toUpperCase().contains(season));
+                .anyMatch(season -> season.equalsIgnoreCase(clothSeason));
     }
 
     /**
