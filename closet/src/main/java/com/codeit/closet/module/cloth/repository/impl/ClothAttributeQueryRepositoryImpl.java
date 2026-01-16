@@ -25,16 +25,20 @@ public class ClothAttributeQueryRepositoryImpl implements ClothAttributeQueryRep
 
     /**
      * 의상 ID로 속성명-값 맵 조회
-     * ClothAttributeValue.clothAttributeId → ClothAttribute.name 조인
+     * ClothAttributeValue.clothAttribute → ClothAttribute.name 조인
      */
     @Override
     public Map<String, String> findAttributeMapByClothId(UUID clothId) {
-        // JPQL로 ClothAttributeValue와 ClothAttribute 조인
+        if (clothId == null) {
+            return Collections.emptyMap();
+        }
+
+        // JPQL로 ClothAttributeValue와 ClothAttribute 조인 (관계 기반)
         String jpql = """
             SELECT ca.name, cav.value
             FROM ClothAttributeValue cav
-            JOIN ClothAttribute ca ON cav.clothAttributeId = ca.id
-            WHERE cav.clothId = :clothId
+            JOIN cav.clothAttribute ca
+            WHERE cav.cloth.id = :clothId
             """;
 
         List<Tuple> results = entityManager.createQuery(jpql, Tuple.class)
