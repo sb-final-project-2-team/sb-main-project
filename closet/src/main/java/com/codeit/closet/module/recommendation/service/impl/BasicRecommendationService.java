@@ -2,11 +2,13 @@ package com.codeit.closet.module.recommendation.service.impl;
 
 import com.codeit.closet.module.cloth.dto.ClothAttributeValueDTO;
 import com.codeit.closet.module.cloth.entity.Cloth;
+import com.codeit.closet.module.cloth.repository.ClothAttributeQueryRepository;
 import com.codeit.closet.module.cloth.repository.ClothRepository;
 import com.codeit.closet.module.recommendation.algorithm.OutfitCombinationGenerator;
-import com.codeit.closet.module.recommendation.algorithm.RecommendationAttributeLoader;
 import com.codeit.closet.module.recommendation.algorithm.RecommendationScorer;
+import com.codeit.closet.module.recommendation.algorithm.SeasonFilter;
 import com.codeit.closet.module.recommendation.algorithm.TemperatureClothMatcher;
+import com.codeit.closet.module.recommendation.mapper.RecommendationMapper;
 import com.codeit.closet.module.recommendation.dto.RecommendationClothDTO;
 import com.codeit.closet.module.recommendation.dto.RecommendationResponse;
 import com.codeit.closet.module.recommendation.exception.InsufficientClothesException;
@@ -30,7 +32,7 @@ import java.util.UUID;
 
 /**
  * 날씨 기반 의상 추천 서비스 구현체
- * - 온도(0-40점) + 강수(0-15점) + 속성(0-30점) = 총 0-85점 범위
+ * - 온도(0-40점) + 강수(0-15점) + 속성(0-30점) = 최대 85점 (0-100 범위로 클램핑)
  * - 체감온도 민감도(1-5)에 따라 ±2도 보정 적용
  */
 @Service
@@ -44,7 +46,9 @@ public class BasicRecommendationService implements RecommendationService {
     private final TemperatureClothMatcher temperatureClothMatcher;
     private final OutfitCombinationGenerator combinationGenerator;
     private final RecommendationScorer recommendationScorer;
-    private final RecommendationAttributeLoader attributeLoader;
+    private final ClothAttributeQueryRepository clothAttributeQueryRepository;
+    private final RecommendationMapper recommendationMapper;
+    private final SeasonFilter seasonFilter;
 
     @Override
     @Transactional(readOnly = true)
@@ -64,47 +68,55 @@ public class BasicRecommendationService implements RecommendationService {
 
         // 3-1. 속성 맵 일괄 로드 (N+1 방지)
         List<UUID> clothIds = clothes.stream().map(Cloth::getId).toList();
-        Map<UUID, Map<String, String>> attributeMaps = attributeLoader.loadAttributeMaps(clothIds);
+        Map<UUID, Map<String, String>> attributeMaps = clothAttributeQueryRepository.findAttributeMapsByClothIds(clothIds);
         // 3-2. 속성 DTO 맵 로드 (응답용)
-        Map<UUID, List<ClothAttributeValueDTO>> attributeDTOs = attributeLoader.loadAttributeDTOs(clothIds);
+        Map<UUID, List<ClothAttributeValueDTO>> attributeDTOs = clothAttributeQueryRepository.findAttributeDTOsByClothIds(clothIds);
 
-        // 4. 코디 조합 생성 가능 여부 확인
-        if (!combinationGenerator.canGenerateCombinations(clothes)) {
-            throw new InsufficientClothesException(
-                    "추천 가능한 코디 조합을 만들 수 없습니다. 상의와 하의를 등록해주세요.");
+        // 4. 체감온도 계산 (필터링에 필요)
+        int sensitivity = user.getTemperatureSensitivity();
+        double adjustedTemp = recommendationScorer.getAdjustedTemperature(
+                weather.getTemperatureCurrent(), sensitivity);
+
+        // 5. 계절 기반 필터링 적용
+        List<Cloth> filteredClothes = seasonFilter.filterByAllowedSeasons(
+                clothes, adjustedTemp, sensitivity, attributeMaps);
+
+        // 5-1. 필터링 후 의상이 부족하면 확장 필터링 시도
+        if (!combinationGenerator.canGenerateCombinations(filteredClothes)) {
+            filteredClothes = seasonFilter.filterWithExpandedSeasons(
+                    clothes, adjustedTemp, attributeMaps);
         }
 
-        // 5. 체감온도 계산 및 아우터 필요 여부 판단
-        double adjustedTemp = recommendationScorer.getAdjustedTemperature(
-                weather.getTemperatureCurrent(), user.getTemperatureSensitivity());
+        // 6. 코디 조합 생성 가능 여부 확인 (필터링된 의상으로)
+        if (!combinationGenerator.canGenerateCombinations(filteredClothes)) {
+            throw new InsufficientClothesException(
+                    "추천 가능한 코디 조합을 만들 수 없습니다. 현재 날씨에 맞는 계절 의상을 등록해주세요.");
+        }
+
+        // 7. 아우터 필요 여부 판단
         boolean outerRequired = temperatureClothMatcher.isOuterRequired(adjustedTemp);
 
-        // 6. 코디 조합 생성
+        // 8. 코디 조합 생성 (필터링된 의상으로)
         List<List<Cloth>> combinations = combinationGenerator.generateCombinations(
-                clothes, outerRequired, limit * 3);
+                filteredClothes, outerRequired, limit * 3);
 
-        // 7. 각 조합 점수 계산 및 정렬
+        // 9. 각 조합 점수 계산 및 정렬
         List<ScoredOutfit> scoredOutfits = combinations.stream()
                 .map(outfit -> new ScoredOutfit(
                         outfit,
-                        recommendationScorer.calculateOutfitScore(outfit, weather, user.getTemperatureSensitivity(), attributeMaps)
+                        recommendationScorer.calculateOutfitScore(outfit, weather, sensitivity, attributeMaps)
                 ))
                 .sorted(Comparator.comparingInt(ScoredOutfit::score).reversed())
                 .limit(limit)
                 .toList();
 
-        // 8. 첫 번째 추천 코디를 DTO로 변환 (프론트엔드 명세 맞춤)
+        // 10. 첫 번째 추천 코디를 DTO로 변환 (MapStruct 사용)
         List<RecommendationClothDTO> recommendedClothes = new ArrayList<>();
         if (!scoredOutfits.isEmpty()) {
             ScoredOutfit topScored = scoredOutfits.get(0);
             for (Cloth cloth : topScored.outfit()) {
-                recommendedClothes.add(new RecommendationClothDTO(
-                        cloth.getId(),
-                        cloth.getName(),
-                        cloth.getBinaryContent() != null ? cloth.getBinaryContent().getFileUrl() : null,
-                        cloth.getType().name(),
-                        attributeDTOs.getOrDefault(cloth.getId(), List.of())
-                ));
+                List<ClothAttributeValueDTO> attrs = attributeDTOs.getOrDefault(cloth.getId(), List.of());
+                recommendedClothes.add(recommendationMapper.toRecommendationClothDTO(cloth, attrs));
             }
         }
 

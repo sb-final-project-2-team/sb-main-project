@@ -16,6 +16,13 @@ import java.util.Set;
 @Component
 public class PrecipitationClothMatcher {
 
+    // 점수 상수
+    private static final int PRECIPITATION_BONUS = 20;
+    private static final int PRECIPITATION_PENALTY = -30;
+    private static final int MAX_PRECIPITATION_SCORE = 15;
+    private static final int RAW_SCORE_OFFSET = 30;
+    private static final double RAW_SCORE_RANGE = 50.0;
+
     // 강수 유형별 추천 의상 타입
     private static final Map<PrecipitationType, Set<ClothType>> RECOMMENDED_FOR_PRECIPITATION;
 
@@ -59,12 +66,12 @@ public class PrecipitationClothMatcher {
         // 비/눈 올 때 추천 의상 보너스
         Set<ClothType> recommended = RECOMMENDED_FOR_PRECIPITATION.get(precipType);
         if (recommended != null && recommended.contains(clothType)) {
-            return 20;  // 추천 보너스
+            return PRECIPITATION_BONUS;
         }
 
         // 비/눈 올 때 비추천 의상 페널티
         if (AVOID_IN_PRECIPITATION.contains(clothType)) {
-            return -30;  // 비추천 페널티
+            return PRECIPITATION_PENALTY;
         }
 
         return 0;
@@ -79,7 +86,7 @@ public class PrecipitationClothMatcher {
     public int calculateNormalizedPrecipitationScore(PrecipitationType precipType, ClothType clothType) {
         int rawScore = getPrecipitationWeight(precipType, clothType);
         // rawScore 범위: -30 ~ +20 → 0 ~ 15점으로 정규화
-        return (int) ((rawScore + 30) / 50.0 * 15);
+        return (int) ((rawScore + RAW_SCORE_OFFSET) / RAW_SCORE_RANGE * MAX_PRECIPITATION_SCORE);
     }
 
     /**
@@ -100,12 +107,4 @@ public class PrecipitationClothMatcher {
         };
     }
 
-    /**
-     * 강수가 있는지 여부
-     * @param precipType 강수 유형
-     * @return 강수 여부
-     */
-    public boolean hasPrecipitation(PrecipitationType precipType) {
-        return precipType != null && precipType != PrecipitationType.NONE;
-    }
 }
