@@ -32,6 +32,10 @@ public class Ootd {
   private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "feed_id", nullable = false)
+  private Feed feed;
+
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "clothes_id", nullable = false)
   private Cloth cloth;
 
