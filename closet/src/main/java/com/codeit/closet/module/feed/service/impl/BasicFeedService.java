@@ -7,8 +7,10 @@ import com.codeit.closet.module.feed.dto.FeedDTO;
 import com.codeit.closet.module.feed.dto.FeedDTOCursorResponse;
 import com.codeit.closet.module.feed.dto.FeedUpdateRequest;
 import com.codeit.closet.module.feed.entity.Feed;
+import com.codeit.closet.module.feed.entity.Ootd;
 import com.codeit.closet.module.feed.mapper.FeedMapper;
 import com.codeit.closet.module.feed.repository.FeedRepository;
+import com.codeit.closet.module.feed.repository.OotdRepository;
 import com.codeit.closet.module.feed.service.FeedService;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
@@ -31,6 +33,7 @@ public class BasicFeedService implements FeedService {
 
   private final UserRepository userRepository;
   private final WeatherDataRepository weatherDataRepository;
+  private final OotdRepository ootdRepository;
   private final ClothRepository clothRepository;
   private final FeedRepository feedRepository;
   private final FeedMapper feedMapper;
@@ -56,8 +59,13 @@ public class BasicFeedService implements FeedService {
         .content(request.content())
         .build();
 
-    for (Cloth clothes : clothList) {
-      feed.addOotd(clothes);
+    for (Cloth cloth : clothList) {
+      Ootd ootd = Ootd.builder()
+          .feed(feed)
+          .cloth(cloth)
+          .build();
+
+      feed.addOotd(ootd);
     }
 
     Feed saved = feedRepository.save(feed);
