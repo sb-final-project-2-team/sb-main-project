@@ -84,6 +84,11 @@ public class PrecipitationClothMatcher {
      * @return 정규화된 점수 (0-15)
      */
     public int calculateNormalizedPrecipitationScore(PrecipitationType precipType, ClothType clothType) {
+        // 강수 없으면 영향 없음 = 0점
+        if (precipType == null || precipType == PrecipitationType.NONE) {
+            return 0;
+        }
+
         int rawScore = getPrecipitationWeight(precipType, clothType);
         // rawScore 범위: -30 ~ +20 → 0 ~ 15점으로 정규화
         return (int) ((rawScore + RAW_SCORE_OFFSET) / RAW_SCORE_RANGE * MAX_PRECIPITATION_SCORE);
