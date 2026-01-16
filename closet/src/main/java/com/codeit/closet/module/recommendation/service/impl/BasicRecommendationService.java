@@ -10,6 +10,7 @@ import com.codeit.closet.module.recommendation.algorithm.SeasonFilter;
 import com.codeit.closet.module.recommendation.algorithm.TemperatureClothMatcher;
 import com.codeit.closet.module.recommendation.mapper.RecommendationMapper;
 import com.codeit.closet.module.recommendation.dto.RecommendationClothDTO;
+import com.codeit.closet.module.recommendation.dto.RecommendationOutfitDTO;
 import com.codeit.closet.module.recommendation.dto.RecommendationResponse;
 import com.codeit.closet.module.recommendation.exception.InsufficientClothesException;
 import com.codeit.closet.module.recommendation.exception.UserWeatherNotSetException;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -105,8 +107,22 @@ public class BasicRecommendationService implements RecommendationService {
         List<List<Cloth>> combinations = combinationGenerator.generateCombinations(
                 filteredClothes, outerRequired, limit * 3);
 
+        // 8-1. 조합 수가 부족하면 확장 필터링 후 재시도
+        if (combinations.size() < limit) {
+            List<Cloth> expandedClothes = seasonFilter.filterWithExpandedSeasons(
+                    clothes, adjustedTemp, attributeMaps);
+            if (combinationGenerator.canGenerateCombinations(expandedClothes)) {
+                combinations = combinationGenerator.generateCombinations(
+                        expandedClothes, outerRequired, limit * 3);
+            }
+        }
+
+        // 8-2. 조합 셔플 (동점 코디에 다양성 제공, 매 호출마다 다른 순서)
+        List<List<Cloth>> shuffledCombinations = new ArrayList<>(combinations);
+        Collections.shuffle(shuffledCombinations);
+
         // 9. 각 조합 점수 계산 및 정렬
-        List<ScoredOutfit> scoredOutfits = combinations.stream()
+        List<ScoredOutfit> scoredOutfits = shuffledCombinations.stream()
                 .map(outfit -> new ScoredOutfit(
                         outfit,
                         recommendationScorer.calculateOutfitScore(outfit, weather, sensitivity, attributeMaps)
@@ -115,17 +131,25 @@ public class BasicRecommendationService implements RecommendationService {
                 .limit(limit)
                 .toList();
 
-        // 10. 첫 번째 추천 코디를 DTO로 변환 (MapStruct 사용)
-        List<RecommendationClothDTO> recommendedClothes = new ArrayList<>();
-        if (!scoredOutfits.isEmpty()) {
-            ScoredOutfit topScored = scoredOutfits.get(0);
-            for (Cloth cloth : topScored.outfit()) {
-                List<ClothAttributeValueDTO> attrs = attributeDTOs.getOrDefault(cloth.getId(), List.of());
-                recommendedClothes.add(recommendationMapper.toRecommendationClothDTO(cloth, attrs));
-            }
-        }
+        // 10. 모든 추천 코디를 DTO로 변환 (MapStruct 사용)
+        List<RecommendationOutfitDTO> outfits = scoredOutfits.stream()
+                .map(scoredOutfit -> {
+                    List<RecommendationClothDTO> clothDTOs = scoredOutfit.outfit().stream()
+                            .map(cloth -> {
+                                List<ClothAttributeValueDTO> attrs = attributeDTOs.getOrDefault(cloth.getId(), List.of());
+                                return recommendationMapper.toRecommendationClothDTO(cloth, attrs);
+                            })
+                            .toList();
+                    return new RecommendationOutfitDTO(scoredOutfit.score(), clothDTOs);
+                })
+                .toList();
 
-        return new RecommendationResponse(weather.getId(), userId, recommendedClothes);
+        // 11. 하위 호환성: 첫 번째 코디의 clothes 추출
+        List<RecommendationClothDTO> topOutfitClothes = outfits.isEmpty()
+                ? List.of()
+                : outfits.get(0).clothes();
+
+        return new RecommendationResponse(weather.getId(), userId, topOutfitClothes, outfits);
     }
 
     @Override
