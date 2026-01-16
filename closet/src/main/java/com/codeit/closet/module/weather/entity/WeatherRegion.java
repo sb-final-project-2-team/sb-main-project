@@ -65,4 +65,8 @@ public class WeatherRegion {
     public void updateLastCollectedAt() {
         this.lastCollectedAt = Instant.now();
     }
+
+    public void updateCurrentWeather(WeatherData weatherData) {
+        this.weatherData = weatherData;
+    }
 }

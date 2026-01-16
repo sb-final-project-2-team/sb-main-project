@@ -2,6 +2,7 @@ package com.codeit.closet.module.feed.entity;
 
 import com.codeit.closet.module.cloth.entity.Cloth;
 import com.codeit.closet.module.user.entity.User;
+import com.codeit.closet.module.weather.entity.WeatherData;
 import com.codeit.closet.module.weather.entity.WeatherRegion;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -45,7 +46,7 @@ public class Feed {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "weather_id", nullable = false)
-  private WeatherRegion weather;
+  private WeatherData weather;
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "feed_id")

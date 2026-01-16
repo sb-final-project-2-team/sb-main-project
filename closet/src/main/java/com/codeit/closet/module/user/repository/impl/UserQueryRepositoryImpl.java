@@ -1,6 +1,5 @@
 package com.codeit.closet.module.user.repository.impl;
 
-import com.codeit.closet.module.user.dto.user.UserDTO;
 import com.codeit.closet.module.user.dto.user.UserDTOCursorResponse;
 import com.codeit.closet.module.user.entity.QUser;
 import com.codeit.closet.module.user.entity.User;
@@ -56,6 +55,8 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
 
     List<User> users = jpaQueryFactory
         .selectFrom(user)
+        .leftJoin(user.binaryContent).fetchJoin()
+        .leftJoin(user.weather).fetchJoin()
         .where(builder)
         .orderBy(orderSpecifiers(sortBy, sortDirection))
         .limit(pageSize + 1)
