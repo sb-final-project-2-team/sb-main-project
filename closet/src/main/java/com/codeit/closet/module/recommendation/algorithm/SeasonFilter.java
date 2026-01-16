@@ -47,13 +47,13 @@ public class SeasonFilter {
         // 민감도에 따른 인접 계절 추가
         if (sensitivity <= 2) {
             // 추위 많이 탐 → 더 따뜻한 계절만 추가
-            addWarmerAdjacentSeason(allowed, primarySeason, adjustedTemp);
+            addWarmerAdjacentSeason(allowed, primarySeason);
         } else if (sensitivity >= 4) {
             // 더위 많이 탐 → 더 시원한 계절도 추가
-            addCoolerAdjacentSeason(allowed, primarySeason, adjustedTemp);
+            addCoolerAdjacentSeason(allowed, primarySeason);
         } else {
             // 보통 → 양쪽 인접 계절 추가
-            addAllAdjacentSeasons(allowed, primarySeason, adjustedTemp);
+            addAllAdjacentSeasons(allowed, primarySeason);
         }
 
         return allowed;
@@ -99,7 +99,7 @@ public class SeasonFilter {
 
         // 일반 계절 필터링
         return allowedSeasons.stream()
-                .anyMatch(season -> clothSeason.toUpperCase().contains(season));
+                .anyMatch(season -> season.equalsIgnoreCase(clothSeason));
     }
 
     /**
@@ -114,9 +114,11 @@ public class SeasonFilter {
         // 모든 인접 계절 허용
         Set<String> expandedSeasons = getAllowedSeasons(adjustedTemp, 3);
 
-        // 추가로 한 단계 더 확장
-        String primarySeason = determinePrimarySeason(adjustedTemp);
-        addAllAdjacentSeasons(expandedSeasons, primarySeason, adjustedTemp);
+        // 추가로 한 단계 더 확장 (새로 추가된 계절들의 인접 계절도 추가)
+        Set<String> toExpand = new HashSet<>(expandedSeasons);
+        for (String season : toExpand) {
+            addAllAdjacentSeasons(expandedSeasons, season);
+        }
 
         return clothes.stream()
                 .filter(cloth -> isClothAllowedExpanded(cloth, adjustedTemp, expandedSeasons, attributeMaps))
@@ -142,7 +144,7 @@ public class SeasonFilter {
         }
 
         return allowedSeasons.stream()
-                .anyMatch(season -> clothSeason.toUpperCase().contains(season));
+                .anyMatch(season -> season.equalsIgnoreCase(clothSeason));
     }
 
     /**
@@ -162,7 +164,7 @@ public class SeasonFilter {
      * FALL → WINTER 추가
      * WINTER → (추가 없음, 이미 가장 따뜻한 옷)
      */
-    private void addWarmerAdjacentSeason(Set<String> seasons, String primarySeason, double temp) {
+    private void addWarmerAdjacentSeason(Set<String> seasons, String primarySeason) {
         switch (primarySeason) {
             case SPRING -> seasons.add(SUMMER);
             case FALL -> seasons.add(WINTER);
@@ -177,7 +179,7 @@ public class SeasonFilter {
      * SPRING → SUMMER 추가
      * SUMMER → (추가 없음, 이미 가장 시원한 옷)
      */
-    private void addCoolerAdjacentSeason(Set<String> seasons, String primarySeason, double temp) {
+    private void addCoolerAdjacentSeason(Set<String> seasons, String primarySeason) {
         switch (primarySeason) {
             case WINTER -> seasons.add(FALL);
             case FALL -> seasons.add(SPRING);
@@ -189,7 +191,7 @@ public class SeasonFilter {
     /**
      * 양쪽 인접 계절 모두 추가 (보통 민감도 사용자용)
      */
-    private void addAllAdjacentSeasons(Set<String> seasons, String primarySeason, double temp) {
+    private void addAllAdjacentSeasons(Set<String> seasons, String primarySeason) {
         switch (primarySeason) {
             case WINTER -> seasons.add(FALL);
             case FALL -> {

@@ -21,7 +21,7 @@ public class OutfitCombinationGenerator {
     /**
      * 의상 목록으로 코디 조합 생성
      * @param clothes 사용자의 의상 목록
-     * @param outerRequired 아우터 필수 여부
+     * @param outerRequired 아우터 필수 여부 (true면 아우터 없는 조합은 생성하지 않음)
      * @param maxCombinations 최대 조합 수
      * @return 코디 조합 목록 (각 조합은 의상 리스트)
      */
@@ -35,70 +35,72 @@ public class OutfitCombinationGenerator {
 
         List<List<Cloth>> combinations = new ArrayList<>();
 
-        // 1. TOP + BOTTOM 조합 생성
         List<Cloth> tops = clothesByType.getOrDefault(ClothType.TOP, List.of());
         List<Cloth> bottoms = clothesByType.getOrDefault(ClothType.BOTTOM, List.of());
         List<Cloth> outers = clothesByType.getOrDefault(ClothType.OUTER, List.of());
+        List<Cloth> dresses = clothesByType.getOrDefault(ClothType.DRESS, List.of());
 
+        // 아우터 필수인데 아우터가 없으면 조합 생성 불가
+        if (outerRequired && outers.isEmpty()) {
+            return combinations;
+        }
+
+        // 1. TOP + BOTTOM 조합 생성
         for (Cloth top : tops) {
             for (Cloth bottom : bottoms) {
-                if (combinations.size() >= maxCombinations * 2) break;
+                if (combinations.size() >= maxCombinations) break;
 
-                // 기본 조합 (TOP + BOTTOM)
-                List<Cloth> outfit = new ArrayList<>();
-                outfit.add(top);
-                outfit.add(bottom);
-
-                // 아우터 추가
-                if (outerRequired && !outers.isEmpty()) {
-                    // 아우터 필수면 아우터 포함 조합만 추가
-                    for (Cloth outer : outers) {
-                        if (combinations.size() >= maxCombinations * 2) break;
-                        List<Cloth> outfitWithOuter = new ArrayList<>(outfit);
-                        outfitWithOuter.add(outer);
-                        combinations.add(outfitWithOuter);
-                    }
-                } else if (!outers.isEmpty()) {
-                    // 아우터 선택적이면 두 버전 모두 추가
-                    combinations.add(outfit);
-                    for (Cloth outer : outers) {
-                        if (combinations.size() >= maxCombinations * 2) break;
-                        List<Cloth> outfitWithOuter = new ArrayList<>(outfit);
-                        outfitWithOuter.add(outer);
-                        combinations.add(outfitWithOuter);
-                    }
-                } else {
-                    combinations.add(outfit);
-                }
+                List<Cloth> baseOutfit = List.of(top, bottom);
+                addOutfitCombinations(combinations, baseOutfit, outers, outerRequired, maxCombinations);
             }
         }
 
         // 2. DRESS 단독 조합 생성
-        List<Cloth> dresses = clothesByType.getOrDefault(ClothType.DRESS, List.of());
         for (Cloth dress : dresses) {
-            if (combinations.size() >= maxCombinations * 2) break;
+            if (combinations.size() >= maxCombinations) break;
 
-            List<Cloth> outfit = new ArrayList<>();
-            outfit.add(dress);
-
-            // 아우터 추가 (선택적)
-            if (!outers.isEmpty()) {
-                for (Cloth outer : outers) {
-                    if (combinations.size() >= maxCombinations * 2) break;
-                    List<Cloth> outfitWithOuter = new ArrayList<>(outfit);
-                    outfitWithOuter.add(outer);
-                    combinations.add(outfitWithOuter);
-                }
-                // 아우터 필수가 아니면 원피스만으로도 조합 추가
-                if (!outerRequired) {
-                    combinations.add(outfit);
-                }
-            } else {
-                combinations.add(outfit);
-            }
+            List<Cloth> baseOutfit = List.of(dress);
+            addOutfitCombinations(combinations, baseOutfit, outers, outerRequired, maxCombinations);
         }
 
         return combinations;
+    }
+
+    /**
+     * 기본 조합에 아우터를 추가하여 조합 목록에 추가
+     */
+    private void addOutfitCombinations(
+            List<List<Cloth>> combinations,
+            List<Cloth> baseOutfit,
+            List<Cloth> outers,
+            boolean outerRequired,
+            int maxCombinations) {
+
+        if (outerRequired) {
+            // 아우터 필수: 아우터 포함 조합만 추가
+            for (Cloth outer : outers) {
+                if (combinations.size() >= maxCombinations) break;
+                List<Cloth> outfitWithOuter = new ArrayList<>(baseOutfit);
+                outfitWithOuter.add(outer);
+                combinations.add(outfitWithOuter);
+            }
+        } else if (!outers.isEmpty()) {
+            // 아우터 선택적 + 아우터 있음: 기본 조합과 아우터 포함 조합 모두 추가
+            if (combinations.size() < maxCombinations) {
+                combinations.add(new ArrayList<>(baseOutfit));
+            }
+            for (Cloth outer : outers) {
+                if (combinations.size() >= maxCombinations) break;
+                List<Cloth> outfitWithOuter = new ArrayList<>(baseOutfit);
+                outfitWithOuter.add(outer);
+                combinations.add(outfitWithOuter);
+            }
+        } else {
+            // 아우터 없음 + 필수 아님: 기본 조합만 추가
+            if (combinations.size() < maxCombinations) {
+                combinations.add(new ArrayList<>(baseOutfit));
+            }
+        }
     }
 
     /**
