@@ -39,7 +39,10 @@ public class AttributeScoreCalculator {
      */
     public int calculateAttributeScore(Cloth cloth, double adjustedTemp, WeatherData weather,
                                        Map<UUID, Map<String, String>> attributeMaps) {
-        Map<String, String> attributes = attributeMaps.getOrDefault(cloth.getId(), Collections.emptyMap());
+        // attributeMaps null 방어
+        Map<UUID, Map<String, String>> safeAttributeMaps =
+                attributeMaps != null ? attributeMaps : Collections.emptyMap();
+        Map<String, String> attributes = safeAttributeMaps.getOrDefault(cloth.getId(), Collections.emptyMap());
 
         if (attributes.isEmpty()) {
             return DEFAULT_ATTRIBUTE_SCORE;
