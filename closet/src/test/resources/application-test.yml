@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:${DB_PORT:5433}/closettest
+    url: jdbc:postgresql://localhost:5433/closet-test
     username: closet-user
     password: closet_1234
     driver-class-name: org.postgresql.Driver
