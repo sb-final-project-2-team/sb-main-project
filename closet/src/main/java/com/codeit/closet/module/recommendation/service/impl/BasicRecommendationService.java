@@ -53,6 +53,11 @@ public class BasicRecommendationService implements RecommendationService {
     @Override
     @Transactional(readOnly = true)
     public RecommendationResponse getRecommendations(UUID weatherId, UUID userId, int limit) {
+        // 0. 파라미터 사전 검증
+        if (limit <= 0) {
+            throw new IllegalArgumentException("추천 개수(limit)는 1 이상이어야 합니다.");
+        }
+
         // 1. 사용자 정보 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 회원입니다."));
