@@ -98,8 +98,7 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
     List<Feed> feeds = jpaQueryFactory
         .selectFrom(feed).distinct()
         .join(feed.user, user).fetchJoin()
-        .join(feed.weather, weatherRegion).fetchJoin()
-        .join(feed.weather.weatherData, weatherData).fetchJoin()
+        .join(feed.weather, weatherData).fetchJoin()
         .leftJoin(feed.ootds, ootd).fetchJoin()
         .leftJoin(ootd.cloth, cloth).fetchJoin()
         .where(feed.id.in(feedIds))
@@ -115,8 +114,7 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
     Long totalCount = jpaQueryFactory
         .select(feed.count())
         .from(feed)
-        .join(feed.weather, weatherRegion)
-        .join(feed.weather.weatherData, weatherData)
+        .join(feed.weather, weatherData)
         .where(
             keywordLike != null && !keywordLike.isEmpty()
                 ? feed.content.containsIgnoreCase(keywordLike)
@@ -125,10 +123,10 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
                 ? feed.user.id.eq(authorIdEqual)
                 : null,
             skyStatusEqual != null
-                ? feed.weather.weatherData.skyStatus.eq(skyStatusEqual)
+                ? feed.weather.skyStatus.eq(skyStatusEqual)
                 : null,
             precipitationTypeEqual != null
-                ? feed.weather.weatherData.precipitationType.eq(precipitationTypeEqual)
+                ? feed.weather.precipitationType.eq(precipitationTypeEqual)
                 : null
         )
         .fetchOne();

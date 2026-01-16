@@ -14,7 +14,9 @@ import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
 import com.codeit.closet.module.weather.entity.PrecipitationType;
 import com.codeit.closet.module.weather.entity.SkyStatus;
+import com.codeit.closet.module.weather.entity.WeatherData;
 import com.codeit.closet.module.weather.entity.WeatherRegion;
+import com.codeit.closet.module.weather.repository.WeatherDataRepository;
 import com.codeit.closet.module.weather.repository.WeatherRegionRepository;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicFeedService implements FeedService {
 
   private final UserRepository userRepository;
-  private final WeatherRegionRepository weatherRegionRepository;
+  private final WeatherDataRepository weatherDataRepository;
   private final ClothRepository clothRepository;
   private final FeedRepository feedRepository;
   private final FeedMapper feedMapper;
@@ -41,7 +43,7 @@ public class BasicFeedService implements FeedService {
         .orElseThrow(() -> new NoSuchElementException("존재하지 않는 회원 정보입니다."));
 
     // 생성을 하는쪽으로 가야함.
-    WeatherRegion weatherRegion = weatherRegionRepository.findById(request.weatherId())
+    WeatherData weatherData = weatherDataRepository.findById(request.weatherId())
         .orElseThrow(() -> new NoSuchElementException("존재하지 않는 날씨 정보 입니다."));
 
     // 나만의 전체 Clothe가 아닌 Ootd에서 추천해준 쪽으로 처리해야한다.
@@ -50,7 +52,7 @@ public class BasicFeedService implements FeedService {
 
     Feed feed = Feed.builder()
         .user(user)
-        .weather(weatherRegion)
+        .weather(weatherData)
         .content(request.content())
         .build();
 

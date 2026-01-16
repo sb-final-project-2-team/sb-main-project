@@ -184,9 +184,11 @@ public class BasicWeatherService implements WeatherService {
         WeatherRegion region = weatherRegionRepository.findByXAndY(nx, ny)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "해당 격자 좌표의 지역이 등록되지 않았습니다: nx=" + nx + ", ny=" + ny));
-
         KmaApiResponse response = kmaApiClient.getUltraSrtNcst(nx, ny);
         WeatherData weatherData = kmaApiConverter.convertUltraSrtNcst(response, region);
+
+        region.updateCurrentWeather(weatherData);
+
         WeatherData saved = weatherDataRepository.save(weatherData);
         updateLastCollectedAt(region);
 
