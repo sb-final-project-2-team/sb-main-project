@@ -164,14 +164,12 @@ public class BasicWeatherService implements WeatherService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public WeatherAPILocation findWeatherLocation(Double longitude, Double latitude) {
         GridCoordinates grid = convertToGrid(longitude, latitude);
 
         WeatherRegion region = weatherRegionRepository.findByXAndY(grid.x(), grid.y())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "해당 좌표의 날씨 지역을 찾을 수 없습니다: lon=" + longitude + ", lat=" + latitude
-                ));
+                .orElseGet(() -> createWeatherRegion(grid.x(), grid.y(), longitude, latitude));
 
         return weatherMapper.toWeatherAPILocation(region);
     }
