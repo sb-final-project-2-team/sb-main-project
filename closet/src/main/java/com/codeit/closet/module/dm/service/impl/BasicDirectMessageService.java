@@ -7,6 +7,8 @@ import com.codeit.closet.module.dm.mapper.DirectMessageMapper;
 import com.codeit.closet.module.dm.repository.DirectMessageRepository;
 import com.codeit.closet.module.dm.service.DirectMessageService;
 import com.codeit.closet.module.dm.util.DmKeyUtil;
+import com.codeit.closet.module.notification.service.NotificationService;
+import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class BasicDirectMessageService implements DirectMessageService {
     private final DirectMessageRepository directMessageRepository;
     private final DirectMessageMapper directMessageMapper;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -54,6 +57,16 @@ public class BasicDirectMessageService implements DirectMessageService {
                 .build();
 
         directMessageRepository.save(directMessage);
+
+        // DM 알림 생성
+        if (!senderId.equals(receiverId)) {
+            notificationService.createWithRawContent(
+                receiverId,
+                NotificationTemplate.DM_RECEIVED,
+                content,
+                sender.getName()
+            );
+        }
 
         log.info("[Service] sender:{} receiver:{}", senderId, receiverId);
 
