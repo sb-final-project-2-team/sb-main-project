@@ -2,8 +2,11 @@ package com.codeit.closet.module.user.service.impl;
 
 import com.codeit.closet.common.exception.user.DuplicateUserException;
 import com.codeit.closet.common.exception.user.UserNotFoundException;
+import com.codeit.closet.common.security.jwt.JwtRegistry;
 import com.codeit.closet.module.binarycontent.entity.BinaryContent;
 import com.codeit.closet.module.binarycontent.service.BinaryContentService;
+import com.codeit.closet.module.notification.service.NotificationService;
+import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.dto.profile.ProfileDTO;
 import com.codeit.closet.module.user.dto.profile.ProfileUpdateRequest;
 import com.codeit.closet.module.user.dto.user.ChangePasswordRequest;
@@ -13,6 +16,7 @@ import com.codeit.closet.module.user.dto.user.UserDTOCursorResponse;
 import com.codeit.closet.module.user.dto.user.UserLockUpdateRequest;
 import com.codeit.closet.module.user.dto.user.UserRoleUpdateRequest;
 import com.codeit.closet.module.user.entity.User;
+import com.codeit.closet.module.user.entity.UserRole;
 import com.codeit.closet.module.user.mapper.UserMapper;
 import com.codeit.closet.module.user.repository.UserRepository;
 import com.codeit.closet.module.user.service.UserService;
@@ -37,6 +41,8 @@ public class BasicUserService implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final BinaryContentService binaryContentService;
   private final WeatherService weatherService;
+  private final NotificationService notificationService;
+  private final JwtRegistry<UUID>  jwtRegistry;
 
   private final UserMapper userMapper;
 
@@ -83,7 +89,26 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId).orElseThrow(
         UserNotFoundException::new);
 
-    user.updateRole(request.role());
+    // 이전 권한 백업용
+    UserRole oldRole = user.getRole();
+    UserRole newRole = request.role();
+
+    if (oldRole == newRole) {
+      return userMapper.toUserDTO(user);
+    }
+
+    user.updateRole(newRole);
+
+    notificationService.createWithRenderContent(
+        user.getId(),
+        NotificationTemplate.ROLE_CHANGED,
+        new Object[]{},
+        oldRole.name(),
+        newRole.name()
+    );
+
+    // 강제 로그아웃
+    jwtRegistry.invalidateJwtInformationByUserId(user.getId());
 
     return userMapper.toUserDTO(user);
   }
