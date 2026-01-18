@@ -9,6 +9,8 @@ import com.codeit.closet.module.comment.repository.CommentRepository;
 import com.codeit.closet.module.comment.service.CommentService;
 import com.codeit.closet.module.feed.entity.Feed;
 import com.codeit.closet.module.feed.repository.FeedRepository;
+import com.codeit.closet.module.notification.service.NotificationService;
+import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
 import java.util.NoSuchElementException;
@@ -25,6 +27,7 @@ public class BasicCommentService implements CommentService {
   private final FeedRepository feedRepository;
   private final CommentRepository commentRepository;
   private final CommentMapper commentMapper;
+  private final NotificationService notificationService;
 
   @Override
   @Transactional
@@ -36,6 +39,8 @@ public class BasicCommentService implements CommentService {
     User user = userRepository.findById(request.authorId()).orElseThrow(
         () -> new NoSuchElementException("존재하지않는 회원입니다."));
 
+    UUID feedOwnerId = feed.getUser().getId();
+
     Comment comment = Comment.builder()
         .user(user)
         .feed(feed)
@@ -45,6 +50,15 @@ public class BasicCommentService implements CommentService {
     feed.increaseCommentCount();
 
     Comment save = commentRepository.save(comment);
+
+    if (!feedOwnerId.equals(user.getId())) {
+      notificationService.createWithRawContent(
+          feedOwnerId,
+          NotificationTemplate.COMMENT,
+          request.content(),
+          user.getName()
+      );
+    }
 
 
     return commentMapper.toDTO(save);
