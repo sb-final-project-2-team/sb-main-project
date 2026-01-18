@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 type = org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE,
                 classes = com.codeit.closet.common.config.SecurityConfig.class
         ))
-@org.springframework.context.annotation.Import(com.codeit.closet.common.config.TestSecurityConfig.class)
+@org.springframework.context.annotation.Import({com.codeit.closet.common.config.TestSecurityConfig.class, com.codeit.closet.common.exception.GlobalExceptionHandler.class})
 @ActiveProfiles("test")
 @DisplayName("ClothAttributeController 테스트")
 class ClothAttributeControllerTest {
