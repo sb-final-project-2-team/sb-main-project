@@ -26,12 +26,16 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@org.junit.jupiter.api.Disabled("Security 설정 문제로 임시 비활성화")
 @WebMvcTest(value = BinaryContentController.class,
         excludeAutoConfiguration = {
                 org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
                 org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration.class
-        })
+        },
+        excludeFilters = @org.springframework.context.annotation.ComponentScan.Filter(
+                type = org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE,
+                classes = com.codeit.closet.common.config.SecurityConfig.class
+        ))
+@org.springframework.context.annotation.Import(com.codeit.closet.common.config.TestSecurityConfig.class)
 @ActiveProfiles("test")
 @DisplayName("BinaryContentController 테스트")
 class BinaryContentControllerTest {

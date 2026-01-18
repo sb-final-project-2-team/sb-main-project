@@ -35,15 +35,16 @@ class LocalBinaryContentStorageTest {
     @AfterEach
     void tearDown() throws IOException {
         if (Files.exists(tempDir)) {
-            Files.walk(tempDir)
-                    .sorted((a, b) -> b.compareTo(a))
-                    .forEach(path -> {
-                        try {
-                            Files.deleteIfExists(path);
-                        } catch (IOException e) {
-                            // ignore
-                        }
-                    });
+            try (var walk = Files.walk(tempDir)) {
+                walk.sorted((a, b) -> b.compareTo(a))
+                        .forEach(path -> {
+                            try {
+                                Files.deleteIfExists(path);
+                            } catch (IOException e) {
+                                // ignore
+                            }
+                        });
+            }
         }
     }
 
@@ -84,14 +85,12 @@ class LocalBinaryContentStorageTest {
         byte[] content = "test file content".getBytes();
         storage.save(fileId, content);
 
-        // when
-        InputStream inputStream = storage.get(fileId);
-
-        // then
-        assertThat(inputStream).isNotNull();
-        byte[] readContent = inputStream.readAllBytes();
-        assertThat(readContent).isEqualTo(content);
-        inputStream.close();
+        // when & then
+        try (InputStream inputStream = storage.get(fileId)) {
+            assertThat(inputStream).isNotNull();
+            byte[] readContent = inputStream.readAllBytes();
+            assertThat(readContent).isEqualTo(content);
+        }
     }
 
     @Test
@@ -148,13 +147,13 @@ class LocalBinaryContentStorageTest {
 
         // when
         storage.save(fileId, largeContent);
-        InputStream inputStream = storage.get(fileId);
 
         // then
-        byte[] readContent = inputStream.readAllBytes();
-        assertThat(readContent).hasSize(largeContent.length);
-        assertThat(readContent).isEqualTo(largeContent);
-        inputStream.close();
+        try (InputStream inputStream = storage.get(fileId)) {
+            byte[] readContent = inputStream.readAllBytes();
+            assertThat(readContent).hasSize(largeContent.length);
+            assertThat(readContent).isEqualTo(largeContent);
+        }
     }
 
     @Test
@@ -175,17 +174,13 @@ class LocalBinaryContentStorageTest {
         storage.save(file3Id, content3);
 
         // then
-        InputStream is1 = storage.get(file1Id);
-        InputStream is2 = storage.get(file2Id);
-        InputStream is3 = storage.get(file3Id);
-
-        assertThat(is1.readAllBytes()).isEqualTo(content1);
-        assertThat(is2.readAllBytes()).isEqualTo(content2);
-        assertThat(is3.readAllBytes()).isEqualTo(content3);
-
-        is1.close();
-        is2.close();
-        is3.close();
+        try (InputStream is1 = storage.get(file1Id);
+             InputStream is2 = storage.get(file2Id);
+             InputStream is3 = storage.get(file3Id)) {
+            assertThat(is1.readAllBytes()).isEqualTo(content1);
+            assertThat(is2.readAllBytes()).isEqualTo(content2);
+            assertThat(is3.readAllBytes()).isEqualTo(content3);
+        }
     }
 
     @Test
@@ -197,12 +192,12 @@ class LocalBinaryContentStorageTest {
 
         // when
         storage.save(fileId, emptyContent);
-        InputStream inputStream = storage.get(fileId);
 
         // then
-        byte[] readContent = inputStream.readAllBytes();
-        assertThat(readContent).isEmpty();
-        inputStream.close();
+        try (InputStream inputStream = storage.get(fileId)) {
+            byte[] readContent = inputStream.readAllBytes();
+            assertThat(readContent).isEmpty();
+        }
     }
 
     @Test
@@ -242,8 +237,12 @@ class LocalBinaryContentStorageTest {
         storage.save(videoId, videoContent);
 
         // then
-        assertThat(storage.get(imageId).readAllBytes()).isEqualTo(imageContent);
-        assertThat(storage.get(pdfId).readAllBytes()).isEqualTo(pdfContent);
-        assertThat(storage.get(videoId).readAllBytes()).isEqualTo(videoContent);
+        try (var imageIs = storage.get(imageId);
+             var pdfIs = storage.get(pdfId);
+             var videoIs = storage.get(videoId)) {
+            assertThat(imageIs.readAllBytes()).isEqualTo(imageContent);
+            assertThat(pdfIs.readAllBytes()).isEqualTo(pdfContent);
+            assertThat(videoIs.readAllBytes()).isEqualTo(videoContent);
+        }
     }
 }
