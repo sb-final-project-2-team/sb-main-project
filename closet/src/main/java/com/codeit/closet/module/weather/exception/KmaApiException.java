@@ -9,10 +9,6 @@ public class KmaApiException extends WeatherApiException {
         super("기상청 API 오류: " + message);
     }
 
-    public KmaApiException(String message, Throwable cause) {
-        super("기상청 API 오류: " + message, cause);
-    }
-
     public static KmaApiException invalidResponse() {
         return new KmaApiException("잘못된 API 응답 형식입니다");
     }
