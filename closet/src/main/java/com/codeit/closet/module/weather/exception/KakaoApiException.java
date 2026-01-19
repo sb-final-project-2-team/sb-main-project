@@ -17,8 +17,4 @@ public class KakaoApiException extends WeatherApiException {
         return new KakaoApiException(
                 "좌표(" + longitude + ", " + latitude + ")에 대한 지역 정보가 존재하지 않습니다");
     }
-
-    public static KakaoApiException connectionFailed(Throwable cause) {
-        return new KakaoApiException("API 연결에 실패했습니다", cause);
-    }
 }
