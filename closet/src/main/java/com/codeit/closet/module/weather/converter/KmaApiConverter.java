@@ -2,6 +2,7 @@ package com.codeit.closet.module.weather.converter;
 
 import com.codeit.closet.module.weather.dto.api.KmaApiResponse;
 import com.codeit.closet.module.weather.entity.*;
+import com.codeit.closet.module.weather.exception.KmaApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -32,12 +33,12 @@ public class KmaApiConverter {
         if (response == null || response.getResponse() == null ||
                 response.getResponse().getBody() == null ||
                 response.getResponse().getBody().getItems() == null) {
-            throw new IllegalArgumentException("잘못된 API 응답 형식");
+            throw KmaApiException.invalidResponse();
         }
 
         List<KmaApiResponse.Item> items = response.getResponse().getBody().getItems().getItem();
         if (items == null || items.isEmpty()) {
-            throw new IllegalArgumentException("API 응답에 데이터가 없습니다");
+            throw KmaApiException.emptyData();
         }
 
         // Category별로 그룹화
@@ -86,12 +87,12 @@ public class KmaApiConverter {
         if (response == null || response.getResponse() == null ||
                 response.getResponse().getBody() == null ||
                 response.getResponse().getBody().getItems() == null) {
-            throw new IllegalArgumentException("잘못된 API 응답 형식");
+            throw KmaApiException.invalidResponse();
         }
 
         List<KmaApiResponse.Item> items = response.getResponse().getBody().getItems().getItem();
         if (items == null || items.isEmpty()) {
-            throw new IllegalArgumentException("API 응답에 데이터가 없습니다");
+            throw KmaApiException.emptyData();
         }
 
         Instant forecastedAt = Instant.now();
