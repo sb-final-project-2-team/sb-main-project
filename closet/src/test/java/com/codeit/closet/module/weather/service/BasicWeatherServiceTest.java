@@ -32,7 +32,6 @@ import static org.mockito.Mockito.verify;
 import com.codeit.closet.module.weather.exception.WeatherDataCollectionException;
 import com.codeit.closet.module.weather.exception.WeatherRegionNotFoundException;
 
-import com.codeit.closet.module.weather.client.KakaoApiClient;
 import com.codeit.closet.module.weather.dto.api.KmaApiResponse;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,16 +53,12 @@ class BasicWeatherServiceTest {
     @Mock
     private KmaApiConverter kmaApiConverter;
 
-    @Mock
-    private KakaoApiClient kakaoApiClient;
-
     @InjectMocks
     private BasicWeatherService weatherService;
 
     private UUID weatherRegionId;
     private WeatherRegion weatherRegion;
     private WeatherData currentData;
-    private WeatherData yesterdayData;
     private WeatherAPILocation location;
 
     @BeforeEach
@@ -104,30 +99,6 @@ class BasicWeatherServiceTest {
                 .windAsWord(WindStrength.WEAK)
                 .createdAt(now)
                 .updatedAt(now)
-                .build();
-
-        // 어제 날씨 데이터
-        Instant yesterday = now.minus(24, ChronoUnit.HOURS);
-        yesterdayData = WeatherData.builder()
-                .id(UUID.randomUUID())
-                .weatherRegion(weatherRegion)
-                .forecastKind(ForecastKind.ULTRA_NOW)
-                .forecastAt(yesterday)
-                .forecastedAt(yesterday)
-                .skyStatus(SkyStatus.CLOUDY)
-                .temperatureCurrent(11.0)  // 어제 온도
-                .temperatureCompPrevDay(null)
-                .temperatureMin(8.0)
-                .temperatureMax(15.0)
-                .precipitationType(PrecipitationType.NONE)
-                .precipitationAmount(0.0)
-                .precipitationProb(0.0)
-                .humidityCurrent(27.0)  // 어제 습도
-                .humidityComparedToDayBefore(0.0)
-                .windSpeed(3.0)
-                .windAsWord(WindStrength.WEAK)
-                .createdAt(yesterday)
-                .updatedAt(yesterday)
                 .build();
 
         // WeatherAPILocation 설정
@@ -336,7 +307,7 @@ class BasicWeatherServiceTest {
                 });
 
         // When
-        WeatherDTO result = weatherService.collectUltraSrtNcst(nx, ny);
+        weatherService.collectUltraSrtNcst(nx, ny);
 
         // Then
         // SHORT_FCST 데이터로 비교 조회가 호출되었는지 검증
@@ -411,7 +382,7 @@ class BasicWeatherServiceTest {
                 });
 
         // When
-        WeatherDTO result = weatherService.collectUltraSrtNcst(nx, ny);
+        weatherService.collectUltraSrtNcst(nx, ny);
 
         // Then
         // 비교값이 null로 유지되는지 검증

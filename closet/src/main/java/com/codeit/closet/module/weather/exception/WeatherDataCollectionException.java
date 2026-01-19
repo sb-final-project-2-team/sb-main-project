@@ -5,10 +5,6 @@ package com.codeit.closet.module.weather.exception;
  */
 public class WeatherDataCollectionException extends WeatherException {
 
-    public WeatherDataCollectionException(String message) {
-        super("날씨 데이터 수집에 실패했습니다: " + message);
-    }
-
     public WeatherDataCollectionException(String message, Throwable cause) {
         super("날씨 데이터 수집에 실패했습니다: " + message, cause);
     }
