@@ -4,6 +4,9 @@ spring:
   application:
     name: closet
 
+  elasticsearch:
+    uris: ${ELASTIC_SEARCH_URL:http://localhost:9200}
+
   mail:
     host: smtp.gmail.com
     port: 587
