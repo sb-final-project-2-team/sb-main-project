@@ -89,26 +89,20 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId).orElseThrow(
         UserNotFoundException::new);
 
-    // 이전 권한 백업용
-    UserRole oldRole = user.getRole();
-    UserRole newRole = request.role();
+    UserRole beforeRole = user.getRole();
+    UserRole afterRole = request.role();
 
-    if (oldRole == newRole) {
-      return userMapper.toUserDTO(user);
+    if (beforeRole != afterRole) {
+      user.updateRole(afterRole);
+
+      notificationService.createWithRenderContent(
+          user.getId(),
+          NotificationTemplate.ROLE_CHANGED,
+          new Object[]{},
+          beforeRole.name(),
+          afterRole.name()
+      );
     }
-
-    user.updateRole(newRole);
-
-    notificationService.createWithRenderContent(
-        user.getId(),
-        NotificationTemplate.ROLE_CHANGED,
-        new Object[]{},
-        oldRole.name(),
-        newRole.name()
-    );
-
-    // 강제 로그아웃
-    jwtRegistry.invalidateJwtInformationByUserId(user.getId());
 
     return userMapper.toUserDTO(user);
   }
