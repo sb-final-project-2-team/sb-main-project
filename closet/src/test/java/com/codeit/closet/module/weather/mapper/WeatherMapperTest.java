@@ -1,12 +1,17 @@
 package com.codeit.closet.module.weather.mapper;
 
 import com.codeit.closet.module.weather.dto.location.WeatherAPILocation;
-import com.codeit.closet.module.weather.entity.WeatherRegion;
+import com.codeit.closet.module.weather.dto.weather.*;
+import com.codeit.closet.module.weather.entity.*;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.time.Instant;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -103,5 +108,195 @@ class WeatherMapperTest {
 
         // Then: 빈 List 반환
         assertThat(location.locationNames()).isEmpty();
+    }
+
+    @Nested
+    @DisplayName("toWeatherDTO 테스트")
+    class ToWeatherDTOTest {
+
+        @Test
+        @DisplayName("WeatherData → WeatherDTO 정상 매핑")
+        void shouldMapWeatherDataToWeatherDTO() {
+            // Given
+            WeatherRegion region = WeatherRegion.builder()
+                    .id(UUID.randomUUID())
+                    .x(60)
+                    .y(127)
+                    .latitude(37.5665)
+                    .longitude(126.9780)
+                    .locationNames("서울특별시,종로구,청운동")
+                    .build();
+
+            Instant now = Instant.now();
+            WeatherData data = WeatherData.builder()
+                    .id(UUID.randomUUID())
+                    .weatherRegion(region)
+                    .forecastKind(ForecastKind.ULTRA_NOW)
+                    .forecastAt(now)
+                    .forecastedAt(now)
+                    .skyStatus(SkyStatus.CLEAR)
+                    .temperatureCurrent(15.0)
+                    .temperatureCompPrevDay(2.0)
+                    .temperatureMin(10.0)
+                    .temperatureMax(20.0)
+                    .precipitationType(PrecipitationType.NONE)
+                    .precipitationAmount(0.0)
+                    .precipitationProb(10.0)
+                    .humidityCurrent(60.0)
+                    .humidityComparedToDayBefore(5.0)
+                    .windSpeed(3.5)
+                    .windAsWord(WindStrength.WEAK)
+                    .build();
+
+            // When
+            WeatherDTO dto = weatherMapper.toWeatherDTO(data);
+
+            // Then
+            assertThat(dto).isNotNull();
+            assertThat(dto.id()).isEqualTo(data.getId());
+            assertThat(dto.skyStatus()).isEqualTo(SkyStatus.CLEAR);
+            assertThat(dto.location()).isNotNull();
+            assertThat(dto.temperature()).isNotNull();
+            assertThat(dto.temperature().current()).isEqualTo(15.0);
+            assertThat(dto.precipitation()).isNotNull();
+            assertThat(dto.humidity()).isNotNull();
+            assertThat(dto.windSpeed()).isNotNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("toTemperatureDTO 테스트")
+    class ToTemperatureDTOTest {
+
+        @Test
+        @DisplayName("WeatherData → TemperatureDTO 정상 매핑")
+        void shouldMapToTemperatureDTO() {
+            // Given
+            WeatherData data = createTestWeatherData();
+
+            // When
+            TemperatureDTO dto = weatherMapper.toTemperatureDTO(data);
+
+            // Then
+            assertThat(dto).isNotNull();
+            assertThat(dto.current()).isEqualTo(15.0);
+            assertThat(dto.comparedToDayBefore()).isEqualTo(2.0);
+            assertThat(dto.min()).isEqualTo(10.0);
+            assertThat(dto.max()).isEqualTo(20.0);
+        }
+    }
+
+    @Nested
+    @DisplayName("toPrecipitationDTO 테스트")
+    class ToPrecipitationDTOTest {
+
+        @Test
+        @DisplayName("WeatherData → PrecipitationDTO 정상 매핑")
+        void shouldMapToPrecipitationDTO() {
+            // Given
+            WeatherData data = createTestWeatherData();
+
+            // When
+            PrecipitationDTO dto = weatherMapper.toPrecipitationDTO(data);
+
+            // Then
+            assertThat(dto).isNotNull();
+            assertThat(dto.type()).isEqualTo(PrecipitationType.NONE);
+            assertThat(dto.amount()).isEqualTo(0.0);
+            assertThat(dto.probability()).isEqualTo(10.0);
+        }
+    }
+
+    @Nested
+    @DisplayName("toHumidityDTO 테스트")
+    class ToHumidityDTOTest {
+
+        @Test
+        @DisplayName("WeatherData → HumidityDTO 정상 매핑")
+        void shouldMapToHumidityDTO() {
+            // Given
+            WeatherData data = createTestWeatherData();
+
+            // When
+            HumidityDTO dto = weatherMapper.toHumidityDTO(data);
+
+            // Then
+            assertThat(dto).isNotNull();
+            assertThat(dto.current()).isEqualTo(60.0);
+            assertThat(dto.comparedToDayBefore()).isEqualTo(5.0);
+        }
+    }
+
+    @Nested
+    @DisplayName("toWindSpeedDTO 테스트")
+    class ToWindSpeedDTOTest {
+
+        @Test
+        @DisplayName("WeatherData → WindSpeedDTO 정상 매핑")
+        void shouldMapToWindSpeedDTO() {
+            // Given
+            WeatherData data = createTestWeatherData();
+
+            // When
+            WindSpeedDTO dto = weatherMapper.toWindSpeedDTO(data);
+
+            // Then
+            assertThat(dto).isNotNull();
+            assertThat(dto.speed()).isEqualTo(3.5);
+            assertThat(dto.asWord()).isEqualTo(WindStrength.WEAK);
+        }
+    }
+
+    @Nested
+    @DisplayName("toWeatherSummaryDTO 테스트")
+    class ToWeatherSummaryDTOTest {
+
+        @Test
+        @DisplayName("WeatherData → WeatherSummaryDTO 정상 매핑")
+        void shouldMapToWeatherSummaryDTO() {
+            // Given
+            WeatherData data = createTestWeatherData();
+
+            // When
+            WeatherSummaryDTO dto = weatherMapper.toWeatherSummaryDTO(data);
+
+            // Then
+            assertThat(dto).isNotNull();
+            assertThat(dto.weatherId()).isEqualTo(data.getId());
+            assertThat(dto.temperature()).isNotNull();
+            assertThat(dto.precipitation()).isNotNull();
+        }
+    }
+
+    private WeatherData createTestWeatherData() {
+        WeatherRegion region = WeatherRegion.builder()
+                .id(UUID.randomUUID())
+                .x(60)
+                .y(127)
+                .latitude(37.5665)
+                .longitude(126.9780)
+                .locationNames("서울특별시,종로구,청운동")
+                .build();
+
+        Instant now = Instant.now();
+        return WeatherData.builder()
+                .id(UUID.randomUUID())
+                .weatherRegion(region)
+                .forecastKind(ForecastKind.ULTRA_NOW)
+                .forecastAt(now)
+                .forecastedAt(now)
+                .skyStatus(SkyStatus.CLEAR)
+                .temperatureCurrent(15.0)
+                .temperatureCompPrevDay(2.0)
+                .temperatureMin(10.0)
+                .temperatureMax(20.0)
+                .precipitationType(PrecipitationType.NONE)
+                .precipitationAmount(0.0)
+                .precipitationProb(10.0)
+                .humidityCurrent(60.0)
+                .humidityComparedToDayBefore(5.0)
+                .windSpeed(3.5)
+                .windAsWord(WindStrength.WEAK)
+                .build();
     }
 }
