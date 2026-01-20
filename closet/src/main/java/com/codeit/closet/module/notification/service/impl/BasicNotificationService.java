@@ -24,8 +24,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class BasicNotificationService implements NotificationService {
 
 	private final NotificationRepository notificationRepository;
@@ -33,35 +33,17 @@ public class BasicNotificationService implements NotificationService {
 	private final NotificationEventPublisher eventPublisher;
 
 	@Override
-	@Transactional(readOnly = true)
-	public List<NotificationDTO> findAllByReceiverId(UUID receiverId) {
-		log.debug("알림 목록 조회 시작: receiverId={}", receiverId);
-
-		List<NotificationDTO> result = notificationRepository
-			.findAllByReceiverIdOrderByCreatedAtDesc(receiverId)
-			.stream()
-			.map(notificationMapper::toDto)
-			.toList();
-
-		log.debug("알림 목록 조회 완료: receiverId={} count={}", receiverId, result.size());
-		return result;
-	}
-
-	@Override
 	@Transactional
 	public void deleteNotification(UUID id, UUID receiverId) {
-		log.debug("알림 삭제 시작: notificationId={}, receiverId={}", id, receiverId);
+		log.info("[알림] 읽음 처리 요청 id={},receiverId={}", id, receiverId);
 
-		Notification notification = notificationRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("알림을 찾을 수 없습니다." + id));
+		long deleted = notificationRepository.deleteByIdAndReceiverId(id, receiverId);
 
-		if (!notification.getReceiverId().equals(receiverId)) {
-			throw new IllegalArgumentException("권한이 없습니다.: 수신자가 일치하지 않습니다.");
+		if (deleted == 0){
+			throw new IllegalArgumentException("알림을 찾을 수 없거나 권한이 없습니다.");
 		}
 
-		notificationRepository.delete(notification);
-
-		log.debug("알림 삭제 완료: id={}", id);
+		log.info("[알림] 읽음 처리 완료 id={}", id);
 
 	}
 
@@ -74,20 +56,13 @@ public class BasicNotificationService implements NotificationService {
 			.receiverId(receiverId)
 			.title(title)
 			.content(content)
+			.level(NotificationLevel.INFO)
+			.createdAt(Instant.now())
 			.build();
 
 		Notification saved = notificationRepository.save(notification);
 
-		NotificationEvent event = new NotificationEvent(
-			saved.getId(),
-			saved.getReceiverId(),
-			saved.getTitle(),
-			saved.getContent(),
-			NotificationLevel.INFO,
-			getCreatedAt(saved)
-		);
-
-		eventPublisher.publish(event);
+		publishEvent(saved);
 
 		log.info("[Notification] 단건 알림 생성 완료(id={} -> receiverId={})", saved.getId(), receiverId);
 	}
@@ -117,40 +92,42 @@ public class BasicNotificationService implements NotificationService {
 					.receiverId(receiverId)
 					.title(title)
 					.content(content)
+					.level(NotificationLevel.INFO)
+					.createdAt(Instant.now())
 					.build()
 			);
 		}
 
 		List<Notification> savedList = notificationRepository.saveAll(notifications);
 		log.info("[Notification] 다건 알림 생성 완료 (count={}", savedList.size());
+
+		publishManyAfterCommit(savedList);
+	}
+
+	private void publishEvent(Notification notification) {
+		NotificationEvent event = new NotificationEvent(
+			notification.getId(),
+			notification.getReceiverId(),
+			notification.getTitle(),
+			notification.getContent(),
+			notification.getLevel(),
+			notification.getCreatedAt()
+		);
+
+		eventPublisher.publish(event);
 	}
 
 		// 이벤트 발행은 별도로 처리
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void publishManyAfterCommit(List<Notification> savedList) {
 
-		for (Notification saved : savedList) {
-			NotificationEvent event = new NotificationEvent(
-				saved.getId(),
-				saved.getReceiverId(),
-				saved.getTitle(),
-				saved.getContent(),
-				NotificationLevel.INFO,
-				getCreatedAt(saved)
-			);
+		for (Notification notification : savedList) {
 			try {
-				eventPublisher.publish(event);
+				publishEvent(notification);
 			} catch (Exception e) {
-			    log.error("[Notification] 이벤트 발행 실패 (id={}", saved.getId(), e); // 부분 실패 처리 전략: 로그만 기록하고 계속 진행
+			    log.error("[Notification] 이벤트 발행 실패 (id={}", notification.getId(), e); // 부분 실패 처리 전략: 로그만 기록하고 계속 진행
 			}
 		}
-	}
-
-	private Instant getCreatedAt(Notification notification) {
-		if (notification.getCreatedAt() != null) {
-			return notification.getCreatedAt();
-		}
-		return Instant.now();
 	}
 
 }
