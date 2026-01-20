@@ -1,4 +1,4 @@
-package com.codeit.closet.common.security;
+package com.codeit.closet.common.util.init;
 
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.entity.UserRole;

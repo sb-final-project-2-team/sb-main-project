@@ -44,7 +44,6 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
   private static final QLike like = QLike.like;
   private static final QOotd ootd = QOotd.ootd;
   private static final QCloth cloth = QCloth.cloth;
-  private static final QWeatherRegion weatherRegion = QWeatherRegion.weatherRegion;
   private static final QWeatherData weatherData = QWeatherData.weatherData;
   @Override
   public FeedDTOCursorResponse findFeedsByCursor(String cursor, UUID idAfter, Integer limit,
@@ -74,11 +73,11 @@ public class FeedQueryRepositoryImpl implements FeedQueryRepository {
     }
 
     if (skyStatusEqual != null) {
-      builder.and(feed.weather.weatherData.skyStatus.eq(skyStatusEqual));
+      builder.and(feed.weather.skyStatus.eq(skyStatusEqual));
     }
 
     if (precipitationTypeEqual != null) {
-      builder.and(feed.weather.weatherData.precipitationType.eq(precipitationTypeEqual));
+      builder.and(feed.weather.precipitationType.eq(precipitationTypeEqual));
     }
 
     List<UUID> feedIds = jpaQueryFactory

@@ -48,8 +48,7 @@ public class Feed {
   @JoinColumn(name = "weather_id", nullable = false)
   private WeatherData weather;
 
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "feed_id")
+  @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<Ootd> ootds = new ArrayList<>();
 
@@ -75,8 +74,8 @@ public class Feed {
   @Transient
   private Boolean likedByMe;
 
-  public void addOotd(Cloth cloth) {
-    this.ootds.add(Ootd.of(cloth));
+  public void addOotd(Ootd ootd) {
+    this.ootds.add(ootd);
   }
 
   public void updateFeed(String content) {

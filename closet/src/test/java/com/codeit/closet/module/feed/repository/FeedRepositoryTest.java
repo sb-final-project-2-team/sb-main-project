@@ -4,6 +4,7 @@ import com.codeit.closet.module.cloth.entity.Cloth;
 import com.codeit.closet.module.cloth.entity.ClothType;
 import com.codeit.closet.module.cloth.repository.ClothRepository;
 import com.codeit.closet.module.feed.entity.Feed;
+import com.codeit.closet.module.feed.entity.Ootd;
 import com.codeit.closet.module.user.entity.AuthProvider;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.entity.UserRole;
@@ -120,7 +121,9 @@ class FeedRepositoryTest {
                 .weather(weatherData)
                 .content("오늘 날씨 좋네요!")
                 .build();
-        feed.addOotd(testCloth);
+
+        Ootd ootd = Ootd.builder().feed(feed).cloth(testCloth).build();
+        feed.addOotd(ootd);
 
         // when
         Feed saved = feedRepository.save(feed);
@@ -294,8 +297,19 @@ class FeedRepositoryTest {
                 .weather(weatherData)
                 .content("오늘의 코디")
                 .build();
-        feed.addOotd(testCloth);
-        feed.addOotd(cloth2);
+
+        Ootd ootd1 = Ootd.builder()
+            .feed(feed)
+            .cloth(cloth2)
+            .build();
+
+        Ootd ootd2 = Ootd.builder()
+            .feed(feed)
+            .cloth(testCloth)
+            .build();
+
+        feed.addOotd(ootd1);
+        feed.addOotd(ootd2);
 
         // when
         Feed saved = feedRepository.save(feed);
