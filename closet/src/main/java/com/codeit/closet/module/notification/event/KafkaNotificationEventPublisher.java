@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,13 +24,17 @@ public class KafkaNotificationEventPublisher implements NotificationEventPublish
 			NotificationTopics.NOTIFICATION_CREATED,
 			notificationKey,
 			event
-		);
+		).whenComplete((result, ex) ->{
+			if (ex == null) {
+				log.info("[Kafka] 전송 성공 (topic={}, offset={})",
+					result.getRecordMetadata().topic(),
+					result.getRecordMetadata().offset());
+			} else {
+				log.error("[Kafka] 전송 실패 (receiverId={})",
+					notificationKey,ex);
+			}
+		});
 
-		log.info(
-			"[Kafka] 알림 생성 이벤트 발행 완료 (receiverId={}, notificationId={})",
-			notificationKey,
-			event.id()
-		);
 	}
 
 	private String toKey(UUID receiverId) {
