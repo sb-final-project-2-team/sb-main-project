@@ -8,6 +8,8 @@ import com.codeit.closet.module.follow.entity.Follow;
 import com.codeit.closet.module.follow.mapper.FollowMapper;
 import com.codeit.closet.module.follow.repository.FollowRepository;
 import com.codeit.closet.module.follow.service.FollowService;
+import com.codeit.closet.module.notification.service.NotificationService;
+import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class BasicFollowService implements FollowService {
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
     private final FollowMapper followMapper;
+    private final NotificationService  notificationService;
 
     @Override
     @Transactional
@@ -57,6 +60,14 @@ public class BasicFollowService implements FollowService {
                 .build();
 
         followRepository.save(follow);
+
+        notificationService.createWithRenderContent(
+            followee.getId(),
+            NotificationTemplate.FOLLOWED,
+            new Object[]{follower.getName()},
+            follower.getName()
+        );
+
         return followMapper.toDTO(follow);
     }
 
