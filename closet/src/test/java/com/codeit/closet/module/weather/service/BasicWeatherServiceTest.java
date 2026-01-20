@@ -1,5 +1,6 @@
 package com.codeit.closet.module.weather.service;
 
+import com.codeit.closet.module.weather.client.KakaoApiClient;
 import com.codeit.closet.module.weather.client.KmaApiClient;
 import com.codeit.closet.module.weather.converter.KmaApiConverter;
 import com.codeit.closet.module.weather.dto.location.WeatherAPILocation;
@@ -52,6 +53,9 @@ class BasicWeatherServiceTest {
 
     @Mock
     private KmaApiConverter kmaApiConverter;
+
+    @Mock
+    private KakaoApiClient kakaoApiClient;
 
     @InjectMocks
     private BasicWeatherService weatherService;
