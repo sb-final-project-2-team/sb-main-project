@@ -52,10 +52,10 @@ public class BasicLikeService implements LikeService {
     }
 
     // 좋아요 알림 생성
-    notificationService.createWithRawContent(
+    notificationService.createWithRenderContent(
         feedOwnerId,
         NotificationTemplate.LIKE,
-        null,
+        new Object[]{user.getName()},
         user.getName()
     );
   }
