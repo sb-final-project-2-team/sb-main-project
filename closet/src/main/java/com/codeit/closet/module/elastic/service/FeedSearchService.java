@@ -4,7 +4,10 @@ import com.codeit.closet.module.elastic.document.FeedDocument;
 import com.codeit.closet.module.elastic.dto.FeedSearchResult;
 import com.codeit.closet.module.weather.entity.PrecipitationType;
 import com.codeit.closet.module.weather.entity.SkyStatus;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -41,11 +44,10 @@ public class FeedSearchService {
         .withQuery(q -> q.bool(b -> {
 
           if (keywordLike != null && !keywordLike.isBlank()) {
-            b.must(m -> m.match(mm -> mm
+            b.must(m -> m.matchPhrase(mp -> mp
                 .field("content")
                 .query(keywordLike)
-                .fuzziness("AUTO")
-                .minimumShouldMatch("70%")
+                .slop(1)
             ));
           }
 
@@ -70,13 +72,16 @@ public class FeedSearchService {
           return b;
         }))
         .withSort(sort)
+        .withTimeout(Duration.ofMillis(500))
         .withPageable(PageRequest.of(0, limit + 1));
 
-    if (cursor != null && idAfter != null) {
-      Object cursorValue = parseCursor(sortBy, cursor);
-      builder.withSearchAfter(List.of(cursorValue, idAfter));
+    if (cursor != null) {
+      CursorInfo cursorInfo = parseCursor(cursor);
+      if (cursorInfo != null) {
+        builder.withSearchAfter(
+            List.of(cursorInfo.sortValue().toEpochMilli(), cursorInfo.idAfter()));
+      }
     }
-
     NativeQuery query = builder.build();
 
     SearchHits<FeedDocument> hits =
@@ -91,11 +96,14 @@ public class FeedSearchService {
 
     String nextCursor = null;
     UUID nextAfter = null;
+
     long totalCount = hits.getTotalHits();
+
     if (hasNext) {
-      NextCursor next = extractNextCursor(hits, limit, sortBy);
-      nextCursor = next.cursor();
-      nextAfter = next.idAfter();
+      var lastHit = hits.getSearchHits().get(limit - 1);
+      Instant lastCreatedAt = lastHit.getContent().getCreatedAt();
+      nextAfter = UUID.fromString(lastHit.getContent().getId());
+      nextCursor = encodeCursor(lastCreatedAt, nextAfter);
     }
 
     return new FeedSearchResult(
@@ -107,30 +115,6 @@ public class FeedSearchService {
     );
   }
 
-  private NextCursor extractNextCursor(SearchHits<FeedDocument> hits, int limit, String sortBy) {
-    var sortValues = hits.getSearchHits().get(limit - 1).getSortValues();
-    String nextCursor;
-
-    if ("createdAt".equals(sortBy)) {
-      long millis = ((Number) sortValues.get(0)).longValue();
-      nextCursor = Instant.ofEpochMilli(millis).toString();
-    } else {
-      nextCursor = sortValues.get(0).toString();
-    }
-
-    UUID nextIdAfter = UUID.fromString(sortValues.get(1).toString());
-
-    return new NextCursor(nextCursor, nextIdAfter);
-  }
-
-  private Object parseCursor(String sortBy, String raw) {
-    return switch (sortBy) {
-      case "likeCount" -> Long.parseLong(raw);
-      case "createdAt" -> Instant.parse(raw).toEpochMilli();
-      default -> throw new IllegalArgumentException("정렬값이 이상합니다.");
-    };
-  }
-
   private String resolveSortField(String sortBy) {
     return switch (sortBy) {
       case "createdAt" -> "createdAt";
@@ -139,8 +123,32 @@ public class FeedSearchService {
     };
   }
 
-  private record NextCursor(String cursor, UUID idAfter) {
+  private record CursorInfo(Instant sortValue, UUID idAfter) {
 
+  }
+
+  private CursorInfo parseCursor(String cursor) {
+    if (cursor == null) {
+      return null;
+    }
+    try {
+      String decoded = new String(Base64.getDecoder().decode(cursor), StandardCharsets.UTF_8);
+      String[] parts = decoded.split("\\|");
+      if (parts.length < 2) {
+        return null;
+      }
+      return new CursorInfo(
+          Instant.parse(parts[0]),
+          UUID.fromString(parts[1])
+      );
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  private String encodeCursor(Instant sortValue, UUID idAfter) {
+    String raw = sortValue + "|" + idAfter;
+    return Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
   }
 }
 
