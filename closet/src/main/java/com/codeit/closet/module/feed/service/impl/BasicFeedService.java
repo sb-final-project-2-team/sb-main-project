@@ -12,6 +12,10 @@ import com.codeit.closet.module.feed.mapper.FeedMapper;
 import com.codeit.closet.module.feed.repository.FeedRepository;
 import com.codeit.closet.module.feed.repository.OotdRepository;
 import com.codeit.closet.module.feed.service.FeedService;
+import com.codeit.closet.module.follow.entity.Follow;
+import com.codeit.closet.module.follow.repository.FollowRepository;
+import com.codeit.closet.module.notification.service.NotificationService;
+import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
 import com.codeit.closet.module.weather.entity.PrecipitationType;
@@ -37,6 +41,8 @@ public class BasicFeedService implements FeedService {
   private final ClothRepository clothRepository;
   private final FeedRepository feedRepository;
   private final FeedMapper feedMapper;
+  private final FollowRepository followRepository;
+  private final NotificationService  notificationService;
 
   @Override
   @Transactional
@@ -70,8 +76,12 @@ public class BasicFeedService implements FeedService {
 
     Feed saved = feedRepository.save(feed);
 
+    notifyFollowersFeedCreated(user);
+
     return feedMapper.toFeedDTO(saved);
   }
+
+
 
   @Override
   @Transactional(readOnly = true)
@@ -101,5 +111,20 @@ public class BasicFeedService implements FeedService {
         () -> new NoSuchElementException("존재하지 않는 피드 입니다."));
 
     feedRepository.delete(feed);
+  }
+
+  private void notifyFollowersFeedCreated(User user) {
+    List<Follow> follows = followRepository.findAllByFollowee_Id(user.getId());
+
+    for (Follow follow : follows) {
+      UUID followeeId = follow.getFollowee().getId();
+
+      notificationService.createWithRenderContent(
+          followeeId,
+          NotificationTemplate.FEED,
+          new Object[]{user.getName()},
+          user.getName()
+      );
+    }
   }
 }
