@@ -76,6 +76,7 @@ class KakaoApiClientTest {
 
         @Test
         @DisplayName("API 호출 시 올바른 Authorization 헤더 사용")
+        @SuppressWarnings("unchecked")
         void shouldUseCorrectAuthorizationHeader() {
             // Given
             Double longitude = 126.9780;
