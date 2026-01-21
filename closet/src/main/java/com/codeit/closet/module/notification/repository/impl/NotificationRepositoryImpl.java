@@ -14,7 +14,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class BasicNotificationRepository implements NotificationQueryRepository {
+public class NotificationRepositoryImpl implements NotificationQueryRepository {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
