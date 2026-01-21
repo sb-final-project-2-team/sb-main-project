@@ -99,7 +99,7 @@ public class BasicNotificationService implements NotificationService {
 		}
 
 		List<Notification> savedList = notificationRepository.saveAll(notifications);
-		log.info("[Notification] 다건 알림 생성 완료 (count={}", savedList.size());
+		log.info("[Notification] 다건 알림 생성 완료 (count={})", savedList.size());
 
 		publishManyAfterCommit(savedList);
 	}
