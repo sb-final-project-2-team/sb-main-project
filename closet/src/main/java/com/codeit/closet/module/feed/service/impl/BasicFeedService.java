@@ -16,6 +16,7 @@ import com.codeit.closet.module.feed.repository.FeedRepository;
 import com.codeit.closet.module.feed.service.FeedService;
 import com.codeit.closet.module.follow.entity.Follow;
 import com.codeit.closet.module.follow.repository.FollowRepository;
+import com.codeit.closet.module.notification.event.NotifyUserEvent;
 import com.codeit.closet.module.notification.service.NotificationService;
 import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.entity.User;
@@ -31,6 +32,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +51,7 @@ public class BasicFeedService implements FeedService {
 
   private final FeedMapper feedMapper;
   private final FollowRepository followRepository;
-  private final NotificationService  notificationService;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @Transactional
@@ -80,7 +83,7 @@ public class BasicFeedService implements FeedService {
 
     Feed saved = feedRepository.save(feed);
 
-    feedElasticService.index(feed);
+    // feedElasticService.index(feed);
     
     notifyFollowersFeedCreated(user);
 
@@ -159,11 +162,14 @@ public class BasicFeedService implements FeedService {
     for (Follow follow : follows) {
       UUID followerId = follow.getFollower().getId();
 
-      notificationService.createWithRenderContent(
-          followerId,
-          NotificationTemplate.FEED,
-          new Object[]{user.getName()},
-          user.getName()
+      eventPublisher.publishEvent(
+          new NotifyUserEvent(
+              followerId,
+              NotificationTemplate.FEED,
+              null,
+              new Object[]{follow.getFollower().getName()},
+              new Object[]{follow.getFollower().getName()}
+          )
       );
     }
   }

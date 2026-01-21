@@ -5,6 +5,7 @@ import com.codeit.closet.module.feed.repository.FeedRepository;
 import com.codeit.closet.module.like.entity.Like;
 import com.codeit.closet.module.like.repository.LikeRepository;
 import com.codeit.closet.module.like.service.LikeService;
+import com.codeit.closet.module.notification.event.NotifyUserEvent;
 import com.codeit.closet.module.notification.service.NotificationService;
 import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.entity.User;
@@ -12,6 +13,8 @@ import com.codeit.closet.module.user.repository.UserRepository;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +25,7 @@ public class BasicLikeService implements LikeService {
   private final FeedRepository feedRepository;
   private final UserRepository userRepository;
   private final LikeRepository likeRepository;
-  private final NotificationService notificationService;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @Transactional
@@ -51,15 +54,15 @@ public class BasicLikeService implements LikeService {
       return;
     }
 
-    // 좋아요 알림 생성
-    if (notificationService != null) {
-      notificationService.createWithRenderContent(
-          feedOwnerId,
-          NotificationTemplate.LIKE,
-          new Object[]{user.getName()},
-          user.getName()
-      );
-    }
+    eventPublisher.publishEvent(
+        new NotifyUserEvent(
+            feedOwnerId,
+            NotificationTemplate.LIKE,
+            null,
+            new Object[]{user.getName()},
+            new Object[]{user.getName()}
+        )
+    );
   }
 
   @Override

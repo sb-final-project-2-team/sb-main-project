@@ -9,6 +9,7 @@ import com.codeit.closet.module.comment.repository.CommentRepository;
 import com.codeit.closet.module.comment.service.CommentService;
 import com.codeit.closet.module.feed.entity.Feed;
 import com.codeit.closet.module.feed.repository.FeedRepository;
+import com.codeit.closet.module.notification.event.NotifyUserEvent;
 import com.codeit.closet.module.notification.service.NotificationService;
 import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.entity.User;
@@ -16,6 +17,8 @@ import com.codeit.closet.module.user.repository.UserRepository;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +30,7 @@ public class BasicCommentService implements CommentService {
   private final FeedRepository feedRepository;
   private final CommentRepository commentRepository;
   private final CommentMapper commentMapper;
-  private final NotificationService notificationService;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @Transactional
@@ -52,11 +55,14 @@ public class BasicCommentService implements CommentService {
     Comment save = commentRepository.save(comment);
 
     if (!feedOwnerId.equals(user.getId())) {
-      notificationService.createWithRawContent(
-          feedOwnerId,
-          NotificationTemplate.COMMENT,
-          request.content(),
-          user.getName()
+      eventPublisher.publishEvent(
+          new NotifyUserEvent(
+              feedOwnerId,
+              NotificationTemplate.COMMENT,
+              null,
+              new Object[]{user.getName()},
+              new Object[]{user.getName()}
+          )
       );
     }
 

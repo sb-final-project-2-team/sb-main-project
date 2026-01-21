@@ -8,6 +8,7 @@ import com.codeit.closet.module.follow.entity.Follow;
 import com.codeit.closet.module.follow.mapper.FollowMapper;
 import com.codeit.closet.module.follow.repository.FollowRepository;
 import com.codeit.closet.module.follow.service.FollowService;
+import com.codeit.closet.module.notification.event.NotifyUserEvent;
 import com.codeit.closet.module.notification.service.NotificationService;
 import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.entity.User;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +31,7 @@ public class BasicFollowService implements FollowService {
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
     private final FollowMapper followMapper;
-    private final NotificationService  notificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -61,11 +63,14 @@ public class BasicFollowService implements FollowService {
 
         followRepository.save(follow);
 
-        notificationService.createWithRenderContent(
-            followee.getId(),
-            NotificationTemplate.FOLLOWED,
-            new Object[]{follower.getName()},
-            follower.getName()
+        eventPublisher.publishEvent(
+            new NotifyUserEvent(
+                follower.getId(),
+                NotificationTemplate.FOLLOWED,
+                null,
+                new Object[]{follower.getName()},
+                new Object[]{follower.getName()}
+            )
         );
 
         return followMapper.toDTO(follow);
