@@ -27,17 +27,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("RecommendationScorer 테스트")
 class RecommendationScorerTest {
 
+    @InjectMocks
+    private RecommendationScorer scorer;
+
     @Spy
+    @SuppressWarnings("unused") // @InjectMocks에 의해 주입됨
     private TemperatureClothMatcher temperatureClothMatcher;
 
     @Spy
+    @SuppressWarnings("unused") // @InjectMocks에 의해 주입됨
     private PrecipitationClothMatcher precipitationClothMatcher;
 
     @Spy
+    @SuppressWarnings("unused") // @InjectMocks에 의해 주입됨
     private AttributeScoreCalculator attributeScoreCalculator;
-
-    @InjectMocks
-    private RecommendationScorer scorer;
 
     private WeatherData coldWeather;
     private WeatherData hotWeather;
@@ -209,11 +212,9 @@ class RecommendationScorerTest {
 
             // When
             int scoreRainy = scorer.calculateClothScore(dressCloth, rainyWeather, sensitivity, emptyAttributeMaps);
-            int scoreNormal = scorer.calculateClothScore(dressCloth, coldWeather, sensitivity, emptyAttributeMaps);
 
             // Then
-            // 비 올 때 원피스 비추천이므로 페널티
-            // (coldWeather와 rainyWeather의 온도 차이로 단순 비교는 어려움, 강수 페널티 존재 확인)
+            // 비 올 때 원피스 비추천이므로 페널티 (점수가 낮음)
             assertThat(scoreRainy).isLessThanOrEqualTo(50);
         }
 

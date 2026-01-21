@@ -7,15 +7,14 @@ import com.codeit.closet.module.recommendation.dto.RecommendationResponse;
 import com.codeit.closet.module.recommendation.service.RecommendationService;
 import com.codeit.closet.module.user.dto.user.UserDTO;
 import com.codeit.closet.module.user.entity.UserRole;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -48,10 +47,7 @@ class RecommendationControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
+    @MockitoBean
     private RecommendationService recommendationService;
 
     private UUID testUserId;
