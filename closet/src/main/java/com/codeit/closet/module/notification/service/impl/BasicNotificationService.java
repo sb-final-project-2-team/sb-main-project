@@ -64,7 +64,12 @@ public class BasicNotificationService implements NotificationService {
 
 		Notification saved = notificationRepository.save(notification);
 
-		publishEvent(saved);
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				publishEvent(saved);
+			}
+		});
 
 		log.info("[Notification] 단건 알림 생성 완료(id={} -> receiverId={})", saved.getId(), receiverId);
 	}
