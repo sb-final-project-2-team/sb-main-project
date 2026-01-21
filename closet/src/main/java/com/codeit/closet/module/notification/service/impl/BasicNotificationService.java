@@ -125,13 +125,13 @@ public class BasicNotificationService implements NotificationService {
 	}
 
 		// 이벤트 발행은 별도로 처리
-	public void publishManyAfterCommit(List<Notification> savedList) {
+	private void publishManyAfterCommit(List<Notification> savedList) {
 
 		for (Notification notification : savedList) {
 			try {
 				publishEvent(notification);
 			} catch (Exception e) {
-			    log.error("[Notification] 이벤트 발행 실패 (id={}", notification.getId(), e); // 부분 실패 처리 전략: 로그만 기록하고 계속 진행
+			    log.error("[Notification] 이벤트 발행 실패 (id={})", notification.getId(), e); // 부분 실패 처리 전략: 로그만 기록하고 계속 진행
 			}
 		}
 	}
