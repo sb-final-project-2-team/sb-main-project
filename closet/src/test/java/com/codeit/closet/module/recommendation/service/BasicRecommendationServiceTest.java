@@ -420,10 +420,6 @@ class BasicRecommendationServiceTest {
             // Given
             List<Cloth> clothes = List.of(topCloth, bottomCloth, outerCloth);
             List<List<Cloth>> initialCombinations = List.of(List.of(topCloth, bottomCloth)); // 1개 조합
-            List<List<Cloth>> expandedCombinations = List.of(
-                    List.of(topCloth, bottomCloth),
-                    List.of(topCloth, bottomCloth, outerCloth)
-            ); // 2개 조합
 
             given(userRepository.findById(userId)).willReturn(Optional.of(user));
             given(weatherDataRepository.findById(weatherId)).willReturn(Optional.of(weatherData));

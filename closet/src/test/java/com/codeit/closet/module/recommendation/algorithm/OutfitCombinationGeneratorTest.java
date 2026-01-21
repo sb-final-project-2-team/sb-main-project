@@ -30,7 +30,6 @@ class OutfitCombinationGeneratorTest {
         generator = new OutfitCombinationGenerator();
 
         Instant now = Instant.now();
-        UUID ownerId = UUID.randomUUID();
 
         top1 = Cloth.builder()
                 .id(UUID.randomUUID())
