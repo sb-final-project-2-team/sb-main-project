@@ -14,7 +14,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class NotificationRepositoryImpl implements NotificationQueryRepository {
+public class BasicNotificationRepository implements NotificationQueryRepository {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
@@ -41,10 +41,6 @@ public class NotificationRepositoryImpl implements NotificationQueryRepository {
 	private BooleanExpression cursorCondition(Instant createdAt, UUID idAfter) {
 		if (createdAt == null || idAfter == null) {
 			return null;
-		}
-
-		if (idAfter == null) {
-			return notification.createdAt.lt(createdAt);
 		}
 
 		return notification.createdAt.lt(createdAt)
