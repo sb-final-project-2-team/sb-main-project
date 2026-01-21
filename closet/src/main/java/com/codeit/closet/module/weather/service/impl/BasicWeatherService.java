@@ -9,6 +9,8 @@ import com.codeit.closet.module.weather.dto.weather.WeatherDTO;
 import com.codeit.closet.module.weather.entity.ForecastKind;
 import com.codeit.closet.module.weather.entity.WeatherData;
 import com.codeit.closet.module.weather.entity.WeatherRegion;
+import com.codeit.closet.module.weather.exception.WeatherDataCollectionException;
+import com.codeit.closet.module.weather.exception.WeatherRegionNotFoundException;
 import com.codeit.closet.module.weather.mapper.WeatherMapper;
 import com.codeit.closet.module.weather.repository.WeatherDataRepository;
 import com.codeit.closet.module.weather.repository.WeatherRegionRepository;
@@ -58,7 +60,7 @@ public class BasicWeatherService implements WeatherService {
                 dataList = weatherDataRepository.findByWeatherRegionId(region.getId());
             } catch (Exception e) {
                 log.error("날씨 데이터 수집 실패: {}", e.getMessage(), e);
-                throw new IllegalStateException("날씨 데이터 수집에 실패했습니다: " + e.getMessage());
+                throw new WeatherDataCollectionException(e.getMessage(), e);
             }
         }
 
@@ -164,14 +166,12 @@ public class BasicWeatherService implements WeatherService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public WeatherAPILocation findWeatherLocation(Double longitude, Double latitude) {
         GridCoordinates grid = convertToGrid(longitude, latitude);
 
         WeatherRegion region = weatherRegionRepository.findByXAndY(grid.x(), grid.y())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "해당 좌표의 날씨 지역을 찾을 수 없습니다: lon=" + longitude + ", lat=" + latitude
-                ));
+                .orElseGet(() -> createWeatherRegion(grid.x(), grid.y(), longitude, latitude));
 
         return weatherMapper.toWeatherAPILocation(region);
     }
@@ -182,10 +182,12 @@ public class BasicWeatherService implements WeatherService {
         log.info("초단기실황 수집: nx={}, ny={}", nx, ny);
 
         WeatherRegion region = weatherRegionRepository.findByXAndY(nx, ny)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "해당 격자 좌표의 지역이 등록되지 않았습니다: nx=" + nx + ", ny=" + ny));
+                .orElseThrow(() -> new WeatherRegionNotFoundException(nx, ny));
         KmaApiResponse response = kmaApiClient.getUltraSrtNcst(nx, ny);
         WeatherData weatherData = kmaApiConverter.convertUltraSrtNcst(response, region);
+
+        // 전날 대비 온도/습도 차이 계산
+        calculateComparedToDayBefore(weatherData, region.getId());
 
         region.updateCurrentWeather(weatherData);
 
@@ -202,8 +204,7 @@ public class BasicWeatherService implements WeatherService {
         log.info("단기예보 수집: nx={}, ny={}", nx, ny);
 
         WeatherRegion region = weatherRegionRepository.findByXAndY(nx, ny)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "해당 격자 좌표의 지역이 등록되지 않았습니다: nx=" + nx + ", ny=" + ny));
+                .orElseThrow(() -> new WeatherRegionNotFoundException(nx, ny));
 
         KmaApiResponse response = kmaApiClient.getVilageFcst(nx, ny);
         List<WeatherData> weatherDataList = kmaApiConverter.convertVilageFcst(response, region);
@@ -221,9 +222,7 @@ public class BasicWeatherService implements WeatherService {
     @Transactional
     public WeatherDTO collectUltraSrtNcstForRegion(UUID weatherRegionId) {
         WeatherRegion region = weatherRegionRepository.findById(weatherRegionId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "WeatherRegion을 찾을 수 없습니다: " + weatherRegionId
-                ));
+                .orElseThrow(() -> new WeatherRegionNotFoundException(weatherRegionId));
 
         return collectUltraSrtNcst(region.getX(), region.getY());
     }
@@ -232,9 +231,7 @@ public class BasicWeatherService implements WeatherService {
     @Transactional
     public List<WeatherDTO> collectVilageFcstForRegion(UUID weatherRegionId) {
         WeatherRegion region = weatherRegionRepository.findById(weatherRegionId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "WeatherRegion을 찾을 수 없습니다: " + weatherRegionId
-                ));
+                .orElseThrow(() -> new WeatherRegionNotFoundException(weatherRegionId));
 
         return collectVilageFcst(region.getX(), region.getY());
     }
@@ -310,11 +307,13 @@ public class BasicWeatherService implements WeatherService {
     private void calculateComparedToDayBefore(WeatherData current, UUID weatherRegionId) {
         try {
             Instant yesterday = current.getForecastAt().minus(24, ChronoUnit.HOURS);
-            Instant startTime = yesterday.minus(1, ChronoUnit.HOURS);
-            Instant endTime = yesterday.plus(1, ChronoUnit.HOURS);
+            // 단기예보는 3시간 간격이므로 ±3시간 범위로 조회
+            Instant startTime = yesterday.minus(3, ChronoUnit.HOURS);
+            Instant endTime = yesterday.plus(3, ChronoUnit.HOURS);
 
+            // 배치에서 수집하는 단기예보(SHORT_FCST) 데이터와 비교
             weatherDataRepository.findClosestByWeatherRegionIdAndTime(
-                    weatherRegionId, "ULTRA_NOW", yesterday, startTime, endTime
+                    weatherRegionId, "SHORT_FCST", yesterday, startTime, endTime
             ).ifPresent(yesterdayData -> {
                 current.setTemperatureCompPrevDay(
                         current.getTemperatureCurrent() - yesterdayData.getTemperatureCurrent());

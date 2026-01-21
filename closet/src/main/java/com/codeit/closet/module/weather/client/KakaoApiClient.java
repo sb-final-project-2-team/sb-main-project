@@ -1,6 +1,7 @@
 package com.codeit.closet.module.weather.client;
 
 import com.codeit.closet.module.weather.config.KakaoApiProperties;
+import com.codeit.closet.module.weather.exception.KakaoApiException;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class KakaoApiClient {
 
     KakaoRegionResponse body = response.getBody();
     if (body == null || body.documents().isEmpty()) {
-      throw new IllegalStateException("카카오 지역 정보가 존재하지 않습니다.");
+      throw KakaoApiException.regionNotFound(longitude, latitude);
     }
 
     return body.documents().get(0).address_name();
