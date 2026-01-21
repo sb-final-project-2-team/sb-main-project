@@ -2,6 +2,9 @@ package com.codeit.closet.module.feed.service.impl;
 
 import com.codeit.closet.module.cloth.entity.Cloth;
 import com.codeit.closet.module.cloth.repository.ClothRepository;
+import com.codeit.closet.module.elastic.dto.FeedSearchResult;
+import com.codeit.closet.module.elastic.service.FeedElasticService;
+import com.codeit.closet.module.elastic.service.FeedSearchService;
 import com.codeit.closet.module.feed.dto.FeedCreateRequest;
 import com.codeit.closet.module.feed.dto.FeedDTO;
 import com.codeit.closet.module.feed.dto.FeedDTOCursorResponse;
@@ -10,7 +13,6 @@ import com.codeit.closet.module.feed.entity.Feed;
 import com.codeit.closet.module.feed.entity.Ootd;
 import com.codeit.closet.module.feed.mapper.FeedMapper;
 import com.codeit.closet.module.feed.repository.FeedRepository;
-import com.codeit.closet.module.feed.repository.OotdRepository;
 import com.codeit.closet.module.feed.service.FeedService;
 import com.codeit.closet.module.follow.entity.Follow;
 import com.codeit.closet.module.follow.repository.FollowRepository;
@@ -21,10 +23,11 @@ import com.codeit.closet.module.user.repository.UserRepository;
 import com.codeit.closet.module.weather.entity.PrecipitationType;
 import com.codeit.closet.module.weather.entity.SkyStatus;
 import com.codeit.closet.module.weather.entity.WeatherData;
-import com.codeit.closet.module.weather.entity.WeatherRegion;
 import com.codeit.closet.module.weather.repository.WeatherDataRepository;
-import com.codeit.closet.module.weather.repository.WeatherRegionRepository;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +40,12 @@ public class BasicFeedService implements FeedService {
 
   private final UserRepository userRepository;
   private final WeatherDataRepository weatherDataRepository;
-  private final OotdRepository ootdRepository;
   private final ClothRepository clothRepository;
   private final FeedRepository feedRepository;
+
+  private final FeedElasticService feedElasticService;
+  private final FeedSearchService feedSearchService;
+
   private final FeedMapper feedMapper;
   private final FollowRepository followRepository;
   private final NotificationService  notificationService;
@@ -51,11 +57,9 @@ public class BasicFeedService implements FeedService {
     User user = userRepository.findById(request.authorId())
         .orElseThrow(() -> new NoSuchElementException("존재하지 않는 회원 정보입니다."));
 
-    // 생성을 하는쪽으로 가야함.
     WeatherData weatherData = weatherDataRepository.findById(request.weatherId())
         .orElseThrow(() -> new NoSuchElementException("존재하지 않는 날씨 정보 입니다."));
 
-    // 나만의 전체 Clothe가 아닌 Ootd에서 추천해준 쪽으로 처리해야한다.
     List<Cloth> clothList =
         clothRepository.findAllById(request.clothesIds());
 
@@ -76,6 +80,8 @@ public class BasicFeedService implements FeedService {
 
     Feed saved = feedRepository.save(feed);
 
+    feedElasticService.index(feed);
+    
     notifyFollowersFeedCreated(user);
 
     return feedMapper.toFeedDTO(saved);
@@ -89,6 +95,36 @@ public class BasicFeedService implements FeedService {
       String sortDirection, String keywordLike, SkyStatus skyStatusEqual,
       PrecipitationType precipitationTypeEqual, UUID authorIdEqual, UUID principal) {
 
+    if (keywordLike != null || skyStatusEqual != null
+        || precipitationTypeEqual != null || authorIdEqual != null) {
+      FeedSearchResult result = feedSearchService.searchFeedIds(cursor, idAfter, limit,
+          sortBy, sortDirection, keywordLike,
+          skyStatusEqual, precipitationTypeEqual, authorIdEqual);
+
+      if (result.feedIds().isEmpty()) {
+        return FeedDTOCursorResponse.empty(sortBy, sortDirection);
+      }
+
+      List<Feed> feeds = feedRepository.findFeedsByIdIn(result.feedIds());
+
+      Map<UUID, Integer> orderMap = new HashMap<>();
+      for (int i = 0; i < result.feedIds().size(); i++) {
+        orderMap.put(result.feedIds().get(i), i);
+      }
+
+      feeds.sort(Comparator.comparingInt(f -> orderMap.get(f.getId())));
+      List<FeedDTO> data = feedMapper.toFeedDTOs(feeds);
+
+      return new FeedDTOCursorResponse(
+          data,
+          result.nextCursor(),
+          result.nextIdAfter(),
+          result.hasNext(),
+          result.totalCount(),
+          sortBy,
+          sortDirection
+      );
+    }
     return feedRepository.findFeedsByCursor(cursor, idAfter, limit, sortBy, sortDirection,
         keywordLike, skyStatusEqual, precipitationTypeEqual, authorIdEqual, principal);
   }
@@ -101,6 +137,8 @@ public class BasicFeedService implements FeedService {
 
     feed.updateFeed(request.content());
 
+    feedElasticService.index(feed);
+
     return feedMapper.toFeedDTO(feed);
   }
 
@@ -109,6 +147,8 @@ public class BasicFeedService implements FeedService {
   public void deleteFeed(UUID feedId) {
     Feed feed = feedRepository.findById(feedId).orElseThrow(
         () -> new NoSuchElementException("존재하지 않는 피드 입니다."));
+
+    feedElasticService.delete(feedId);
 
     feedRepository.delete(feed);
   }

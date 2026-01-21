@@ -38,6 +38,20 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
   }
 
+  @ExceptionHandler(RuntimeException.class)
+  public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException e) {
+    log.error("런타임 예외 발생 : code={}, message={}", HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+
+    // NotFoundException 패턴의 예외는 404 처리
+    if (e.getClass().getSimpleName().contains("NotFoundException")) {
+      ErrorResponse errorResponse = new ErrorResponse(e, 404);
+      return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+    }
+
+    ErrorResponse errorResponse = new ErrorResponse(e, 500);
+    return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+  }
+
   @ExceptionHandler(FileNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleFileNotFoundException(FileNotFoundException e) {
     log.error("예외 발생 : code={}, message={}", HttpStatus.NOT_FOUND, e.getMessage());

@@ -14,4 +14,16 @@ public record FeedDTOCursorResponse(
         String sortBy,
         String sortDirection
 ) {
+
+  public static FeedDTOCursorResponse empty(String sortBy, String sortDirection) {
+    return new FeedDTOCursorResponse(
+        List.of(),
+        null,
+        null,
+        false,
+        0L,
+        sortBy,
+        sortDirection
+    );
+  }
 }
