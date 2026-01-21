@@ -566,8 +566,6 @@ class WeatherMapperTest {
         @DisplayName("MOSTLY_CLOUDY 상태 매핑")
         void shouldMapMostlyCloudyStatus() {
             // Given
-            WeatherData data = createTestWeatherData();
-            // reflection으로 skyStatus 변경 또는 Builder로 새로 생성
             WeatherRegion region = WeatherRegion.builder()
                     .id(UUID.randomUUID())
                     .x(60)
