@@ -299,4 +299,400 @@ class WeatherMapperTest {
                 .windAsWord(WindStrength.WEAK)
                 .build();
     }
+
+
+    @Nested
+    @DisplayName("null 입력 처리 테스트")
+    class NullInputTest {
+
+        @Test
+        @DisplayName("null WeatherData 입력 시 null 반환")
+        void toWeatherDTO_shouldReturnNullForNullInput() {
+            // When
+            WeatherDTO result = weatherMapper.toWeatherDTO(null);
+
+            // Then
+            assertThat(result).isNull();
+        }
+
+        @Test
+        @DisplayName("null WeatherRegion 입력 시 null 반환")
+        void toWeatherAPILocation_shouldReturnNullForNullInput() {
+            // When
+            WeatherAPILocation result = weatherMapper.toWeatherAPILocation(null);
+
+            // Then
+            assertThat(result).isNull();
+        }
+
+        @Test
+        @DisplayName("null WeatherData → TemperatureDTO 시 null 반환")
+        void toTemperatureDTO_shouldReturnNullForNullInput() {
+            // When
+            TemperatureDTO result = weatherMapper.toTemperatureDTO(null);
+
+            // Then
+            assertThat(result).isNull();
+        }
+
+        @Test
+        @DisplayName("null WeatherData → PrecipitationDTO 시 null 반환")
+        void toPrecipitationDTO_shouldReturnNullForNullInput() {
+            // When
+            PrecipitationDTO result = weatherMapper.toPrecipitationDTO(null);
+
+            // Then
+            assertThat(result).isNull();
+        }
+
+        @Test
+        @DisplayName("null WeatherData → HumidityDTO 시 null 반환")
+        void toHumidityDTO_shouldReturnNullForNullInput() {
+            // When
+            HumidityDTO result = weatherMapper.toHumidityDTO(null);
+
+            // Then
+            assertThat(result).isNull();
+        }
+
+        @Test
+        @DisplayName("null WeatherData → WindSpeedDTO 시 null 반환")
+        void toWindSpeedDTO_shouldReturnNullForNullInput() {
+            // When
+            WindSpeedDTO result = weatherMapper.toWindSpeedDTO(null);
+
+            // Then
+            assertThat(result).isNull();
+        }
+
+        @Test
+        @DisplayName("null WeatherData → WeatherSummaryDTO 시 null 반환")
+        void toWeatherSummaryDTO_shouldReturnNullForNullInput() {
+            // When
+            WeatherSummaryDTO result = weatherMapper.toWeatherSummaryDTO(null);
+
+            // Then
+            assertThat(result).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("null 필드 포함 데이터 처리 테스트")
+    class NullFieldTest {
+
+        @Test
+        @DisplayName("weatherRegion이 null인 WeatherData 처리")
+        void toWeatherDTO_shouldHandleNullWeatherRegion() {
+            // Given
+            Instant now = Instant.now();
+            WeatherData data = WeatherData.builder()
+                    .id(UUID.randomUUID())
+                    .weatherRegion(null)  // null WeatherRegion
+                    .forecastKind(ForecastKind.ULTRA_NOW)
+                    .forecastAt(now)
+                    .forecastedAt(now)
+                    .skyStatus(SkyStatus.CLEAR)
+                    .temperatureCurrent(15.0)
+                    .build();
+
+            // When
+            WeatherDTO result = weatherMapper.toWeatherDTO(data);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.location()).isNull();
+        }
+
+        @Test
+        @DisplayName("locationNames가 null인 WeatherRegion 처리 - 빈 리스트 반환")
+        void toWeatherAPILocation_shouldHandleNullLocationNames() {
+            // Given
+            WeatherRegion region = WeatherRegion.builder()
+                    .x(60)
+                    .y(127)
+                    .latitude(37.5665)
+                    .longitude(126.9780)
+                    .locationNames(null)  // null locationNames
+                    .build();
+
+            // When
+            WeatherAPILocation result = weatherMapper.toWeatherAPILocation(region);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.locationNames()).isEmpty();  // null이 아닌 빈 리스트 반환
+        }
+
+        @Test
+        @DisplayName("temperatureCompPrevDay가 null인 경우 처리")
+        void toTemperatureDTO_shouldHandleNullCompPrevDay() {
+            // Given
+            WeatherRegion region = WeatherRegion.builder()
+                    .id(UUID.randomUUID())
+                    .x(60)
+                    .y(127)
+                    .latitude(37.5665)
+                    .longitude(126.9780)
+                    .locationNames("서울특별시")
+                    .build();
+
+            Instant now = Instant.now();
+            WeatherData data = WeatherData.builder()
+                    .id(UUID.randomUUID())
+                    .weatherRegion(region)
+                    .forecastKind(ForecastKind.SHORT_FCST)
+                    .forecastAt(now)
+                    .forecastedAt(now)
+                    .skyStatus(SkyStatus.CLEAR)
+                    .temperatureCurrent(15.0)
+                    .temperatureCompPrevDay(null)  // null
+                    .temperatureMin(10.0)
+                    .temperatureMax(20.0)
+                    .build();
+
+            // When
+            TemperatureDTO result = weatherMapper.toTemperatureDTO(data);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.comparedToDayBefore()).isNull();
+        }
+
+        @Test
+        @DisplayName("humidityComparedToDayBefore가 null인 경우 처리")
+        void toHumidityDTO_shouldHandleNullComparedToDayBefore() {
+            // Given
+            WeatherRegion region = WeatherRegion.builder()
+                    .id(UUID.randomUUID())
+                    .x(60)
+                    .y(127)
+                    .latitude(37.5665)
+                    .longitude(126.9780)
+                    .locationNames("서울특별시")
+                    .build();
+
+            Instant now = Instant.now();
+            WeatherData data = WeatherData.builder()
+                    .id(UUID.randomUUID())
+                    .weatherRegion(region)
+                    .forecastKind(ForecastKind.SHORT_FCST)
+                    .forecastAt(now)
+                    .forecastedAt(now)
+                    .skyStatus(SkyStatus.CLEAR)
+                    .humidityCurrent(60.0)
+                    .humidityComparedToDayBefore(null)  // null - 실제로는 0.0 기본값
+                    .build();
+
+            // When
+            HumidityDTO result = weatherMapper.toHumidityDTO(data);
+
+            // Then
+            assertThat(result).isNotNull();
+        }
+
+        @Test
+        @DisplayName("windAsWord가 null인 경우 처리")
+        void toWindSpeedDTO_shouldHandleNullWindAsWord() {
+            // Given
+            WeatherRegion region = WeatherRegion.builder()
+                    .id(UUID.randomUUID())
+                    .x(60)
+                    .y(127)
+                    .latitude(37.5665)
+                    .longitude(126.9780)
+                    .locationNames("서울특별시")
+                    .build();
+
+            Instant now = Instant.now();
+            WeatherData data = WeatherData.builder()
+                    .id(UUID.randomUUID())
+                    .weatherRegion(region)
+                    .forecastKind(ForecastKind.ULTRA_NOW)
+                    .forecastAt(now)
+                    .forecastedAt(now)
+                    .skyStatus(SkyStatus.CLEAR)
+                    .windSpeed(5.0)
+                    .windAsWord(null)  // null
+                    .build();
+
+            // When
+            WindSpeedDTO result = weatherMapper.toWindSpeedDTO(data);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.asWord()).isNull();
+        }
+
+        @Test
+        @DisplayName("precipitationType이 null인 경우 처리")
+        void toPrecipitationDTO_shouldHandleNullPrecipitationType() {
+            // Given
+            WeatherRegion region = WeatherRegion.builder()
+                    .id(UUID.randomUUID())
+                    .x(60)
+                    .y(127)
+                    .latitude(37.5665)
+                    .longitude(126.9780)
+                    .locationNames("서울특별시")
+                    .build();
+
+            Instant now = Instant.now();
+            WeatherData data = WeatherData.builder()
+                    .id(UUID.randomUUID())
+                    .weatherRegion(region)
+                    .forecastKind(ForecastKind.ULTRA_NOW)
+                    .forecastAt(now)
+                    .forecastedAt(now)
+                    .skyStatus(SkyStatus.CLEAR)
+                    .precipitationType(null)  // null
+                    .precipitationAmount(0.0)
+                    .precipitationProb(0.0)
+                    .build();
+
+            // When
+            PrecipitationDTO result = weatherMapper.toPrecipitationDTO(data);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.type()).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("다양한 SkyStatus 매핑 테스트")
+    class SkyStatusMappingTest {
+
+        @Test
+        @DisplayName("MOSTLY_CLOUDY 상태 매핑")
+        void shouldMapMostlyCloudyStatus() {
+            // Given
+            WeatherData data = createTestWeatherData();
+            // reflection으로 skyStatus 변경 또는 Builder로 새로 생성
+            WeatherRegion region = WeatherRegion.builder()
+                    .id(UUID.randomUUID())
+                    .x(60)
+                    .y(127)
+                    .latitude(37.5665)
+                    .longitude(126.9780)
+                    .locationNames("서울특별시")
+                    .build();
+
+            Instant now = Instant.now();
+            WeatherData mostlyCloudyData = WeatherData.builder()
+                    .id(UUID.randomUUID())
+                    .weatherRegion(region)
+                    .forecastKind(ForecastKind.SHORT_FCST)
+                    .forecastAt(now)
+                    .forecastedAt(now)
+                    .skyStatus(SkyStatus.MOSTLY_CLOUDY)
+                    .temperatureCurrent(15.0)
+                    .build();
+
+            // When
+            WeatherDTO result = weatherMapper.toWeatherDTO(mostlyCloudyData);
+
+            // Then
+            assertThat(result.skyStatus()).isEqualTo(SkyStatus.MOSTLY_CLOUDY);
+        }
+
+        @Test
+        @DisplayName("CLOUDY 상태 매핑")
+        void shouldMapCloudyStatus() {
+            // Given
+            WeatherRegion region = WeatherRegion.builder()
+                    .id(UUID.randomUUID())
+                    .x(60)
+                    .y(127)
+                    .latitude(37.5665)
+                    .longitude(126.9780)
+                    .locationNames("서울특별시")
+                    .build();
+
+            Instant now = Instant.now();
+            WeatherData cloudyData = WeatherData.builder()
+                    .id(UUID.randomUUID())
+                    .weatherRegion(region)
+                    .forecastKind(ForecastKind.SHORT_FCST)
+                    .forecastAt(now)
+                    .forecastedAt(now)
+                    .skyStatus(SkyStatus.CLOUDY)
+                    .temperatureCurrent(15.0)
+                    .build();
+
+            // When
+            WeatherDTO result = weatherMapper.toWeatherDTO(cloudyData);
+
+            // Then
+            assertThat(result.skyStatus()).isEqualTo(SkyStatus.CLOUDY);
+        }
+    }
+
+    @Nested
+    @DisplayName("다양한 WindStrength 매핑 테스트")
+    class WindStrengthMappingTest {
+
+        @Test
+        @DisplayName("MODERATE 풍속 매핑")
+        void shouldMapModerateWindStrength() {
+            // Given
+            WeatherRegion region = WeatherRegion.builder()
+                    .id(UUID.randomUUID())
+                    .x(60)
+                    .y(127)
+                    .latitude(37.5665)
+                    .longitude(126.9780)
+                    .locationNames("서울특별시")
+                    .build();
+
+            Instant now = Instant.now();
+            WeatherData data = WeatherData.builder()
+                    .id(UUID.randomUUID())
+                    .weatherRegion(region)
+                    .forecastKind(ForecastKind.ULTRA_NOW)
+                    .forecastAt(now)
+                    .forecastedAt(now)
+                    .skyStatus(SkyStatus.CLEAR)
+                    .windSpeed(6.0)
+                    .windAsWord(WindStrength.MODERATE)
+                    .build();
+
+            // When
+            WindSpeedDTO result = weatherMapper.toWindSpeedDTO(data);
+
+            // Then
+            assertThat(result.asWord()).isEqualTo(WindStrength.MODERATE);
+        }
+
+        @Test
+        @DisplayName("STRONG 풍속 매핑")
+        void shouldMapStrongWindStrength() {
+            // Given
+            WeatherRegion region = WeatherRegion.builder()
+                    .id(UUID.randomUUID())
+                    .x(60)
+                    .y(127)
+                    .latitude(37.5665)
+                    .longitude(126.9780)
+                    .locationNames("서울특별시")
+                    .build();
+
+            Instant now = Instant.now();
+            WeatherData data = WeatherData.builder()
+                    .id(UUID.randomUUID())
+                    .weatherRegion(region)
+                    .forecastKind(ForecastKind.ULTRA_NOW)
+                    .forecastAt(now)
+                    .forecastedAt(now)
+                    .skyStatus(SkyStatus.CLEAR)
+                    .windSpeed(12.0)
+                    .windAsWord(WindStrength.STRONG)
+                    .build();
+
+            // When
+            WindSpeedDTO result = weatherMapper.toWindSpeedDTO(data);
+
+            // Then
+            assertThat(result.asWord()).isEqualTo(WindStrength.STRONG);
+        }
+    }
 }

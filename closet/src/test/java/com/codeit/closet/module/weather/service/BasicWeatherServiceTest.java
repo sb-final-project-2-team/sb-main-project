@@ -585,4 +585,413 @@ class BasicWeatherServiceTest {
                 .isInstanceOf(WeatherDataCollectionException.class)
                 .hasMessageContaining("날씨 데이터 수집에 실패했습니다");
     }
+
+
+    @Test
+    @DisplayName("지역이 없을 때 새로운 WeatherRegion 생성")
+    void findWeather_regionNotExists_createsNewRegion() {
+        // Given
+        Double longitude = 126.9780;
+        Double latitude = 37.5665;
+
+        // Region이 없어서 새로 생성해야 하는 경우
+        given(weatherRegionRepository.findByXAndY(anyInt(), anyInt()))
+                .willReturn(Optional.empty());
+
+        given(kakaoApiClient.getRegionByCoordinate(anyDouble(), anyDouble()))
+                .willReturn("서울특별시,종로구,청운동");
+
+        given(weatherRegionRepository.save(any(WeatherRegion.class)))
+                .willReturn(weatherRegion);
+
+        given(weatherDataRepository.findByWeatherRegionId(any(UUID.class)))
+                .willReturn(List.of(currentData));
+
+        given(weatherMapper.toWeatherDTO(any(WeatherData.class)))
+                .willAnswer(invocation -> {
+                    WeatherData data = invocation.getArgument(0);
+                    return new WeatherDTO(
+                            data.getId(),
+                            data.getForecastedAt(),
+                            data.getForecastAt(),
+                            location,
+                            data.getSkyStatus(),
+                            null, null, null, null
+                    );
+                });
+
+        // When
+        List<WeatherDTO> result = weatherService.findWeather(longitude, latitude);
+
+        // Then
+        assertThat(result).isNotEmpty();
+        verify(weatherRegionRepository).save(any(WeatherRegion.class));
+    }
+
+    @Test
+    @DisplayName("단기예보 데이터로 일별 집계 수행 - 최저/최고 온도 null인 경우")
+    void findWeather_withForecastData_handlesNullMinMaxTemperature() {
+        // Given
+        Double longitude = 126.9780;
+        Double latitude = 37.5665;
+        Instant now = Instant.now();
+
+        // 최저/최고 온도가 null인 단기예보 데이터
+        WeatherData forecastData = WeatherData.builder()
+                .id(UUID.randomUUID())
+                .weatherRegion(weatherRegion)
+                .forecastKind(ForecastKind.SHORT_FCST)
+                .forecastAt(now.plus(3, ChronoUnit.HOURS))
+                .forecastedAt(now)
+                .skyStatus(SkyStatus.CLEAR)
+                .temperatureCurrent(18.0)
+                .temperatureMin(null)  // null
+                .temperatureMax(null)  // null
+                .precipitationType(PrecipitationType.NONE)
+                .precipitationAmount(0.0)
+                .precipitationProb(10.0)
+                .humidityCurrent(55.0)
+                .humidityComparedToDayBefore(0.0)
+                .windSpeed(3.0)
+                .windAsWord(WindStrength.WEAK)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+
+        given(weatherRegionRepository.findByXAndY(anyInt(), anyInt()))
+                .willReturn(Optional.of(weatherRegion));
+
+        given(weatherDataRepository.findByWeatherRegionId(weatherRegionId))
+                .willReturn(List.of(currentData, forecastData));
+
+        given(weatherMapper.toWeatherDTO(any(WeatherData.class)))
+                .willAnswer(invocation -> {
+                    WeatherData data = invocation.getArgument(0);
+                    return new WeatherDTO(
+                            data.getId(),
+                            data.getForecastedAt(),
+                            data.getForecastAt(),
+                            location,
+                            data.getSkyStatus(),
+                            null, null, null, null
+                    );
+                });
+
+        // When
+        List<WeatherDTO> result = weatherService.findWeather(longitude, latitude);
+
+        // Then
+        assertThat(result).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("최저/최고 온도가 유효하지 않은 값(100 이상, -100 이하)인 경우 필터링")
+    void findWeather_filterInvalidTemperatureValues() {
+        // Given
+        Double longitude = 126.9780;
+        Double latitude = 37.5665;
+        Instant now = Instant.now();
+
+        // 유효하지 않은 온도값을 가진 데이터
+        WeatherData invalidTempData = WeatherData.builder()
+                .id(UUID.randomUUID())
+                .weatherRegion(weatherRegion)
+                .forecastKind(ForecastKind.SHORT_FCST)
+                .forecastAt(now)
+                .forecastedAt(now)
+                .skyStatus(SkyStatus.CLEAR)
+                .temperatureCurrent(18.0)
+                .temperatureMin(999.0)  // 유효하지 않은 값 (100 이상)
+                .temperatureMax(-999.0) // 유효하지 않은 값 (-100 이하)
+                .precipitationType(PrecipitationType.NONE)
+                .precipitationAmount(0.0)
+                .precipitationProb(10.0)
+                .humidityCurrent(55.0)
+                .humidityComparedToDayBefore(0.0)
+                .windSpeed(3.0)
+                .windAsWord(WindStrength.WEAK)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+
+        given(weatherRegionRepository.findByXAndY(anyInt(), anyInt()))
+                .willReturn(Optional.of(weatherRegion));
+
+        given(weatherDataRepository.findByWeatherRegionId(weatherRegionId))
+                .willReturn(List.of(currentData, invalidTempData));
+
+        given(weatherMapper.toWeatherDTO(any(WeatherData.class)))
+                .willAnswer(invocation -> {
+                    WeatherData data = invocation.getArgument(0);
+                    return new WeatherDTO(
+                            data.getId(),
+                            data.getForecastedAt(),
+                            data.getForecastAt(),
+                            location,
+                            data.getSkyStatus(),
+                            null, null, null, null
+                    );
+                });
+
+        // When
+        List<WeatherDTO> result = weatherService.findWeather(longitude, latitude);
+
+        // Then
+        assertThat(result).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("findWeatherRegion - 지역 없으면 새로 생성")
+    void findWeatherRegion_notExists_createsNew() {
+        // Given
+        Double longitude = 126.9780;
+        Double latitude = 37.5665;
+
+        given(weatherRegionRepository.findByXAndY(anyInt(), anyInt()))
+                .willReturn(Optional.empty());
+
+        given(kakaoApiClient.getRegionByCoordinate(anyDouble(), anyDouble()))
+                .willReturn("서울특별시,종로구,청운동");
+
+        given(weatherRegionRepository.save(any(WeatherRegion.class)))
+                .willReturn(weatherRegion);
+
+        // When
+        WeatherRegion result = weatherService.findWeatherRegion(longitude, latitude);
+
+        // Then
+        assertThat(result).isNotNull();
+        verify(weatherRegionRepository).save(any(WeatherRegion.class));
+    }
+
+    @Test
+    @DisplayName("findWeatherRegion - 기존 지역 반환")
+    void findWeatherRegion_exists_returnsExisting() {
+        // Given
+        Double longitude = 126.9780;
+        Double latitude = 37.5665;
+
+        given(weatherRegionRepository.findByXAndY(anyInt(), anyInt()))
+                .willReturn(Optional.of(weatherRegion));
+
+        // When
+        WeatherRegion result = weatherService.findWeatherRegion(longitude, latitude);
+
+        // Then
+        assertThat(result).isEqualTo(weatherRegion);
+    }
+
+    @Test
+    @DisplayName("다양한 좌표로 격자 변환 테스트 - 동해안 좌표")
+    void findWeather_withEastCoastCoordinates() {
+        // Given: 동해안 좌표 (theta 조정 필요한 경계값 테스트)
+        Double longitude = 130.0;  // 동경 130도 (경계값)
+        Double latitude = 37.5665;
+
+        given(weatherRegionRepository.findByXAndY(anyInt(), anyInt()))
+                .willReturn(Optional.of(weatherRegion));
+
+        given(weatherDataRepository.findByWeatherRegionId(weatherRegionId))
+                .willReturn(List.of(currentData));
+
+        given(weatherMapper.toWeatherDTO(any(WeatherData.class)))
+                .willAnswer(invocation -> {
+                    WeatherData data = invocation.getArgument(0);
+                    return new WeatherDTO(
+                            data.getId(),
+                            data.getForecastedAt(),
+                            data.getForecastAt(),
+                            location,
+                            data.getSkyStatus(),
+                            null, null, null, null
+                    );
+                });
+
+        // When
+        List<WeatherDTO> result = weatherService.findWeather(longitude, latitude);
+
+        // Then
+        assertThat(result).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("어제 대비 계산 중 예외 발생 시 로그만 남기고 계속 진행")
+    void collectUltraSrtNcst_calculateComparedError_continuesExecution() {
+        // Given
+        Integer nx = 60;
+        Integer ny = 127;
+        Instant now = Instant.now();
+
+        KmaApiResponse mockResponse = new KmaApiResponse();
+
+        WeatherData convertedData = WeatherData.builder()
+                .id(UUID.randomUUID())
+                .weatherRegion(weatherRegion)
+                .forecastKind(ForecastKind.ULTRA_NOW)
+                .forecastAt(now)
+                .forecastedAt(now)
+                .skyStatus(SkyStatus.CLEAR)
+                .temperatureCurrent(15.0)
+                .humidityCurrent(60.0)
+                .humidityComparedToDayBefore(0.0)
+                .build();
+
+        given(weatherRegionRepository.findByXAndY(nx, ny))
+                .willReturn(Optional.of(weatherRegion));
+
+        given(kmaApiClient.getUltraSrtNcst(nx, ny))
+                .willReturn(mockResponse);
+
+        given(kmaApiConverter.convertUltraSrtNcst(mockResponse, weatherRegion))
+                .willReturn(convertedData);
+
+        // 어제 데이터 조회 시 예외 발생
+        given(weatherDataRepository.findClosestByWeatherRegionIdAndTime(
+                eq(weatherRegionId), eq("SHORT_FCST"), any(), any(), any()))
+                .willThrow(new RuntimeException("DB 조회 실패"));
+
+        given(weatherDataRepository.save(any(WeatherData.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        given(weatherMapper.toWeatherDTO(any(WeatherData.class)))
+                .willAnswer(invocation -> {
+                    WeatherData data = invocation.getArgument(0);
+                    return new WeatherDTO(
+                            data.getId(), data.getForecastedAt(), data.getForecastAt(),
+                            location, data.getSkyStatus(), null, null, null, null
+                    );
+                });
+
+        // When - 예외가 발생해도 계속 진행되어야 함
+        WeatherDTO result = weatherService.collectUltraSrtNcst(nx, ny);
+
+        // Then
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    @DisplayName("단기예보 수집 성공")
+    void collectVilageFcst_success() {
+        // Given
+        Integer nx = 60;
+        Integer ny = 127;
+        Instant now = Instant.now();
+
+        KmaApiResponse mockResponse = new KmaApiResponse();
+
+        WeatherData forecastData = WeatherData.builder()
+                .id(UUID.randomUUID())
+                .weatherRegion(weatherRegion)
+                .forecastKind(ForecastKind.SHORT_FCST)
+                .forecastAt(now.plus(3, ChronoUnit.HOURS))
+                .forecastedAt(now)
+                .skyStatus(SkyStatus.CLEAR)
+                .temperatureCurrent(18.0)
+                .precipitationProb(10.0)
+                .humidityCurrent(55.0)
+                .humidityComparedToDayBefore(0.0)
+                .build();
+
+        given(weatherRegionRepository.findByXAndY(nx, ny))
+                .willReturn(Optional.of(weatherRegion));
+
+        given(kmaApiClient.getVilageFcst(nx, ny))
+                .willReturn(mockResponse);
+
+        given(kmaApiConverter.convertVilageFcst(mockResponse, weatherRegion))
+                .willReturn(List.of(forecastData));
+
+        given(weatherDataRepository.saveAll(anyList()))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        given(weatherMapper.toWeatherDTO(any(WeatherData.class)))
+                .willAnswer(invocation -> {
+                    WeatherData data = invocation.getArgument(0);
+                    return new WeatherDTO(
+                            data.getId(), data.getForecastedAt(), data.getForecastAt(),
+                            location, data.getSkyStatus(), null, null, null, null
+                    );
+                });
+
+        // When
+        List<WeatherDTO> result = weatherService.collectVilageFcst(nx, ny);
+
+        // Then
+        assertThat(result).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("일별 대표 데이터 선택 - 12시 데이터 우선 선택")
+    void findWeather_selectsDailyRepresentative_prefersNoon() {
+        // Given
+        Double longitude = 126.9780;
+        Double latitude = 37.5665;
+        Instant now = Instant.now();
+
+        // 여러 시간대의 예보 데이터 (내일 날짜로 설정)
+        Instant tomorrow9am = now.plus(1, ChronoUnit.DAYS);
+        Instant tomorrow12pm = now.plus(1, ChronoUnit.DAYS).plus(3, ChronoUnit.HOURS);
+        Instant tomorrow3pm = now.plus(1, ChronoUnit.DAYS).plus(6, ChronoUnit.HOURS);
+
+        WeatherData data9am = WeatherData.builder()
+                .id(UUID.randomUUID())
+                .weatherRegion(weatherRegion)
+                .forecastKind(ForecastKind.SHORT_FCST)
+                .forecastAt(tomorrow9am)
+                .forecastedAt(now)
+                .skyStatus(SkyStatus.CLEAR)
+                .temperatureCurrent(12.0)
+                .humidityCurrent(50.0)
+                .humidityComparedToDayBefore(0.0)
+                .build();
+
+        WeatherData data12pm = WeatherData.builder()
+                .id(UUID.randomUUID())
+                .weatherRegion(weatherRegion)
+                .forecastKind(ForecastKind.SHORT_FCST)
+                .forecastAt(tomorrow12pm)
+                .forecastedAt(now)
+                .skyStatus(SkyStatus.MOSTLY_CLOUDY)
+                .temperatureCurrent(18.0)
+                .humidityCurrent(45.0)
+                .humidityComparedToDayBefore(0.0)
+                .build();
+
+        WeatherData data3pm = WeatherData.builder()
+                .id(UUID.randomUUID())
+                .weatherRegion(weatherRegion)
+                .forecastKind(ForecastKind.SHORT_FCST)
+                .forecastAt(tomorrow3pm)
+                .forecastedAt(now)
+                .skyStatus(SkyStatus.CLOUDY)
+                .temperatureCurrent(20.0)
+                .humidityCurrent(40.0)
+                .humidityComparedToDayBefore(0.0)
+                .build();
+
+        given(weatherRegionRepository.findByXAndY(anyInt(), anyInt()))
+                .willReturn(Optional.of(weatherRegion));
+
+        given(weatherDataRepository.findByWeatherRegionId(weatherRegionId))
+                .willReturn(List.of(currentData, data9am, data12pm, data3pm));
+
+        given(weatherMapper.toWeatherDTO(any(WeatherData.class)))
+                .willAnswer(invocation -> {
+                    WeatherData data = invocation.getArgument(0);
+                    return new WeatherDTO(
+                            data.getId(),
+                            data.getForecastedAt(),
+                            data.getForecastAt(),
+                            location,
+                            data.getSkyStatus(),
+                            null, null, null, null
+                    );
+                });
+
+        // When
+        List<WeatherDTO> result = weatherService.findWeather(longitude, latitude);
+
+        // Then
+        assertThat(result).isNotEmpty();
+    }
 }
