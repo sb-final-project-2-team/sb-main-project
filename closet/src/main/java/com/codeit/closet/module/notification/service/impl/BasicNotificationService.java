@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.codeit.closet.module.notification.dto.NotificationDTO;
 import com.codeit.closet.module.notification.entity.Notification;
@@ -101,7 +103,12 @@ public class BasicNotificationService implements NotificationService {
 		List<Notification> savedList = notificationRepository.saveAll(notifications);
 		log.info("[Notification] 다건 알림 생성 완료 (count={})", savedList.size());
 
-		publishManyAfterCommit(savedList);
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				publishManyAfterCommit(savedList);
+			}
+		});
 	}
 
 	private void publishEvent(Notification notification) {
@@ -118,7 +125,6 @@ public class BasicNotificationService implements NotificationService {
 	}
 
 		// 이벤트 발행은 별도로 처리
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void publishManyAfterCommit(List<Notification> savedList) {
 
 		for (Notification notification : savedList) {
