@@ -117,10 +117,10 @@ public class BasicFeedService implements FeedService {
     List<Follow> follows = followRepository.findAllByFollowee_Id(user.getId());
 
     for (Follow follow : follows) {
-      UUID followeeId = follow.getFollowee().getId();
+      UUID followerId = follow.getFollower().getId();
 
       notificationService.createWithRenderContent(
-          followeeId,
+          followerId,
           NotificationTemplate.FEED,
           new Object[]{user.getName()},
           user.getName()
