@@ -578,4 +578,317 @@ class KmaApiConverterTest {
             assertThat(result.getTemperatureCurrent()).isEqualTo(0.0);
         }
     }
+
+
+    @Nested
+    @DisplayName("parsePrecipitationType - 강수 유형 변환 추가 테스트")
+    class ParsePrecipitationTypeAdditionalTest {
+
+        @Test
+        @DisplayName("유효하지 않은 PTY 값은 NONE 반환")
+        void shouldReturnNoneForInvalidPtyValue() {
+            // Given
+            KmaApiResponse response = createValidUltraSrtNcstResponse();
+            response.getResponse().getBody().getItems().getItem()
+                    .stream()
+                    .filter(item -> "PTY".equals(item.getCategory()))
+                    .findFirst()
+                    .ifPresent(item -> item.setObsrValue("99")); // 유효하지 않은 값
+
+            // When
+            WeatherData result = converter.convertUltraSrtNcst(response, weatherRegion);
+
+            // Then
+            assertThat(result.getPrecipitationType()).isEqualTo(PrecipitationType.NONE);
+        }
+
+        @Test
+        @DisplayName("PTY null인 경우 NONE 반환")
+        void shouldReturnNoneForNullPty() {
+            // Given
+            KmaApiResponse response = createValidUltraSrtNcstResponse();
+            // PTY 항목을 제거
+            response.getResponse().getBody().getItems().getItem()
+                    .removeIf(item -> "PTY".equals(item.getCategory()));
+
+            // When
+            WeatherData result = converter.convertUltraSrtNcst(response, weatherRegion);
+
+            // Then
+            assertThat(result.getPrecipitationType()).isEqualTo(PrecipitationType.NONE);
+        }
+    }
+
+    @Nested
+    @DisplayName("parseSkyStatusFromSky - 하늘 상태 변환 추가 테스트")
+    class ParseSkyStatusFromSkyAdditionalTest {
+
+        @Test
+        @DisplayName("유효하지 않은 SKY 값은 CLEAR 반환")
+        void shouldReturnClearForInvalidSkyValue() {
+            // Given
+            KmaApiResponse response = new KmaApiResponse();
+            KmaApiResponse.Response resp = new KmaApiResponse.Response();
+            KmaApiResponse.Body body = new KmaApiResponse.Body();
+            KmaApiResponse.Items items = new KmaApiResponse.Items();
+            List<KmaApiResponse.Item> itemList = new ArrayList<>();
+
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "TMP", "16"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "SKY", "99")); // 유효하지 않은 값
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "PTY", "0"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "POP", "10"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "PCP", "강수없음"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "REH", "55"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "WSD", "3.5"));
+
+            items.setItem(itemList);
+            body.setItems(items);
+            resp.setBody(body);
+            response.setResponse(resp);
+
+            // When
+            List<WeatherData> result = converter.convertVilageFcst(response, weatherRegion);
+
+            // Then
+            assertThat(result.get(0).getSkyStatus()).isEqualTo(SkyStatus.CLEAR);
+        }
+
+        @Test
+        @DisplayName("SKY null인 경우 CLEAR 반환")
+        void shouldReturnClearForNullSky() {
+            // Given
+            KmaApiResponse response = new KmaApiResponse();
+            KmaApiResponse.Response resp = new KmaApiResponse.Response();
+            KmaApiResponse.Body body = new KmaApiResponse.Body();
+            KmaApiResponse.Items items = new KmaApiResponse.Items();
+            List<KmaApiResponse.Item> itemList = new ArrayList<>();
+
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "TMP", "16"));
+            // SKY 항목 없음
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "PTY", "0"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "POP", "10"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "PCP", "강수없음"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "REH", "55"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "WSD", "3.5"));
+
+            items.setItem(itemList);
+            body.setItems(items);
+            resp.setBody(body);
+            response.setResponse(resp);
+
+            // When
+            List<WeatherData> result = converter.convertVilageFcst(response, weatherRegion);
+
+            // Then
+            assertThat(result.get(0).getSkyStatus()).isEqualTo(SkyStatus.CLEAR);
+        }
+    }
+
+    @Nested
+    @DisplayName("parsePrecipitationAmount - 강수량 변환 추가 테스트")
+    class ParsePrecipitationAmountAdditionalTest {
+
+        @Test
+        @DisplayName("강수량 '0'인 경우 0.0 반환")
+        void shouldReturnZeroForZeroString() {
+            // Given
+            KmaApiResponse response = new KmaApiResponse();
+            KmaApiResponse.Response resp = new KmaApiResponse.Response();
+            KmaApiResponse.Body body = new KmaApiResponse.Body();
+            KmaApiResponse.Items items = new KmaApiResponse.Items();
+            List<KmaApiResponse.Item> itemList = new ArrayList<>();
+
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "TMP", "16"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "SKY", "1"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "PTY", "0"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "POP", "0"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "PCP", "0")); // "0" 문자열
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "REH", "55"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "WSD", "3.5"));
+
+            items.setItem(itemList);
+            body.setItems(items);
+            resp.setBody(body);
+            response.setResponse(resp);
+
+            // When
+            List<WeatherData> result = converter.convertVilageFcst(response, weatherRegion);
+
+            // Then
+            assertThat(result.get(0).getPrecipitationAmount()).isEqualTo(0.0);
+        }
+
+        @Test
+        @DisplayName("강수량 null인 경우 0.0 반환")
+        void shouldReturnZeroForNullPcp() {
+            // Given
+            KmaApiResponse response = new KmaApiResponse();
+            KmaApiResponse.Response resp = new KmaApiResponse.Response();
+            KmaApiResponse.Body body = new KmaApiResponse.Body();
+            KmaApiResponse.Items items = new KmaApiResponse.Items();
+            List<KmaApiResponse.Item> itemList = new ArrayList<>();
+
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "TMP", "16"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "SKY", "1"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "PTY", "0"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "POP", "10"));
+            // PCP 항목 없음 (null)
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "REH", "55"));
+            itemList.add(createFcstItem("20260120", "1700", "20260120", "1800", "WSD", "3.5"));
+
+            items.setItem(itemList);
+            body.setItems(items);
+            resp.setBody(body);
+            response.setResponse(resp);
+
+            // When
+            List<WeatherData> result = converter.convertVilageFcst(response, weatherRegion);
+
+            // Then
+            assertThat(result.get(0).getPrecipitationAmount()).isEqualTo(0.0);
+        }
+    }
+
+    @Nested
+    @DisplayName("null 응답 처리 추가 테스트")
+    class NullResponseTest {
+
+        @Test
+        @DisplayName("response.getResponse()가 null인 경우 예외 발생")
+        void shouldThrowExceptionWhenResponseIsNull() {
+            // Given
+            KmaApiResponse response = new KmaApiResponse();
+            response.setResponse(null);
+
+            // When & Then
+            assertThatThrownBy(() -> converter.convertUltraSrtNcst(response, weatherRegion))
+                    .isInstanceOf(KmaApiException.class);
+        }
+
+        @Test
+        @DisplayName("response.getResponse().getBody()가 null인 경우 예외 발생")
+        void shouldThrowExceptionWhenBodyIsNull() {
+            // Given
+            KmaApiResponse response = new KmaApiResponse();
+            KmaApiResponse.Response resp = new KmaApiResponse.Response();
+            resp.setBody(null);
+            response.setResponse(resp);
+
+            // When & Then
+            assertThatThrownBy(() -> converter.convertUltraSrtNcst(response, weatherRegion))
+                    .isInstanceOf(KmaApiException.class);
+        }
+
+        @Test
+        @DisplayName("response.getResponse().getBody().getItems()가 null인 경우 예외 발생")
+        void shouldThrowExceptionWhenItemsIsNull() {
+            // Given
+            KmaApiResponse response = new KmaApiResponse();
+            KmaApiResponse.Response resp = new KmaApiResponse.Response();
+            KmaApiResponse.Body body = new KmaApiResponse.Body();
+            body.setItems(null);
+            resp.setBody(body);
+            response.setResponse(resp);
+
+            // When & Then
+            assertThatThrownBy(() -> converter.convertUltraSrtNcst(response, weatherRegion))
+                    .isInstanceOf(KmaApiException.class);
+        }
+
+        @Test
+        @DisplayName("items.getItem()이 null인 경우 예외 발생")
+        void shouldThrowExceptionWhenItemListIsNull() {
+            // Given
+            KmaApiResponse response = new KmaApiResponse();
+            KmaApiResponse.Response resp = new KmaApiResponse.Response();
+            KmaApiResponse.Body body = new KmaApiResponse.Body();
+            KmaApiResponse.Items items = new KmaApiResponse.Items();
+            items.setItem(null);
+            body.setItems(items);
+            resp.setBody(body);
+            response.setResponse(resp);
+
+            // When & Then
+            assertThatThrownBy(() -> converter.convertUltraSrtNcst(response, weatherRegion))
+                    .isInstanceOf(KmaApiException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("parseSkyStatus - 초단기실황 하늘 상태 변환")
+    class ParseSkyStatusTest {
+
+        @Test
+        @DisplayName("PTY null인 경우 CLEAR 반환")
+        void shouldReturnClearForNullPty() {
+            // Given
+            KmaApiResponse response = createValidUltraSrtNcstResponse();
+            // PTY 항목 제거
+            response.getResponse().getBody().getItems().getItem()
+                    .removeIf(item -> "PTY".equals(item.getCategory()));
+
+            // When
+            WeatherData result = converter.convertUltraSrtNcst(response, weatherRegion);
+
+            // Then
+            assertThat(result.getSkyStatus()).isEqualTo(SkyStatus.CLEAR);
+        }
+    }
+
+    @Nested
+    @DisplayName("parseWindStrength - 풍속 변환 경계값 테스트")
+    class ParseWindStrengthBoundaryTest {
+
+        @Test
+        @DisplayName("정확히 4m/s일 때 MODERATE 반환")
+        void shouldReturnModerateAtExactly4() {
+            // Given
+            KmaApiResponse response = createValidUltraSrtNcstResponse();
+            response.getResponse().getBody().getItems().getItem()
+                    .stream()
+                    .filter(item -> "WSD".equals(item.getCategory()))
+                    .findFirst()
+                    .ifPresent(item -> item.setObsrValue("4.0"));
+
+            // When
+            WeatherData result = converter.convertUltraSrtNcst(response, weatherRegion);
+
+            // Then
+            assertThat(result.getWindAsWord()).isEqualTo(WindStrength.MODERATE);
+        }
+
+        @Test
+        @DisplayName("정확히 9m/s일 때 STRONG 반환")
+        void shouldReturnStrongAtExactly9() {
+            // Given
+            KmaApiResponse response = createValidUltraSrtNcstResponse();
+            response.getResponse().getBody().getItems().getItem()
+                    .stream()
+                    .filter(item -> "WSD".equals(item.getCategory()))
+                    .findFirst()
+                    .ifPresent(item -> item.setObsrValue("9.0"));
+
+            // When
+            WeatherData result = converter.convertUltraSrtNcst(response, weatherRegion);
+
+            // Then
+            assertThat(result.getWindAsWord()).isEqualTo(WindStrength.STRONG);
+        }
+
+        @Test
+        @DisplayName("WSD가 null일 때 WEAK 반환")
+        void shouldReturnWeakForNullWsd() {
+            // Given
+            KmaApiResponse response = createValidUltraSrtNcstResponse();
+            // WSD 항목 제거
+            response.getResponse().getBody().getItems().getItem()
+                    .removeIf(item -> "WSD".equals(item.getCategory()));
+
+            // When
+            WeatherData result = converter.convertUltraSrtNcst(response, weatherRegion);
+
+            // Then
+            assertThat(result.getWindAsWord()).isEqualTo(WindStrength.WEAK);
+        }
+    }
 }
