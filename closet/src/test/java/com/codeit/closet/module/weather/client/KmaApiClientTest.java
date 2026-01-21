@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestTemplate;
 
@@ -141,7 +142,7 @@ class KmaApiClientTest {
             given(restTemplate.getForObject(any(URI.class), eq(KmaApiResponse.class)))
                     .willReturn(mockResponse);
 
-            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
+            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
                 mockedStatic.when(LocalDateTime::now).thenReturn(mockTime);
 
                 // When
@@ -171,7 +172,7 @@ class KmaApiClientTest {
             given(restTemplate.getForObject(any(URI.class), eq(KmaApiResponse.class)))
                     .willReturn(mockResponse);
 
-            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
+            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
                 mockedStatic.when(LocalDateTime::now).thenReturn(mockTime);
 
                 // When
@@ -255,7 +256,7 @@ class KmaApiClientTest {
             given(restTemplate.getForObject(any(URI.class), eq(KmaApiResponse.class)))
                     .willReturn(mockResponse);
 
-            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
+            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
                 mockedStatic.when(LocalDateTime::now).thenReturn(mockTime);
 
                 // When
@@ -285,7 +286,7 @@ class KmaApiClientTest {
             given(restTemplate.getForObject(any(URI.class), eq(KmaApiResponse.class)))
                     .willReturn(mockResponse);
 
-            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
+            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
                 mockedStatic.when(LocalDateTime::now).thenReturn(mockTime);
 
                 // When
@@ -396,7 +397,7 @@ class KmaApiClientTest {
             given(restTemplate.getForObject(any(URI.class), eq(KmaApiResponse.class)))
                     .willReturn(mockResponse);
 
-            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
+            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
                 mockedStatic.when(LocalDateTime::now).thenReturn(mockTime);
 
                 // When
@@ -426,7 +427,7 @@ class KmaApiClientTest {
             given(restTemplate.getForObject(any(URI.class), eq(KmaApiResponse.class)))
                     .willReturn(mockResponse);
 
-            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
+            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
                 mockedStatic.when(LocalDateTime::now).thenReturn(mockTime);
 
                 // When
@@ -456,7 +457,7 @@ class KmaApiClientTest {
             given(restTemplate.getForObject(any(URI.class), eq(KmaApiResponse.class)))
                     .willReturn(mockResponse);
 
-            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
+            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
                 mockedStatic.when(LocalDateTime::now).thenReturn(mockTime);
 
                 // When
@@ -487,7 +488,7 @@ class KmaApiClientTest {
             given(restTemplate.getForObject(any(URI.class), eq(KmaApiResponse.class)))
                     .willReturn(mockResponse);
 
-            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
+            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
                 mockedStatic.when(LocalDateTime::now).thenReturn(mockTime);
 
                 // When
@@ -517,7 +518,7 @@ class KmaApiClientTest {
             given(restTemplate.getForObject(any(URI.class), eq(KmaApiResponse.class)))
                     .willReturn(mockResponse);
 
-            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
+            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
                 mockedStatic.when(LocalDateTime::now).thenReturn(mockTime);
 
                 // When
@@ -547,7 +548,7 @@ class KmaApiClientTest {
             given(restTemplate.getForObject(any(URI.class), eq(KmaApiResponse.class)))
                     .willReturn(mockResponse);
 
-            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
+            try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
                 mockedStatic.when(LocalDateTime::now).thenReturn(mockTime);
 
                 // When
