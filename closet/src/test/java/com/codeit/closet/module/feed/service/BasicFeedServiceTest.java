@@ -1,10 +1,25 @@
 package com.codeit.closet.module.feed.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.codeit.closet.module.cloth.entity.Cloth;
 import com.codeit.closet.module.cloth.entity.ClothType;
 import com.codeit.closet.module.cloth.repository.ClothRepository;
+import com.codeit.closet.module.elastic.dto.FeedSearchResult;
+import com.codeit.closet.module.elastic.service.FeedElasticService;
+import com.codeit.closet.module.elastic.service.FeedSearchService;
 import com.codeit.closet.module.feed.dto.FeedCreateRequest;
 import com.codeit.closet.module.feed.dto.FeedDTO;
+import com.codeit.closet.module.feed.dto.FeedDTOCursorResponse;
 import com.codeit.closet.module.feed.dto.FeedUpdateRequest;
 import com.codeit.closet.module.feed.entity.Feed;
 import com.codeit.closet.module.feed.mapper.FeedMapper;
@@ -13,9 +28,13 @@ import com.codeit.closet.module.feed.service.impl.BasicFeedService;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
 import com.codeit.closet.module.weather.entity.WeatherData;
-import com.codeit.closet.module.weather.entity.WeatherRegion;
 import com.codeit.closet.module.weather.repository.WeatherDataRepository;
 import com.codeit.closet.module.weather.repository.WeatherRegionRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,16 +42,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BasicFeedService 테스트")
@@ -55,6 +64,12 @@ class BasicFeedServiceTest {
 
     @Mock
     private FeedMapper feedMapper;
+
+    @Mock
+    private FeedSearchService feedSearchService;
+
+    @Mock
+    private FeedElasticService feedElasticService;
 
     @InjectMocks
     private BasicFeedService feedService;
@@ -207,6 +222,87 @@ class BasicFeedServiceTest {
         assertThat(result).isNotNull();
         verify(clothRepository, times(1)).findAllById(List.of(testClothId, clothId2));
     }
+
+    @Test
+    @DisplayName("검색 조건이 있는 경우 Elasticsearch 경로를 타고 ID 순서를 유지한다")
+    void findFeeds_WithCondition_UsesElasticAndKeepsOrder() {
+        // given
+        String cursor = null;
+        UUID idAfter = null;
+        int limit = 3;
+
+        UUID feedId1 = UUID.randomUUID();
+        UUID feedId2 = UUID.randomUUID();
+        UUID feedId3 = UUID.randomUUID();
+
+        List<UUID> feedIdsFromES = List.of(feedId2, feedId1, feedId3);
+
+        FeedSearchResult searchResult = new FeedSearchResult(
+            feedIdsFromES,
+            "nextCursor",
+            UUID.randomUUID(),
+            true,
+            100L
+        );
+
+        Feed feed1 = mock(Feed.class);
+        Feed feed2 = mock(Feed.class);
+        Feed feed3 = mock(Feed.class);
+
+        when(feed1.getId()).thenReturn(feedId1);
+        when(feed2.getId()).thenReturn(feedId2);
+        when(feed3.getId()).thenReturn(feedId3);
+
+        when(feedSearchService.searchFeedIds(
+            any(), any(), any(), any(), any(),
+            any(), any(), any(), any()
+        )).thenReturn(searchResult);
+
+        // ⚠️ 일부러 순서 섞어서 반환
+        when(feedRepository.findFeedsByIdIn(feedIdsFromES))
+            .thenReturn(new ArrayList<>(List.of(feed1, feed3, feed2)));
+
+        FeedDTO dto1 = mock(FeedDTO.class);
+        FeedDTO dto2 = mock(FeedDTO.class);
+        FeedDTO dto3 = mock(FeedDTO.class);
+
+        when(feedMapper.toFeedDTOs(any()))
+            .thenReturn(List.of(dto2, dto1, dto3));
+
+        // when
+        FeedDTOCursorResponse response = feedService.findFeeds(
+            cursor,
+            idAfter,
+            limit,
+            "createdAt",
+            "DESC",
+            "코디",          // 🔥 조건 하나만 줘도 ES 경로
+            null,
+            null,
+            null,
+            testUserId
+        );
+
+        // then
+        assertThat(response.data()).hasSize(3);
+
+        // ES가 준 ID 순서 그대로 유지되는지
+        assertThat(response.data()).containsExactly(dto2, dto1, dto3);
+
+        verify(feedSearchService, times(1)).searchFeedIds(
+            any(), any(), any(), any(), any(),
+            any(), any(), any(), any()
+        );
+
+        verify(feedRepository, times(1)).findFeedsByIdIn(feedIdsFromES);
+
+        // 🔒 RDB 직접 조회는 타면 안 됨
+        verify(feedRepository, never()).findFeedsByCursor(
+            any(), any(), any(), any(), any(),
+            any(), any(), any(), any(), any()
+        );
+    }
+
 
     @Test
     @DisplayName("피드 업데이트 성공")
