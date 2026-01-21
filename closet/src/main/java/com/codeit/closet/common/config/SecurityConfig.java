@@ -83,12 +83,6 @@ public class SecurityConfig {
 
         // 권한 범위 허용
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                "/",
-                "/index.html",
-                "/favicon.ico",
-                "/assets/**"
-            ).permitAll()
             .requestMatchers("/api/auth/csrf-token").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
