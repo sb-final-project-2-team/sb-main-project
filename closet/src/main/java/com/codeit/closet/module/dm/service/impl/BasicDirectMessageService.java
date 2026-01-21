@@ -67,7 +67,7 @@ public class BasicDirectMessageService implements DirectMessageService {
                     receiverId,
                     NotificationTemplate.DM_RECEIVED,
                     directMessage.getContent(),
-                    new Object[]{receiver.getName()},
+                    new Object[]{sender.getName()},
                     null
                 )
             );

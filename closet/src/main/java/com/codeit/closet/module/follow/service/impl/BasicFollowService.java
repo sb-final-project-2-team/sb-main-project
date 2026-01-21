@@ -65,7 +65,7 @@ public class BasicFollowService implements FollowService {
 
         eventPublisher.publishEvent(
             new NotifyUserEvent(
-                follower.getId(),
+                followee.getId(),
                 NotificationTemplate.FOLLOWED,
                 null,
                 new Object[]{follower.getName()},

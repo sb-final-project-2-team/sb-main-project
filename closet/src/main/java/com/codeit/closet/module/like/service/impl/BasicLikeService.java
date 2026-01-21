@@ -1,22 +1,23 @@
 package com.codeit.closet.module.like.service.impl;
 
+import java.util.NoSuchElementException;
+import java.util.UUID;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.codeit.closet.module.feed.entity.Feed;
 import com.codeit.closet.module.feed.repository.FeedRepository;
 import com.codeit.closet.module.like.entity.Like;
 import com.codeit.closet.module.like.repository.LikeRepository;
 import com.codeit.closet.module.like.service.LikeService;
 import com.codeit.closet.module.notification.event.NotifyUserEvent;
-import com.codeit.closet.module.notification.service.NotificationService;
 import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
-import java.util.NoSuchElementException;
-import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

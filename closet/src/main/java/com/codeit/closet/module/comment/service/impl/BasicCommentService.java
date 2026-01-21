@@ -59,9 +59,9 @@ public class BasicCommentService implements CommentService {
           new NotifyUserEvent(
               feedOwnerId,
               NotificationTemplate.COMMENT,
-              null,
+              request.content(),
               new Object[]{user.getName()},
-              new Object[]{user.getName()}
+              null
           )
       );
     }
