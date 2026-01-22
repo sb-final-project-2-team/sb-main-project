@@ -2,8 +2,12 @@ package com.codeit.closet.module.user.service.impl;
 
 import com.codeit.closet.common.exception.user.DuplicateUserException;
 import com.codeit.closet.common.exception.user.UserNotFoundException;
+import com.codeit.closet.common.security.jwt.JwtRegistry;
 import com.codeit.closet.module.binarycontent.entity.BinaryContent;
 import com.codeit.closet.module.binarycontent.service.BinaryContentService;
+import com.codeit.closet.module.notification.event.NotifyUserEvent;
+import com.codeit.closet.module.notification.service.NotificationService;
+import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.dto.profile.ProfileDTO;
 import com.codeit.closet.module.user.dto.profile.ProfileUpdateRequest;
 import com.codeit.closet.module.user.dto.user.ChangePasswordRequest;
@@ -13,6 +17,7 @@ import com.codeit.closet.module.user.dto.user.UserDTOCursorResponse;
 import com.codeit.closet.module.user.dto.user.UserLockUpdateRequest;
 import com.codeit.closet.module.user.dto.user.UserRoleUpdateRequest;
 import com.codeit.closet.module.user.entity.User;
+import com.codeit.closet.module.user.entity.UserRole;
 import com.codeit.closet.module.user.mapper.UserMapper;
 import com.codeit.closet.module.user.repository.UserRepository;
 import com.codeit.closet.module.user.service.UserService;
@@ -22,6 +27,8 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,6 +44,8 @@ public class BasicUserService implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final BinaryContentService binaryContentService;
   private final WeatherService weatherService;
+  private final ApplicationEventPublisher eventPublisher;
+  private final JwtRegistry<UUID>  jwtRegistry;
 
   private final UserMapper userMapper;
 
@@ -83,7 +92,22 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId).orElseThrow(
         UserNotFoundException::new);
 
-    user.updateRole(request.role());
+    UserRole beforeRole = user.getRole();
+    UserRole afterRole = request.role();
+
+    if (beforeRole != afterRole) {
+      user.updateRole(afterRole);
+
+      eventPublisher.publishEvent(
+          new NotifyUserEvent(
+              user.getId(),
+              NotificationTemplate.ROLE_CHANGED,
+              null, // rawContent
+              new Object[]{}, // titleArgs
+              new Object[]{beforeRole.name(), afterRole.name()} // contentArgs
+          )
+      );
+    }
 
     return userMapper.toUserDTO(user);
   }

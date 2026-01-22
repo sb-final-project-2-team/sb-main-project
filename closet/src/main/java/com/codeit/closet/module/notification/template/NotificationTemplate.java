@@ -18,7 +18,7 @@ public enum NotificationTemplate {
 	// front: icHeart
 	LIKE(
 		"{}님이 내 피드를 좋아합니다", // 좋아요를 누른 사용자의 이름
-		null
+		"{}님이 회원님의 피드를 좋아합니다."
 	),
 
 	// front: icMessage
@@ -35,6 +35,11 @@ public enum NotificationTemplate {
 		"내 권한이 [{}]에서 [{}]로 변경되었어요."
 	),
 
+	ATTRIBUTE_ADD(
+		"의상 속성이 추가되었어요.",
+		"[{}] 속성을 확인해보세요." // 속성명이 들어가야함
+	),
+
 	// front: icSettingPlus
 	ATTRIBUTE_CHANGED(
 		"의상 속성이 변경되었어요.",
@@ -44,7 +49,12 @@ public enum NotificationTemplate {
 	// front: icHanger
 	FEED(
 		"{}님이 새로운 피드를 작성했어요.",
-		null
+		"{}님이 따끈따끈한 소식을 전해왔어요!"
+	),
+
+	FOLLOWED(
+		"{}님이 회원님을 팔로우했습니다.",
+		"{}님의 피드를 확인해보세요"
 	),
 
 	// front: 매핑 조건이 없음 default = icMessage

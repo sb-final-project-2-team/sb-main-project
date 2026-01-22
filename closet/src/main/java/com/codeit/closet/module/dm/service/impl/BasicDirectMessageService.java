@@ -7,12 +7,16 @@ import com.codeit.closet.module.dm.mapper.DirectMessageMapper;
 import com.codeit.closet.module.dm.repository.DirectMessageRepository;
 import com.codeit.closet.module.dm.service.DirectMessageService;
 import com.codeit.closet.module.dm.util.DmKeyUtil;
+import com.codeit.closet.module.notification.event.NotifyUserEvent;
+import com.codeit.closet.module.notification.service.NotificationService;
+import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +29,7 @@ public class BasicDirectMessageService implements DirectMessageService {
     private final DirectMessageRepository directMessageRepository;
     private final DirectMessageMapper directMessageMapper;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -54,6 +59,19 @@ public class BasicDirectMessageService implements DirectMessageService {
                 .build();
 
         directMessageRepository.save(directMessage);
+
+        // DM 알림 생성
+        if (!senderId.equals(receiverId)) {
+            eventPublisher.publishEvent(
+                new NotifyUserEvent(
+                    receiverId,
+                    NotificationTemplate.DM_RECEIVED,
+                    directMessage.getContent(),
+                    new Object[]{sender.getName()},
+                    null
+                )
+            );
+        }
 
         log.info("[Service] sender:{} receiver:{}", senderId, receiverId);
 

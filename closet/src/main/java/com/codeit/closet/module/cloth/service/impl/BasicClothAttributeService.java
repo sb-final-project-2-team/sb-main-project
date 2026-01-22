@@ -8,7 +8,15 @@ import com.codeit.closet.module.cloth.exception.ClothAttributeNotFoundException;
 import com.codeit.closet.module.cloth.exception.DuplicateClothAttributeNameException;
 import com.codeit.closet.module.cloth.repository.ClothAttributeRepository;
 import com.codeit.closet.module.cloth.service.ClothAttributeService;
+import com.codeit.closet.module.notification.event.NotifyUserEvent;
+import com.codeit.closet.module.notification.service.NotificationService;
+import com.codeit.closet.module.notification.template.NotificationTemplate;
+import com.codeit.closet.module.user.entity.User;
+import com.codeit.closet.module.user.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +28,8 @@ import java.util.UUID;
 public class BasicClothAttributeService implements ClothAttributeService {
 
     private final ClothAttributeRepository clothAttributeRepository;
+    private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -37,6 +47,9 @@ public class BasicClothAttributeService implements ClothAttributeService {
 
         // 저장
         ClothAttribute saved = clothAttributeRepository.save(attribute);
+
+        // 모든 사용자에게 알림 전송
+        notifyAttributeAdded(attribute);
 
         // DTO 변환
         return toDto(saved);
@@ -68,12 +81,25 @@ public class BasicClothAttributeService implements ClothAttributeService {
         ClothAttribute attribute = clothAttributeRepository.findById(attributeId)
                 .orElseThrow(() -> new ClothAttributeNotFoundException(attributeId));
 
+        // 변경 전 상태 저장
+        String beforeName = attribute.getName();
+        List<String> beforeValues = List.copyOf(attribute.getAttributesValues());
+
+        boolean changed = false;
+
         // 수정 (null이 아닌 값만)
-        if (request.name() != null) {
+        if (request.name() != null && !request.name().equals(attribute.getName())) {
             attribute.updateName(request.name());
+            changed = true;
         }
-        if (request.selectableValues() != null) {
+        if (request.selectableValues() != null
+            && !request.selectableValues().equals(beforeValues)){
             attribute.updateAttributesValues(request.selectableValues());
+            changed = true;
+        }
+
+        if (changed) {
+            notifyAttributeChanged(attribute);
         }
 
         // @Transactional과 JPA 더티 체킹으로 자동 저장됨
@@ -100,5 +126,29 @@ public class BasicClothAttributeService implements ClothAttributeService {
                 attribute.getAttributesValues(),
                 attribute.getCreatedAt()
         );
+    }
+
+    private void notifyAllUsers(NotificationTemplate template, Object[] titleArgs, Object... contentArgs) {
+        List<User> allUsers = userRepository.findAll();
+
+		for (User user : allUsers) {
+            eventPublisher.publishEvent(
+                new NotifyUserEvent(
+                    user.getId(),
+                    template,
+                    null,
+                    titleArgs,
+                    contentArgs
+                )
+            );
+        }
+    }
+
+    private void notifyAttributeAdded(ClothAttribute attribute) {
+        notifyAllUsers(NotificationTemplate.ATTRIBUTE_ADD, null, attribute.getName());
+    }
+
+    private void notifyAttributeChanged(ClothAttribute attribute) {
+        notifyAllUsers(NotificationTemplate.ATTRIBUTE_CHANGED, null, attribute.getName());
     }
 }

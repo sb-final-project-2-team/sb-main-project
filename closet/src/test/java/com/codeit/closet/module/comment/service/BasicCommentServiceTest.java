@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -44,6 +45,9 @@ class BasicCommentServiceTest {
   @Mock
   private CommentMapper commentMapper;
 
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
+
   @InjectMocks
   private BasicCommentService commentService;
 
@@ -65,8 +69,12 @@ class BasicCommentServiceTest {
     lenient().when(testUser.getId()).thenReturn(testUserId);
     lenient().when(testUser.getName()).thenReturn("testuser");
 
+    User feedOwner = mock(User.class);
+    lenient().when(feedOwner.getId()).thenReturn(UUID.randomUUID());
+
     testFeed = mock(Feed.class);
     lenient().when(testFeed.getId()).thenReturn(testFeedId);
+    lenient().when(testFeed.getUser()).thenReturn(feedOwner);
 
     testComment = mock(Comment.class);
     lenient().when(testComment.getId()).thenReturn(testCommentId);
@@ -103,6 +111,7 @@ class BasicCommentServiceTest {
     verify(commentRepository, times(1)).save(any(Comment.class));
     verify(commentMapper, times(1)).toDTO(testComment);
     verify(testFeed, times(1)).increaseCommentCount();
+    verify(eventPublisher, times(1)).publishEvent(any(Object.class));
   }
 
   @Test
