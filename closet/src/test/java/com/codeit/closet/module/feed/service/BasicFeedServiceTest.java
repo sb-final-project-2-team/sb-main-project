@@ -25,6 +25,7 @@ import com.codeit.closet.module.feed.entity.Feed;
 import com.codeit.closet.module.feed.mapper.FeedMapper;
 import com.codeit.closet.module.feed.repository.FeedRepository;
 import com.codeit.closet.module.feed.service.impl.BasicFeedService;
+import com.codeit.closet.module.follow.repository.FollowRepository;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
 import com.codeit.closet.module.weather.entity.WeatherData;
@@ -42,6 +43,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BasicFeedService 테스트")
@@ -70,6 +72,12 @@ class BasicFeedServiceTest {
 
     @Mock
     private FeedElasticService feedElasticService;
+
+    @Mock
+    private FollowRepository followRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private BasicFeedService feedService;
@@ -117,6 +125,9 @@ class BasicFeedServiceTest {
         // Mock FeedDTO
         testFeedDTO = mock(FeedDTO.class);
         lenient().when(testFeedDTO.content()).thenReturn("테스트 피드");
+
+        lenient().when(followRepository.findAllByFollowee_Id(any(UUID.class)))
+            .thenReturn(List.of());
     }
 
     @Test
@@ -146,6 +157,8 @@ class BasicFeedServiceTest {
         verify(clothRepository, times(1)).findAllById(List.of(testClothId));
         verify(feedRepository, times(1)).save(any(Feed.class));
         verify(feedMapper, times(1)).toFeedDTO(testFeed);
+
+        verify(eventPublisher, never()).publishEvent(any(Object.class));
     }
 
     @Test
