@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -38,6 +39,9 @@ class BasicLikeServiceTest {
     @Mock
     private LikeRepository likeRepository;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private BasicLikeService likeService;
 
@@ -53,6 +57,7 @@ class BasicLikeServiceTest {
         testFeedId = UUID.randomUUID();
 
         testUser = User.builder()
+                .id(testUserId)
                 .email("test@example.com")
                 .password("password123")
                 .name("testuser")
@@ -86,6 +91,8 @@ class BasicLikeServiceTest {
         verify(feedRepository, times(1)).findById(testFeedId);
         verify(userRepository, times(1)).findById(testUserId);
         verify(likeRepository, times(1)).save(any(Like.class));
+
+        verify(eventPublisher, never()).publishEvent(any(Object.class));
     }
 
     @Test
