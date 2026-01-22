@@ -23,10 +23,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
+  // 테스트용 loadUser 분리
+  protected OAuth2User loadOAuth2User(OAuth2UserRequest request) {
+    return super.loadUser(request);
+  }
+
   @Override
   @Transactional
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-    OAuth2User oauth2User = super.loadUser(userRequest);
+    OAuth2User oauth2User = loadOAuth2User(userRequest);
 
     String registrationId = userRequest.getClientRegistration().getRegistrationId();
     OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(registrationId,
