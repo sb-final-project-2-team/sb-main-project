@@ -5,6 +5,7 @@ import com.codeit.closet.common.exception.user.UserNotFoundException;
 import com.codeit.closet.common.security.jwt.JwtRegistry;
 import com.codeit.closet.module.binarycontent.entity.BinaryContent;
 import com.codeit.closet.module.binarycontent.service.BinaryContentService;
+import com.codeit.closet.module.notification.event.NotifyUserEvent;
 import com.codeit.closet.module.notification.service.NotificationService;
 import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.dto.profile.ProfileDTO;
@@ -26,6 +27,8 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,7 +44,7 @@ public class BasicUserService implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final BinaryContentService binaryContentService;
   private final WeatherService weatherService;
-  private final NotificationService notificationService;
+  private final ApplicationEventPublisher eventPublisher;
   private final JwtRegistry<UUID>  jwtRegistry;
 
   private final UserMapper userMapper;
@@ -95,12 +98,14 @@ public class BasicUserService implements UserService {
     if (beforeRole != afterRole) {
       user.updateRole(afterRole);
 
-      notificationService.createWithRenderContent(
-          user.getId(),
-          NotificationTemplate.ROLE_CHANGED,
-          new Object[]{},
-          beforeRole.name(),
-          afterRole.name()
+      eventPublisher.publishEvent(
+          new NotifyUserEvent(
+              user.getId(),
+              NotificationTemplate.ROLE_CHANGED,
+              null, // rawContent
+              new Object[]{}, // titleArgs
+              new Object[]{beforeRole.name(), afterRole.name()} // contentArgs
+          )
       );
     }
 
