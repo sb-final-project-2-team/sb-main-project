@@ -27,6 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -57,6 +58,9 @@ class BasicUserServiceTest {
     @Mock
     private UserMapper userMapper;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private BasicUserService userService;
 
@@ -70,9 +74,11 @@ class BasicUserServiceTest {
         testUserId = UUID.randomUUID();
 
         testUser = User.builder()
+                .id(testUserId)
                 .email("test@example.com")
                 .password("encodedPassword")
                 .name("testuser")
+                .role(UserRole.USER)
                 .build();
 
         testUserDTO = new UserDTO(
@@ -156,6 +162,8 @@ class BasicUserServiceTest {
         // then
         assertThat(result).isNotNull();
         verify(userRepository, times(1)).findById(testUserId);
+
+        verify(eventPublisher, times(1)).publishEvent(any(Object.class));
     }
 
     @Test
