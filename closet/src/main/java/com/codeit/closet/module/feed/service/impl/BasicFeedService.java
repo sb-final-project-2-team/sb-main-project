@@ -83,7 +83,7 @@ public class BasicFeedService implements FeedService {
 
     Feed saved = feedRepository.save(feed);
 
-    // feedElasticService.index(feed);
+    feedElasticService.index(feed);
     
     notifyFollowersFeedCreated(user);
 
