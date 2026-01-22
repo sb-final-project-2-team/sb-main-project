@@ -8,6 +8,8 @@ import com.codeit.closet.module.cloth.exception.ClothAttributeNotFoundException;
 import com.codeit.closet.module.cloth.exception.DuplicateClothAttributeNameException;
 import com.codeit.closet.module.cloth.repository.ClothAttributeRepository;
 import com.codeit.closet.module.cloth.service.impl.BasicClothAttributeService;
+import com.codeit.closet.module.user.repository.UserRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.Instant;
 import java.util.List;
@@ -34,6 +37,12 @@ class BasicClothAttributeServiceTest {
     @Mock
     private ClothAttributeRepository clothAttributeRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private BasicClothAttributeService clothAttributeService;
 
@@ -49,6 +58,7 @@ class BasicClothAttributeServiceTest {
         lenient().when(testAttribute.getId()).thenReturn(testAttributeId);
         lenient().when(testAttribute.getName()).thenReturn("색상");
         lenient().when(testAttribute.getAttributesValues()).thenReturn(List.of("블랙", "화이트", "블루", "레드"));
+        lenient().when(userRepository.findAll()).thenReturn(List.of());
     }
 
     @Test
@@ -72,6 +82,7 @@ class BasicClothAttributeServiceTest {
         assertThat(result.selectableValues()).hasSize(4);
         assertThat(result.selectableValues()).containsExactly("블랙", "화이트", "블루", "레드");
         verify(clothAttributeRepository, times(1)).save(any(ClothAttribute.class));
+        verify(eventPublisher, times(0)).publishEvent(any(Object.class));
     }
 
     @Test
