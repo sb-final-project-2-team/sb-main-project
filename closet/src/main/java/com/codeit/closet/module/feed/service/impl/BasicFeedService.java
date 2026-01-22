@@ -14,6 +14,11 @@ import com.codeit.closet.module.feed.entity.Ootd;
 import com.codeit.closet.module.feed.mapper.FeedMapper;
 import com.codeit.closet.module.feed.repository.FeedRepository;
 import com.codeit.closet.module.feed.service.FeedService;
+import com.codeit.closet.module.follow.entity.Follow;
+import com.codeit.closet.module.follow.repository.FollowRepository;
+import com.codeit.closet.module.notification.event.NotifyUserEvent;
+import com.codeit.closet.module.notification.service.NotificationService;
+import com.codeit.closet.module.notification.template.NotificationTemplate;
 import com.codeit.closet.module.user.entity.User;
 import com.codeit.closet.module.user.repository.UserRepository;
 import com.codeit.closet.module.weather.entity.PrecipitationType;
@@ -27,6 +32,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +50,8 @@ public class BasicFeedService implements FeedService {
   private final FeedSearchService feedSearchService;
 
   private final FeedMapper feedMapper;
+  private final FollowRepository followRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @Transactional
@@ -73,9 +82,15 @@ public class BasicFeedService implements FeedService {
     }
 
     Feed saved = feedRepository.save(feed);
-    feedElasticService.index(feed);
+
+    // feedElasticService.index(feed);
+    
+    notifyFollowersFeedCreated(user);
+
     return feedMapper.toFeedDTO(saved);
   }
+
+
 
   @Override
   @Transactional(readOnly = true)
@@ -141,4 +156,21 @@ public class BasicFeedService implements FeedService {
     feedRepository.delete(feed);
   }
 
+  private void notifyFollowersFeedCreated(User user) {
+    List<Follow> follows = followRepository.findAllByFollowee_Id(user.getId());
+
+    for (Follow follow : follows) {
+      UUID followerId = follow.getFollower().getId();
+
+      eventPublisher.publishEvent(
+          new NotifyUserEvent(
+              followerId,
+              NotificationTemplate.FEED,
+              null,
+              new Object[]{follow.getFollower().getName()},
+              new Object[]{follow.getFollower().getName()}
+          )
+      );
+    }
+  }
 }

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LikeRepository extends JpaRepository<Like, UUID>{
 
+  boolean existsByFeedAndUser(Feed feed, User user);
 
   void deleteByFeedAndUser(Feed feed, User user);
 }

@@ -9,10 +9,11 @@ import org.springframework.stereotype.Repository;
 import com.codeit.closet.module.notification.entity.Notification;
 
 @Repository
-public interface NotificationRepository extends JpaRepository<Notification, UUID> {
-
-	List<Notification> findAllByReceiverIdOrderByCreatedAtDesc(UUID receiverId);
+public interface NotificationRepository
+	extends JpaRepository<Notification, UUID>, NotificationQueryRepository {
 
 	long deleteByIdAndReceiverId(UUID id, UUID receiverId);
+
+	long countByReceiverId(UUID receiverId);
 
 }

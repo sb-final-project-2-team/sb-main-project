@@ -4,8 +4,11 @@ import com.codeit.closet.module.follow.entity.Follow;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface FollowRepository extends JpaRepository<Follow, UUID>, FollowListQueryRepository, FollowSummaryQueryRepository {
     boolean existsByFollowee_IdAndFollower_Id(UUID followeeId, UUID followerId);
+
+    List<Follow> findAllByFollowee_Id(UUID followeeId);
 }
