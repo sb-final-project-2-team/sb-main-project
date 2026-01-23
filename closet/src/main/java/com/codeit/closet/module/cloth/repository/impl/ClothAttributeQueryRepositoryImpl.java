@@ -1,6 +1,6 @@
 package com.codeit.closet.module.cloth.repository.impl;
 
-import com.codeit.closet.module.cloth.dto.ClothAttributeValueDTO;
+import com.codeit.closet.module.cloth.entity.ClothAttributeValue;
 import com.codeit.closet.module.cloth.repository.ClothAttributeQueryRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -90,36 +90,34 @@ public class ClothAttributeQueryRepositoryImpl implements ClothAttributeQueryRep
     }
 
     /**
-     * 여러 의상 ID로 ClothAttributeValueDTO 리스트 일괄 조회 (DTO 변환용)
+     * 여러 의상 ID로 ClothAttributeValue 엔티티 리스트 일괄 조회
      */
     @Override
-    public Map<UUID, List<ClothAttributeValueDTO>> findAttributeDTOsByClothIds(List<UUID> clothIds) {
+    public Map<UUID, List<ClothAttributeValue>> findAttributeValuesByClothIds(List<UUID> clothIds) {
         if (clothIds == null || clothIds.isEmpty()) {
             return Collections.emptyMap();
         }
 
+        // fetch join으로 ClothAttribute 함께 조회 (N+1 방지)
         String jpql = """
-            SELECT cav.cloth.id, ca.id, cav.value
+            SELECT cav
             FROM ClothAttributeValue cav
-            JOIN cav.clothAttribute ca
+            JOIN FETCH cav.clothAttribute
             WHERE cav.cloth.id IN :clothIds
             """;
 
-        List<Tuple> results = entityManager.createQuery(jpql, Tuple.class)
+        List<ClothAttributeValue> results = entityManager.createQuery(jpql, ClothAttributeValue.class)
                 .setParameter("clothIds", clothIds)
                 .getResultList();
 
-        Map<UUID, List<ClothAttributeValueDTO>> attributeDTOs = new HashMap<>();
-        for (Tuple tuple : results) {
-            UUID clothId = tuple.get(0, UUID.class);
-            UUID definitionId = tuple.get(1, UUID.class);
-            String value = tuple.get(2, String.class);
-
-            attributeDTOs
+        Map<UUID, List<ClothAttributeValue>> attributeValues = new HashMap<>();
+        for (ClothAttributeValue cav : results) {
+            UUID clothId = cav.getCloth().getId();
+            attributeValues
                     .computeIfAbsent(clothId, k -> new ArrayList<>())
-                    .add(new ClothAttributeValueDTO(definitionId, value));
+                    .add(cav);
         }
 
-        return attributeDTOs;
+        return attributeValues;
     }
 }

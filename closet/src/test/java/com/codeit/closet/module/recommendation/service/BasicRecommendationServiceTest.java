@@ -2,6 +2,7 @@ package com.codeit.closet.module.recommendation.service;
 
 import com.codeit.closet.module.cloth.entity.Cloth;
 import com.codeit.closet.module.cloth.entity.ClothType;
+import com.codeit.closet.module.cloth.mapper.ClothMapper;
 import com.codeit.closet.module.cloth.repository.ClothAttributeQueryRepository;
 import com.codeit.closet.module.cloth.repository.ClothRepository;
 import com.codeit.closet.module.recommendation.algorithm.OutfitCombinationGenerator;
@@ -64,6 +65,8 @@ class BasicRecommendationServiceTest {
     private ClothAttributeQueryRepository clothAttributeQueryRepository;
     @Mock
     private RecommendationMapper recommendationMapper;
+    @Mock
+    private ClothMapper clothMapper;
     @Mock
     private SeasonFilter seasonFilter;
 
@@ -166,7 +169,7 @@ class BasicRecommendationServiceTest {
             given(weatherDataRepository.findById(weatherId)).willReturn(Optional.of(weatherData));
             given(clothRepository.findAllByOwner_Id(userId)).willReturn(clothes);
             given(clothAttributeQueryRepository.findAttributeMapsByClothIds(anyList())).willReturn(new HashMap<>());
-            given(clothAttributeQueryRepository.findAttributeDTOsByClothIds(anyList())).willReturn(new HashMap<>());
+            given(clothAttributeQueryRepository.findAttributeValuesByClothIds(anyList())).willReturn(new HashMap<>());
             given(recommendationScorer.getAdjustedTemperature(anyDouble(), anyInt())).willReturn(15.0);
             given(seasonFilter.filterByAllowedSeasons(anyList(), anyDouble(), anyInt(), any()))
                     .willReturn(clothes);
@@ -200,7 +203,7 @@ class BasicRecommendationServiceTest {
                     .willReturn(Optional.of(weatherData));
             given(clothRepository.findAllByOwner_Id(userId)).willReturn(clothes);
             given(clothAttributeQueryRepository.findAttributeMapsByClothIds(anyList())).willReturn(new HashMap<>());
-            given(clothAttributeQueryRepository.findAttributeDTOsByClothIds(anyList())).willReturn(new HashMap<>());
+            given(clothAttributeQueryRepository.findAttributeValuesByClothIds(anyList())).willReturn(new HashMap<>());
             given(recommendationScorer.getAdjustedTemperature(anyDouble(), anyInt())).willReturn(15.0);
             given(seasonFilter.filterByAllowedSeasons(anyList(), anyDouble(), anyInt(), any()))
                     .willReturn(clothes);
@@ -294,7 +297,7 @@ class BasicRecommendationServiceTest {
             given(weatherDataRepository.findById(weatherId)).willReturn(Optional.of(weatherData));
             given(clothRepository.findAllByOwner_Id(userId)).willReturn(clothes);
             given(clothAttributeQueryRepository.findAttributeMapsByClothIds(anyList())).willReturn(new HashMap<>());
-            given(clothAttributeQueryRepository.findAttributeDTOsByClothIds(anyList())).willReturn(new HashMap<>());
+            given(clothAttributeQueryRepository.findAttributeValuesByClothIds(anyList())).willReturn(new HashMap<>());
             given(recommendationScorer.getAdjustedTemperature(anyDouble(), anyInt())).willReturn(15.0);
             given(seasonFilter.filterByAllowedSeasons(anyList(), anyDouble(), anyInt(), any()))
                     .willReturn(clothes);
@@ -350,7 +353,7 @@ class BasicRecommendationServiceTest {
             given(weatherDataRepository.findById(weatherId)).willReturn(Optional.of(weatherData));
             given(clothRepository.findAllByOwner_Id(userId)).willReturn(clothes);
             given(clothAttributeQueryRepository.findAttributeMapsByClothIds(anyList())).willReturn(new HashMap<>());
-            given(clothAttributeQueryRepository.findAttributeDTOsByClothIds(anyList())).willReturn(new HashMap<>());
+            given(clothAttributeQueryRepository.findAttributeValuesByClothIds(anyList())).willReturn(new HashMap<>());
             given(recommendationScorer.getAdjustedTemperature(anyDouble(), anyInt())).willReturn(5.0); // 추운 온도
             given(seasonFilter.filterByAllowedSeasons(anyList(), anyDouble(), anyInt(), any()))
                     .willReturn(clothes);
@@ -389,7 +392,7 @@ class BasicRecommendationServiceTest {
             given(weatherDataRepository.findById(weatherId)).willReturn(Optional.of(weatherData));
             given(clothRepository.findAllByOwner_Id(userId)).willReturn(clothes);
             given(clothAttributeQueryRepository.findAttributeMapsByClothIds(anyList())).willReturn(new HashMap<>());
-            given(clothAttributeQueryRepository.findAttributeDTOsByClothIds(anyList())).willReturn(new HashMap<>());
+            given(clothAttributeQueryRepository.findAttributeValuesByClothIds(anyList())).willReturn(new HashMap<>());
             given(recommendationScorer.getAdjustedTemperature(anyDouble(), anyInt())).willReturn(15.0);
             given(seasonFilter.filterByAllowedSeasons(anyList(), anyDouble(), anyInt(), any()))
                     .willReturn(filteredClothes);
@@ -425,7 +428,7 @@ class BasicRecommendationServiceTest {
             given(weatherDataRepository.findById(weatherId)).willReturn(Optional.of(weatherData));
             given(clothRepository.findAllByOwner_Id(userId)).willReturn(clothes);
             given(clothAttributeQueryRepository.findAttributeMapsByClothIds(anyList())).willReturn(new HashMap<>());
-            given(clothAttributeQueryRepository.findAttributeDTOsByClothIds(anyList())).willReturn(new HashMap<>());
+            given(clothAttributeQueryRepository.findAttributeValuesByClothIds(anyList())).willReturn(new HashMap<>());
             given(recommendationScorer.getAdjustedTemperature(anyDouble(), anyInt())).willReturn(15.0);
             given(seasonFilter.filterByAllowedSeasons(anyList(), anyDouble(), anyInt(), any()))
                     .willReturn(clothes);
@@ -465,7 +468,7 @@ class BasicRecommendationServiceTest {
             given(weatherDataRepository.findById(weatherId)).willReturn(Optional.of(weatherData));
             given(clothRepository.findAllByOwner_Id(userId)).willReturn(clothes);
             given(clothAttributeQueryRepository.findAttributeMapsByClothIds(anyList())).willReturn(new HashMap<>());
-            given(clothAttributeQueryRepository.findAttributeDTOsByClothIds(anyList())).willReturn(new HashMap<>());
+            given(clothAttributeQueryRepository.findAttributeValuesByClothIds(anyList())).willReturn(new HashMap<>());
             given(recommendationScorer.getAdjustedTemperature(anyDouble(), anyInt())).willReturn(15.0);
             given(seasonFilter.filterByAllowedSeasons(anyList(), anyDouble(), anyInt(), any()))
                     .willReturn(clothes);

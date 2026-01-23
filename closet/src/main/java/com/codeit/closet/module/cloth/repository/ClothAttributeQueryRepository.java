@@ -1,6 +1,6 @@
 package com.codeit.closet.module.cloth.repository;
 
-import com.codeit.closet.module.cloth.dto.ClothAttributeValueDTO;
+import com.codeit.closet.module.cloth.entity.ClothAttributeValue;
 
 import java.util.List;
 import java.util.Map;
@@ -27,9 +27,9 @@ public interface ClothAttributeQueryRepository {
     Map<UUID, Map<String, String>> findAttributeMapsByClothIds(List<UUID> clothIds);
 
     /**
-     * 여러 의상 ID로 ClothAttributeValueDTO 리스트 일괄 조회 (DTO 변환용)
+     * 여러 의상 ID로 ClothAttributeValue 엔티티 리스트 일괄 조회
      * @param clothIds 의상 ID 목록
-     * @return 의상ID -> ClothAttributeValueDTO 리스트 맵
+     * @return 의상ID -> ClothAttributeValue 엔티티 리스트 맵
      */
-    Map<UUID, List<ClothAttributeValueDTO>> findAttributeDTOsByClothIds(List<UUID> clothIds);
+    Map<UUID, List<ClothAttributeValue>> findAttributeValuesByClothIds(List<UUID> clothIds);
 }
