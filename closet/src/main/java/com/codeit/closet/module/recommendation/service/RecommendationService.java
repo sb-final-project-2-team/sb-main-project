@@ -17,11 +17,4 @@ public interface RecommendationService {
      * @return 추천 응답 DTO
      */
     RecommendationResponse getRecommendations(UUID weatherId, UUID userId, int limit);
-
-    /**
-     * 피드 참고 추천 (2차 구현)
-     */
-    RecommendationResponse getRecommendationsWithFeedReference(
-            UUID weatherId, UUID userId, boolean includePopularFeeds, int limit
-    );
 }

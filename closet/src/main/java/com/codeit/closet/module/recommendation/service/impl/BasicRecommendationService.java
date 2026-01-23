@@ -158,15 +158,6 @@ public class BasicRecommendationService implements RecommendationService {
         return new RecommendationResponse(weather.getId(), userId, topOutfitClothes, outfits);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public RecommendationResponse getRecommendationsWithFeedReference(
-            UUID weatherId, UUID userId, boolean includePopularFeeds, int limit) {
-        // 2차 구현: 피드 기반 추천 로직
-        // 현재는 기본 추천과 동일하게 동작
-        return getRecommendations(weatherId, userId, limit);
-    }
-
     /**
      * weatherId가 있으면 해당 데이터 조회,
      * 없으면 사용자 설정 지역의 최신 날씨 데이터 조회

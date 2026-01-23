@@ -29,7 +29,6 @@ public class RecommendationController {
      *
      * @param weatherId 날씨 데이터 ID (선택적, 미제공 시 사용자 설정 지역의 최신 데이터 사용)
      * @param limit 추천 결과 개수 (기본값: 5, 최대: 20)
-     * @param includePopularFeeds 인기 피드 기반 추천 포함 여부 (2차 구현)
      * @return 추천 코디 목록
      */
     @GetMapping
@@ -37,7 +36,6 @@ public class RecommendationController {
     public ResponseEntity<RecommendationResponse> getRecommendations(
             @RequestParam(required = false) UUID weatherId,
             @RequestParam(defaultValue = "5") int limit,
-            @RequestParam(defaultValue = "false") boolean includePopularFeeds,
             @AuthenticationPrincipal ClosetUserDetails userDetails
     ) {
         UUID userId = userDetails.getUserDTO().id();
@@ -45,13 +43,8 @@ public class RecommendationController {
         // limit 범위 제한 (1-20)
         int validLimit = Math.max(1, Math.min(20, limit));
 
-        RecommendationResponse response;
-        if (includePopularFeeds) {
-            response = recommendationService.getRecommendationsWithFeedReference(
-                    weatherId, userId, true, validLimit);
-        } else {
-            response = recommendationService.getRecommendations(weatherId, userId, validLimit);
-        }
+        RecommendationResponse response = recommendationService.getRecommendations(
+                weatherId, userId, validLimit);
 
         return ResponseEntity.ok(response);
     }
