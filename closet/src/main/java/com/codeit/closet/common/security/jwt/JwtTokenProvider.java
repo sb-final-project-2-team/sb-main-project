@@ -97,7 +97,7 @@ public class JwtTokenProvider {
   public ResponseCookie generateOAuth2RefreshTokenCookie(String refreshToken) {
     return ResponseCookie.from("CLOSET_REFRESH_TOKEN", refreshToken)
         .httpOnly(true)
-        .secure(false)
+        .secure(true)
         .sameSite("None")
         .path("/")
         .maxAge((int) (refreshTokenExpirationMs / 1000L))

@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseCookie;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -113,11 +114,16 @@ class OAuth2SuccessHandlerTest {
     when(jwtTokenProvider.generateAccessToken(any()))
         .thenReturn("access-token");
 
-    when(jwtTokenProvider.generateRefreshToken(any()))
-        .thenReturn("refresh-token");
+    ResponseCookie refreshCookie =
+        ResponseCookie.from("CLOSET_REFRESH_TOKEN", "refresh-token")
+            .httpOnly(true)
+            .secure(true)
+            .sameSite("None")
+            .path("/")
+            .build();
 
-    when(jwtTokenProvider.generateRefreshTokenCookie("refresh-token"))
-        .thenReturn(new Cookie("refreshToken", "refresh-token"));
+    when(jwtTokenProvider.generateOAuth2RefreshTokenCookie(any()))
+        .thenReturn(refreshCookie);
 
     // when
     handler.onAuthenticationSuccess(request, response, authentication);
@@ -174,11 +180,16 @@ class OAuth2SuccessHandlerTest {
     when(jwtTokenProvider.generateAccessToken(any()))
         .thenReturn("access-token");
 
-    when(jwtTokenProvider.generateRefreshToken(any()))
-        .thenReturn("refresh-token");
+    ResponseCookie refreshCookie =
+        ResponseCookie.from("CLOSET_REFRESH_TOKEN", "refresh-token")
+            .httpOnly(true)
+            .secure(true)
+            .sameSite("None")
+            .path("/")
+            .build();
 
-    when(jwtTokenProvider.generateRefreshTokenCookie("refresh-token"))
-        .thenReturn(new Cookie("refreshToken", "refresh-token"));
+    when(jwtTokenProvider.generateOAuth2RefreshTokenCookie(any()))
+        .thenReturn(refreshCookie);
 
     // when
     handler.onAuthenticationSuccess(request, response, authentication);
@@ -233,11 +244,16 @@ class OAuth2SuccessHandlerTest {
     when(jwtTokenProvider.generateAccessToken(any()))
         .thenReturn("access-token");
 
-    when(jwtTokenProvider.generateRefreshToken(any()))
-        .thenReturn("refresh-token");
+    ResponseCookie refreshCookie =
+        ResponseCookie.from("CLOSET_REFRESH_TOKEN", "refresh-token")
+            .httpOnly(true)
+            .secure(true)
+            .sameSite("None")
+            .path("/")
+            .build();
 
-    when(jwtTokenProvider.generateRefreshTokenCookie("refresh-token"))
-        .thenReturn(new Cookie("refreshToken", "refresh-token"));
+    when(jwtTokenProvider.generateOAuth2RefreshTokenCookie(any()))
+        .thenReturn(refreshCookie);
 
     // when
     handler.onAuthenticationSuccess(request, response, authentication);
