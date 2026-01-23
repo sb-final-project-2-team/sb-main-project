@@ -100,7 +100,7 @@ public class JwtTokenProvider {
         .secure(false)
         .sameSite("None")
         .path("/")
-        .maxAge(refreshTokenExpirationMs / 1000)
+        .maxAge((int) (refreshTokenExpirationMs / 1000L))
         .build();
   }
 
