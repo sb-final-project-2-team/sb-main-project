@@ -2,6 +2,8 @@ package com.codeit.closet.module.recommendation.service.impl;
 
 import com.codeit.closet.module.cloth.dto.ClothAttributeValueDTO;
 import com.codeit.closet.module.cloth.entity.Cloth;
+import com.codeit.closet.module.cloth.entity.ClothAttributeValue;
+import com.codeit.closet.module.cloth.mapper.ClothMapper;
 import com.codeit.closet.module.cloth.repository.ClothAttributeQueryRepository;
 import com.codeit.closet.module.cloth.repository.ClothRepository;
 import com.codeit.closet.module.recommendation.algorithm.OutfitCombinationGenerator;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -50,6 +53,7 @@ public class BasicRecommendationService implements RecommendationService {
     private final RecommendationScorer recommendationScorer;
     private final ClothAttributeQueryRepository clothAttributeQueryRepository;
     private final RecommendationMapper recommendationMapper;
+    private final ClothMapper clothMapper;
     private final SeasonFilter seasonFilter;
 
     @Override
@@ -76,8 +80,10 @@ public class BasicRecommendationService implements RecommendationService {
         // 3-1. 속성 맵 일괄 로드 (N+1 방지)
         List<UUID> clothIds = clothes.stream().map(Cloth::getId).toList();
         Map<UUID, Map<String, String>> attributeMaps = clothAttributeQueryRepository.findAttributeMapsByClothIds(clothIds);
-        // 3-2. 속성 DTO 맵 로드 (응답용)
-        Map<UUID, List<ClothAttributeValueDTO>> attributeDTOs = clothAttributeQueryRepository.findAttributeDTOsByClothIds(clothIds);
+        // 3-2. 속성 엔티티 맵 로드
+        Map<UUID, List<ClothAttributeValue>> attributeEntities = clothAttributeQueryRepository.findAttributeValuesByClothIds(clothIds);
+        // 3-3. 엔티티 → DTO 변환 (Mapper 사용)
+        Map<UUID, List<ClothAttributeValueDTO>> attributeDTOs = convertToAttributeDTOs(attributeEntities);
 
         // 4. 체감온도 계산 (필터링에 필요)
         int sensitivity = user.getTemperatureSensitivity();
@@ -185,4 +191,18 @@ public class BasicRecommendationService implements RecommendationService {
      * 점수가 매겨진 코디 조합 레코드
      */
     private record ScoredOutfit(List<Cloth> outfit, int score) {}
+
+    /**
+     * ClothAttributeValue 엔티티 맵을 ClothAttributeValueDTO 맵으로 변환
+     * @param attributeEntities 의상ID -> 속성 엔티티 리스트 맵
+     * @return 의상ID -> 속성 DTO 리스트 맵
+     */
+    private Map<UUID, List<ClothAttributeValueDTO>> convertToAttributeDTOs(
+            Map<UUID, List<ClothAttributeValue>> attributeEntities) {
+        Map<UUID, List<ClothAttributeValueDTO>> result = new HashMap<>();
+        for (Map.Entry<UUID, List<ClothAttributeValue>> entry : attributeEntities.entrySet()) {
+            result.put(entry.getKey(), clothMapper.toAttributeDTOs(entry.getValue()));
+        }
+        return result;
+    }
 }
