@@ -20,7 +20,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -28,6 +30,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
@@ -94,16 +97,15 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
       String accessToken = jwtTokenProvider.generateAccessToken(closetUserDetails);
       String refreshToken = jwtTokenProvider.generateRefreshToken(closetUserDetails);
 
-      Cookie refreshTokenCookie = jwtTokenProvider.generateRefreshTokenCookie(refreshToken);
-      refreshTokenCookie.setHttpOnly(true);
-      refreshTokenCookie.setPath("/");
-      response.addCookie(refreshTokenCookie);
+      ResponseCookie refreshCookie  = jwtTokenProvider.generateOAuth2RefreshTokenCookie(
+          refreshToken);
 
-      response.sendRedirect(base_url);
-      response.setStatus(HttpServletResponse.SC_OK);
+      response.addHeader("Set-Cookie", refreshCookie.toString());
 
       jwtRegistry.registerJwtInformation(
           new JwtInformation(closetUserDetails.getUserDTO(), accessToken, refreshToken));
+
+      response.sendRedirect(base_url);
     } catch (JOSEException e) {
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       ErrorResponse errorResponse = new ErrorResponse(e,

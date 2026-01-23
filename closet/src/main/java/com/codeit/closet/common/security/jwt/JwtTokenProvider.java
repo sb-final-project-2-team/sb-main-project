@@ -22,6 +22,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -93,6 +94,16 @@ public class JwtTokenProvider {
     return cookie;
   }
 
+  public ResponseCookie generateOAuth2RefreshTokenCookie(String refreshToken) {
+    return ResponseCookie.from("CLOSET_REFRESH_TOKEN", refreshToken)
+        .httpOnly(true)
+        .secure(false)
+        .sameSite("Lax")
+        .path("/")
+        .maxAge(refreshTokenExpirationMs / 1000)
+        .build();
+  }
+
   public Cookie generateRefreshTokenExpirationCookie() {
     Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, "");
     cookie.setHttpOnly(true);
@@ -101,6 +112,7 @@ public class JwtTokenProvider {
     cookie.setMaxAge(0);
     return cookie;
   }
+
   // ==========================================
   // ================ JWT 파싱 ================
   // ==========================================
@@ -160,7 +172,7 @@ public class JwtTokenProvider {
     try {
       SignedJWT signedJWT = SignedJWT.parse(token);
 
-      if (!signedJWT.verify(verifier)){
+      if (!signedJWT.verify(verifier)) {
         log.debug("JWT signature verification failed for {} token", expectedType);
         return false;
       }
