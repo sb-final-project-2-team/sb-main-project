@@ -16,7 +16,6 @@ import com.codeit.closet.module.user.entity.UserRole;
 import com.codeit.closet.module.user.mapper.UserMapper;
 import com.codeit.closet.module.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.Cookie;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -118,11 +117,12 @@ class OAuth2SuccessHandlerTest {
         ResponseCookie.from("CLOSET_REFRESH_TOKEN", "refresh-token")
             .httpOnly(true)
             .secure(true)
+            .domain(".otboo.store")
             .sameSite("None")
             .path("/")
             .build();
 
-    when(jwtTokenProvider.generateOAuth2RefreshTokenCookie(any()))
+    when(jwtTokenProvider.generateRefreshTokenCookie(any()))
         .thenReturn(refreshCookie);
 
     // when
@@ -188,7 +188,7 @@ class OAuth2SuccessHandlerTest {
             .path("/")
             .build();
 
-    when(jwtTokenProvider.generateOAuth2RefreshTokenCookie(any()))
+    when(jwtTokenProvider.generateRefreshTokenCookie(any()))
         .thenReturn(refreshCookie);
 
     // when
@@ -252,7 +252,7 @@ class OAuth2SuccessHandlerTest {
             .path("/")
             .build();
 
-    when(jwtTokenProvider.generateOAuth2RefreshTokenCookie(any()))
+    when(jwtTokenProvider.generateRefreshTokenCookie(any()))
         .thenReturn(refreshCookie);
 
     // when

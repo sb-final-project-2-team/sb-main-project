@@ -12,7 +12,6 @@ import com.codeit.closet.module.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -97,7 +96,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
       String accessToken = jwtTokenProvider.generateAccessToken(closetUserDetails);
       String refreshToken = jwtTokenProvider.generateRefreshToken(closetUserDetails);
 
-      ResponseCookie refreshCookie  = jwtTokenProvider.generateOAuth2RefreshTokenCookie(
+      ResponseCookie refreshCookie  = jwtTokenProvider.generateRefreshTokenCookie(
           refreshToken);
 
       response.addHeader("Set-Cookie", refreshCookie.toString());

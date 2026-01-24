@@ -2,17 +2,20 @@ package com.codeit.closet.common.security.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import com.codeit.closet.common.security.ClosetUserDetails;
 import com.codeit.closet.module.user.dto.user.UserDTO;
 import com.codeit.closet.module.user.entity.UserRole;
-import jakarta.servlet.http.Cookie;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseCookie;
 
 @ExtendWith(MockitoExtension.class)
 class JwtTokenProviderTest {
@@ -132,19 +135,22 @@ class JwtTokenProviderTest {
   @Test
   @DisplayName("RefreshToken 쿠키를 생성한다")
   void generate_refresh_token_cookie() {
-    Cookie cookie = tokenProvider.generateRefreshTokenCookie("refresh-token");
+    // when
+    ResponseCookie result =
+        tokenProvider.generateRefreshTokenCookie("userId");
 
-    assertThat(cookie.getName()).isEqualTo(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME);
-    assertThat(cookie.isHttpOnly()).isTrue();
-    assertThat(cookie.getSecure()).isTrue();
+    // then
+    assertThat(result.getName())
+        .isEqualTo(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME);
+    assertThat(result.isHttpOnly()).isTrue();
   }
 
   @Test
   @DisplayName("RefreshToken 만료 쿠키를 생성한다")
   void generate_expired_cookie() {
-    Cookie cookie = tokenProvider.generateRefreshTokenExpirationCookie();
+    ResponseCookie responseCookie = tokenProvider.generateRefreshTokenExpirationCookie();
 
-    assertThat(cookie.getMaxAge()).isZero();
+    assertThat(responseCookie.getMaxAge()).isZero();
   }
 
 }

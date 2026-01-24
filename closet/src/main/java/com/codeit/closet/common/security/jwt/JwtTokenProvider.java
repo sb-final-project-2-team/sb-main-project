@@ -13,9 +13,7 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTClaimsSet.Builder;
 import com.nimbusds.jwt.SignedJWT;
-import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +28,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenProvider {
 
-  public static final String REFRESH_TOKEN_COOKIE_NAME = "CLOSET_REFRESH_TOKEN";
+  public static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
 
   private final long accessTokenExpirationMs;
   private final long refreshTokenExpirationMs;
@@ -82,20 +80,8 @@ public class JwtTokenProvider {
     return validateToken(token, refreshTokenVerifier, "refresh_token");
   }
 
-  // ==========================================
-  // ============ 리프레시 토큰 변환 =============
-  // ==========================================
-  public Cookie generateRefreshTokenCookie(String refreshToken) {
-    Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken);
-    cookie.setHttpOnly(true);
-    cookie.setSecure(true);
-    cookie.setPath("/");
-    cookie.setMaxAge((int) (refreshTokenExpirationMs / 1000L));
-    return cookie;
-  }
-
-  public ResponseCookie generateOAuth2RefreshTokenCookie(String refreshToken) {
-    return ResponseCookie.from("CLOSET_REFRESH_TOKEN", refreshToken)
+  public ResponseCookie generateRefreshTokenCookie(String refreshToken) {
+    return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
         .httpOnly(true)
         .secure(true)
         .sameSite("None")
@@ -104,13 +90,14 @@ public class JwtTokenProvider {
         .build();
   }
 
-  public Cookie generateRefreshTokenExpirationCookie() {
-    Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, "");
-    cookie.setHttpOnly(true);
-    cookie.setSecure(true);
-    cookie.setPath("/");
-    cookie.setMaxAge(0);
-    return cookie;
+  public ResponseCookie generateRefreshTokenExpirationCookie() {
+    return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, "")
+        .httpOnly(true)
+        .secure(true)
+        .sameSite("None")
+        .path("/")
+        .maxAge(0L)
+        .build();
   }
 
   // ==========================================

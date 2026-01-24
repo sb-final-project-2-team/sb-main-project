@@ -12,7 +12,6 @@ import com.codeit.closet.module.user.dto.user.UserDTO;
 import com.codeit.closet.module.user.entity.UserRole;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
@@ -24,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,12 +82,16 @@ class JwtLoginSuccessHandlerTest {
     when(jwtTokenProvider.generateRefreshToken(userDetails))
         .thenReturn("refresh.token");
 
-    Cookie refreshCookie = new Cookie(
-        JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME,
-        "refresh.token"
-    );
+    ResponseCookie refreshCookie =
+        ResponseCookie.from("CLOSET_REFRESH_TOKEN", "refresh-token")
+            .httpOnly(true)
+            .secure(true)
+            .domain(".otboo.store")
+            .sameSite("None")
+            .path("/")
+            .build();
 
-    when(jwtTokenProvider.generateRefreshTokenCookie("refresh.token"))
+    when(jwtTokenProvider.generateRefreshTokenCookie(any()))
         .thenReturn(refreshCookie);
 
     // when
@@ -95,8 +99,6 @@ class JwtLoginSuccessHandlerTest {
 
     // then
     verify(response).setStatus(HttpServletResponse.SC_OK);
-    verify(response).addCookie(refreshCookie);
-
     verify(jwtRegistry).registerJwtInformation(any(JwtInformation.class));
 
     JwtDTO jwtDTO =

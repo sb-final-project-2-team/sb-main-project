@@ -5,11 +5,11 @@ import com.codeit.closet.common.security.jwt.JwtInformation;
 import com.codeit.closet.common.security.jwt.JwtTokenProvider;
 import com.codeit.closet.module.auth.dto.ResetPasswordRequest;
 import com.codeit.closet.module.auth.service.AuthService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -39,8 +39,10 @@ public class AuthController {
       @CookieValue(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME) String refreshToken,
       HttpServletResponse response) {
     JwtInformation jwtInformation = authService.refreshToken(refreshToken);
-    Cookie cookie = jwtTokenProvider.generateRefreshTokenCookie(jwtInformation.getRefreshToken());
-    response.addCookie(cookie);
+    ResponseCookie refreshCookie  = jwtTokenProvider.generateRefreshTokenCookie(
+        jwtInformation.getRefreshToken());
+
+    response.addHeader("Set-Cookie", refreshCookie.toString());
 
     JwtDTO jwtDTO = new JwtDTO(jwtInformation.getUserDTO(), jwtInformation.getAccessToken());
 

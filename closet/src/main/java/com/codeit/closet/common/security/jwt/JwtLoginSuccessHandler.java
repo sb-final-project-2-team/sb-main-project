@@ -5,7 +5,6 @@ import com.codeit.closet.common.security.ClosetUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -13,6 +12,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -38,8 +38,10 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = jwtTokenProvider.generateAccessToken(closetUserDetails);
         String refreshToken = jwtTokenProvider.generateRefreshToken(closetUserDetails);
 
-        Cookie refreshTokenCookie = jwtTokenProvider.generateRefreshTokenCookie(refreshToken);
-        response.addCookie(refreshTokenCookie);
+        ResponseCookie refreshCookie  = jwtTokenProvider.generateRefreshTokenCookie(
+            refreshToken);
+
+        response.addHeader("Set-Cookie", refreshCookie.toString());
 
         JwtDTO jwtDTO = new JwtDTO(closetUserDetails.getUserDTO(), accessToken);
         response.setStatus(HttpServletResponse.SC_OK);
