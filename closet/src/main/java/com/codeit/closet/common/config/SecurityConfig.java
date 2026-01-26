@@ -77,7 +77,7 @@ public class SecurityConfig {
 
         // CSRF 사용용 설정
         .csrf(csrf -> csrf
-            .ignoringRequestMatchers("/api/direct-messages/**") // dm 저장 요청
+            .ignoringRequestMatchers("/api/direct-messages/**", "/api/auth/sign-in", "/api/auth/sign-out", "/api/auth/refresh") // dm 저장 요청
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
 
@@ -126,7 +126,7 @@ public class SecurityConfig {
   CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
 
-    config.setAllowedOrigins(List.of("http://localhost:3000"));
+    config.setAllowedOrigins(List.of("https://otboo.store"));
 
     config.setAllowedMethods(List.of(
         "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
