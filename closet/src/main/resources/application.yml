@@ -3,6 +3,8 @@ spring:
     include: kafka # 혹시 문제 생긴다면 지우시면 됩니다.
   application:
     name: closet
+  mvc:
+    dispatch-options-request: true
 
   elasticsearch:
     uris: ${ELASTIC_SEARCH_URL:http://localhost:9200}
@@ -91,7 +93,6 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 
-
 closet:
   storage:
     type: ${STORAGE_TYPE:s3}
@@ -126,6 +127,8 @@ logging:
     root: info
     org.hibernate.sql: info
     org.hibernate.type: info
+    org.springframework.security: DEBUG
+
 
 management:
   server:
@@ -141,3 +144,11 @@ management:
     metrics:
       export:
         enabled: true
+
+server:
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: true
+        same-site: none
