@@ -1,196 +1,137 @@
-# sb-main-project
-메인 프로젝트 입니다.
+---
 
-# 기초 템플릿 구성
-ISSUE : bug report, feature report 구성
-CI : 구성
-CODEOWNERS 구성
-PR : PR TEMPLATE 구성
+# 👗 옷장을 부탁해 (Please Take Care of My Closet)
 
-ISSUE 작업 자동화 확인
-코드래빗 적용 테스트
+> 
+> **"당신의 OOTD 여기서 편하게! 날씨에 맞는 옷을 추천해드릴게요."** 
+> 
+> 
 
-브랜치 규칙 적용 완료
-main, develop 직접 push reject, 코드 리뷰 2명이상 해야 push, merge가능
-
-## 📦 Tech Stack & Dependencies
-
-본 프로젝트는 **Spring Boot 4.x + Java 17** 기반으로 구성되어 있으며,
-확장성과 실무 사용성을 고려한 라이브러리들을 사용합니다.
+매일 아침 '무엇을 입을까' 고민하는 평균 15분의 시간, 기온만 보고 나갔다가 낭패를 본 경험, 그리고 옷장 속에 어떤 아이템이 있는지 기억나지 않는 한계를 해결하기 위해 탄생한 **지능형 패션 커뮤니티**입니다. 
 
 ---
 
-### ☕ Language & Build
+## 📅 프로젝트 정보
 
-* **Java 17**
-* **Gradle**
-* **Spring Boot 4.0.1**
+* 
+**진행 기간**: 2025년 12월 18일 ~ 2026년 01월 29일 
 
----
 
-### 🌐 Web & API
+* 
+**팀원 (TEAM 2)**: 남현수(팀장), 정수진, 김용희, 주세훈, 강동민, 최도한 
 
-* **spring-boot-starter-web**
 
-    * REST API 개발을 위한 기본 Web MVC 스택
-* **spring-boot-starter-validation**
-
-    * Bean Validation (`@NotNull`, `@Email` 등)
-* **spring-boot-starter-thymeleaf**
-
-    * 서버 사이드 렌더링(View) 지원
-* **spring-boot-starter-websocket**
-
-    * 실시간 통신(WebSocket) 기능 지원
 
 ---
 
-### 🔐 Security & Authentication
+## 🛠 기술 스택 (Tech Stack)
 
-* **spring-boot-starter-security**
+### Backend & Security
 
-    * 인증/인가 전반 처리
-* **spring-boot-starter-oauth2-client**
+* 
+**Framework**: Spring Boot, Spring Data JPA 
 
-    * OAuth2 기반 소셜 로그인 (Google, Kakao 등)
-* **thymeleaf-extras-springsecurity6**
 
-    * Thymeleaf + Spring Security 연동
+* 
+**Security**: Spring Security, OAuth2 (Google, Kakao) 
 
----
 
-### 🗄️ Data & Persistence
+* 
+**Data**: PostgreSQL, Redis, Kafka, ElasticSearch 
 
-* **spring-boot-starter-data-jpa**
 
-    * JPA 기반 ORM 처리
-* **spring-boot-starter-batch**
 
-    * 대용량 데이터 처리 및 배치 작업
-* **PostgreSQL Driver**
+### Infrastructure & DevOps
 
-    * 운영 환경용 RDBMS
-* **H2 Database**
+* 
+**Server**: AWS, Nginx (트래픽 분산) 
 
-    * 개발 및 테스트용 인메모리 DB
 
----
+* 
+**CI/CD**: GitHub Actions, Docker 
 
-### 🔄 DTO Mapping
 
-* **MapStruct**
+* 
+**Monitoring**: Prometheus, Grafana 
 
-    * 컴파일 타임 기반 DTO ↔ Entity 매핑
-    * 성능 저하 없는 명시적 매핑 처리
 
----
 
-### ✉️ Mail (SMTP)
+### Collaboration Tools
 
-* **spring-boot-starter-mail**
+* 
+**Code Review**: CodeRabbit (AI 기반 리뷰), GitHub PR 
 
-    * 이메일 인증, 알림 메일, 비밀번호 재설정 등 SMTP 메일 전송
+
+* 
+**Communication**: Daily Double Check-in (아침/저녁 공유) 
+
+
 
 ---
 
-### 🔁 Resilience & Stability
+## 🌟 주요 기능 (Main Features)
 
-* **Spring Cloud Resilience4j**
+### 1. 지능형 의상 추천
 
-    * Circuit Breaker 기반 장애 대응
-    * 외부 시스템 장애 격리 및 복구 처리
+* 실시간 날씨 데이터(체감 온도, 강수 확률 등)를 연동하여 최적의 코디를 추천합니다. 
 
----
 
-### 📊 Monitoring & Observability
+* 사용자별 온도 민감도 설정을 통해 개인화된 추천을 제공합니다. 
 
-* **spring-boot-starter-actuator**
 
-    * 애플리케이션 상태 및 메트릭 제공
-* **Micrometer Prometheus Registry**
 
-    * Prometheus 연동 메트릭 수집
+### 2. 가상 옷장 관리
 
----
+* 본인이 가진 의상을 등록하고 속성을 관리하여 불필요한 중복 구매를 방지합니다. 
 
-### 🛠️ Development Productivity
 
-* **Lombok**
+* 의상 링크 및 이미지 등록 기능을 통해 디지털 옷장을 구축합니다. 
 
-    * Boilerplate 코드 제거 (`@Getter`, `@Builder` 등)
-* **Spring Boot DevTools**
 
-    * 개발 중 자동 재시작, Live Reload 지원
 
----
+### 3. 패션 커뮤니티 (OOTD)
 
-### 🧪 Test
+* 오늘의 착장(OOTD) 피드를 공유하고 다른 사용자의 스타일 아이디어를 탐색합니다. 
 
-* **spring-boot-starter-test**
 
-    * JUnit 5, Mockito 등 통합 테스트 환경
-* **spring-security-test**
+* 팔로우 및 DM 기능을 통해 취향이 맞는 사용자들과 소통할 수 있습니다. 
 
-    * 인증/인가 테스트 지원
-* **spring-batch-test**
 
-    * Batch Job / Step 테스트 전용 유틸리티
+
+### 4. 관리자 및 기타 기능
+
+* 비밀번호 초기화, 프로필 업데이트, 위치 등록 및 알림 서비스. 
+
+
 
 ---
 
-## 🔍 Environment Strategy
+## 🎯 기대 효과
 
-* **H2**: 로컬 개발 및 테스트 환경
-* **PostgreSQL**: 운영 환경
-* **Spring Profile 기반 설정 분리 예정**
+* 
+**개인의 혁신**: 매일 아침 코디 고민 시간 단축 및 착장 오류 방지 
+
+
+* 
+**관계의 연결**: 패션 취향 기반의 소통과 건강한 네트워킹 문화 형성 
+
+
+* 
+**사회적 공헌**: 의류 자산의 효율적 관리로 버려지는 옷을 줄이는 ESG 가치 실현 (Slow Fashion) 
+
+
 
 ---
 
-## ✨ Design Considerations
+## 📂 프로젝트 구조 및 협업 전략
 
-* 실무 기준 확장 가능한 구조
-* 인증 / 배치 / 메일 / 장애 대응을 고려한 구성
-* 운영 환경을 고려한 모니터링 및 메트릭 수집
+* 
+**Git-Flow**: 브랜치 전략 및 이슈 관리, Pull Request 기반 코드 리뷰 정착 
 
----
-## 📁 프로젝트 구조 가이드 (단일 모듈 + 도메인 분리 기반 DDD Lite)
 
->핵심: common은 공용, module 안에 비즈니스 도메인 분리,
->service/repository 방식 사용 가능.
->단지 도메인을 기능 묶음 기준으로 독립성 있게 관리한다는 목적.
+* 
+**문서화**: API 명세서 정의 및 PostgreSQL 기반 ERD 설계 
 
-🔥 디렉토리 구조 예시
 
-``` markdown
-src/main/java/com/project
-├─ common/                         # 공통 모듈 (전역에서 활용)
-│   ├─ config/                      # 공통 설정(Spring Config 등)
-│   ├─ exception/                   # GlobalException, ErrorCode 등
-│   └─ util/                        # 유틸 클래스
-│
-└─ module/                         # 도메인 그룹
-├─ user/                       # User Domain
-│   ├─ controller/             # API 진입점
-│   ├─ service/                # 서비스(비즈니스 로직)
-│   ├─ repository/             # Repository (JPA/Hibernate)
-│   ├─ entity/                 # DB Entity
-│   └─ dto/                    # Request / Response DTO
-│
-├─ auth/                       # Auth Domain
-│   ├─ controller/
-│   ├─ service/
-│   ├─ repository/
-│   ├─ entity/
-│   └─ dto/
-│
-├─ order/
-│   ├─ controller/
-│   ├─ service/
-│   ├─ repository/
-│   ├─ entity/
-│   └─ dto/
-│
-└─ ...
-```
-📌 ModuleConfig 제거, 도메인별 폴더로만 분리
-📌 Service/Repository 구조는 동일하게 유지
+* 
+**컨벤션**: 일관된 코드 스타일 및 Git 커밋 메시지 규칙 적용
